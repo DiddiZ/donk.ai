@@ -3,16 +3,21 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 
 
-def loss_l2_ref(d, wp):
-    """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
-    from sympy import MatrixSymbol, diff
-    T, D = d.shape
+def _create_symbols(D):
+    from sympy import MatrixSymbol
 
     d_sym = np.array(MatrixSymbol('d', 1, D))[0]
     wp_sym = np.array(MatrixSymbol('wp', 1, D))[0]
 
-    # Loss function and derivatives
-    loss = 0.5 * sum(d_sym**2 * wp_sym)
+    return d_sym, wp_sym
+
+
+def _evaluate_loss(d, wp, d_sym, wp_sym, loss):
+    from sympy import diff
+
+    T, D = d.shape
+
+    # Derivatives
     d1 = diff(loss, d_sym)
     d2 = diff(d1, d_sym)
 
@@ -29,6 +34,29 @@ def loss_l2_ref(d, wp):
     return l, lx, lxx
 
 
+def loss_l2_ref(d, wp):
+    """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
+    _, D = d.shape
+    d_sym, wp_sym = _create_symbols(D)
+
+    # Loss function
+    loss = 0.5 * sum(d_sym**2 * wp_sym)
+
+    return _evaluate_loss(d, wp, d_sym, wp_sym, loss)
+
+
+def loss_log_cosh_ref(d, wp):
+    """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
+    from sympy import log, cosh
+    _, D = d.shape
+    d_sym, wp_sym = _create_symbols(D)
+
+    # Loss function
+    loss = sum([log(cosh(d_sym[i])) * wp_sym[i] for i in range(D)])
+
+    return _evaluate_loss(d, wp, d_sym, wp_sym, loss)
+
+
 class Test_Losses(unittest.TestCase):
     def test_loss_l2(self):
         """Test loss_l2 implementation agains reference implementation using random values."""
@@ -40,6 +68,21 @@ class Test_Losses(unittest.TestCase):
 
         l_ref, lx_ref, lxx_ref = loss_l2_ref(d, wp)
         l, lx, lxx = loss_l2(d, wp)
+
+        assert_array_almost_equal(l_ref, l)
+        assert_array_almost_equal(lx_ref, lx)
+        assert_array_almost_equal(lxx_ref, lxx)
+
+    def test_loss_log_cosh(self):
+        """Test loss_log_cosh implementation agains reference implementation using random values."""
+        from donk.costs import loss_log_cosh
+
+        T, D = 10, 3
+        d = np.random.randn(T, D)
+        wp = np.random.uniform(size=(T, D))
+
+        l_ref, lx_ref, lxx_ref = loss_log_cosh_ref(d, wp)
+        l, lx, lxx = loss_log_cosh(d, wp)
 
         assert_array_almost_equal(l_ref, l)
         assert_array_almost_equal(lx_ref, lx)
