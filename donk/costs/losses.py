@@ -1,6 +1,30 @@
 import numpy as np
 
 
+def loss_combined(d, wp, losses):
+    """Evaluates and sums up multiple loss functions.
+
+    Args:
+        d: (T, D) states to evaluate norm on.
+        wp: (T, D) matrix with weights for each dimension and time step.
+        losses: List of dicts with keys
+            'loss': loss function to evaluate.
+            'kwargs': Addional arguments passed to the loss function (optional).
+
+    """
+    if len(losses) < 1:
+        raise ValueError("loss_combined requred at least one loss function to sum up.")
+
+    l, lx, lxx = losses[0]['loss'](d, wp, **losses[0].get('kwargs', {}))
+    for loss in losses[1:]:
+        l_, lx_, lxx_ = loss['loss'](d, wp, **loss.get('kwargs', {}))
+        l += l_
+        lx += lx_
+        lxx += lxx_
+
+    return l, lx, lxx
+
+
 def loss_l2(d, wp):
     """Evaluate and compute derivatives for l2 norm penalty.
 

@@ -87,3 +87,69 @@ class Test_Losses(unittest.TestCase):
         assert_array_almost_equal(l_ref, l)
         assert_array_almost_equal(lx_ref, lx)
         assert_array_almost_equal(lxx_ref, lxx)
+
+    def test_loss_sum(self):
+        """Test loss_combined summing up two losses."""
+        from donk.costs import loss_log_cosh, loss_l2, loss_combined
+
+        T, D = 10, 3
+        d = np.random.randn(T, D)
+        wp = np.random.uniform(size=(T, D))
+
+        # Reference
+        l_l2_ref, lx_l2_ref, lxx_l2_ref = loss_l2(d, wp)
+        l_log_cosh_ref, lx_log_cosh_ref, lxx_log_cosh_ref = loss_log_cosh_ref(d, wp)
+        l_ref = l_l2_ref + l_log_cosh_ref
+        lx_ref = lx_l2_ref + lx_log_cosh_ref
+        lxx_ref = lxx_l2_ref + lxx_log_cosh_ref
+
+        # Impl
+        l, lx, lxx = loss_combined(d, wp, [
+            {
+                'loss': loss_l2,
+                'kwargs': {}
+            },
+            {
+                'loss': loss_log_cosh,
+            },
+        ])
+
+        assert_array_almost_equal(l_ref, l)
+        assert_array_almost_equal(lx_ref, lx)
+        assert_array_almost_equal(lxx_ref, lxx)
+
+    def test_loss_sum_single_argument(self):
+        """Test loss_combined with only a single loss to sum up."""
+        from donk.costs import loss_l2, loss_combined
+
+        T, D = 10, 3
+        d = np.random.randn(T, D)
+        wp = np.random.uniform(size=(T, D))
+
+        # Reference
+        l_ref, lx_ref, lxx_ref = loss_l2_ref(d, wp)
+
+        # Impl
+        l, lx, lxx = loss_combined(d, wp, [{'loss': loss_l2}])
+
+        assert_array_almost_equal(l_ref, l)
+        assert_array_almost_equal(lx_ref, lx)
+        assert_array_almost_equal(lxx_ref, lxx)
+
+    def test_loss_sum_missing_arguments(self):
+        """Test loss_combined raises errors on missing arguments."""
+        from donk.costs import loss_combined
+
+        T, D = 10, 3
+        d = np.random.randn(T, D)
+        wp = np.random.uniform(size=(T, D))
+
+        # No losses to sum up
+        with self.assertRaises(ValueError):
+            loss_combined(d, wp, [])
+
+        # Missing 'loss'
+        with self.assertRaises(KeyError):
+            loss_combined(d, wp, [
+                {},
+            ])
