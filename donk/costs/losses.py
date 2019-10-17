@@ -1,23 +1,22 @@
 import numpy as np
 
 
-def loss_combined(d, wp, losses):
+def loss_combined(x, losses):
     """Evaluates and sums up multiple loss functions.
 
     Args:
-        d: (T, D) states to evaluate norm on.
-        wp: (T, D) matrix with weights for each dimension and time step.
-        losses: List of dicts with keys
-            'loss': loss function to evaluate.
-            'kwargs': Addional arguments passed to the loss function (optional).
+        x: (T, dX) states, actual values.
+        losses: List of tuples (`loss`, `kwargs`)
+            `loss`: loss function to evaluate.
+            `kwargs`: Addional arguments passed to the loss function (optional).
 
     """
     if len(losses) < 1:
         raise ValueError("loss_combined requred at least one loss function to sum up.")
 
-    l, lx, lxx = losses[0]['loss'](d, wp, **losses[0].get('kwargs', {}))
+    l, lx, lxx = losses[0][0](x, **losses[0][1])
     for loss in losses[1:]:
-        l_, lx_, lxx_ = loss['loss'](d, wp, **loss.get('kwargs', {}))
+        l_, lx_, lxx_ = loss[0](x, **loss[1])
         l += l_
         lx += lx_
         lxx += lxx_
@@ -25,14 +24,15 @@ def loss_combined(d, wp, losses):
     return l, lx, lxx
 
 
-def loss_l2(d, wp):
+def loss_l2(x, t, w):
     """Evaluate and compute derivatives for l2 norm penalty.
 
-    loss = 0.5 * d^2 * wp
+    loss = sum(0.5 * (t - x)^2 * w)
 
     Args:
-        d: (T, D) states to evaluate norm on.
-        wp: (T, D) matrix with weights for each dimension and time step.
+        x: (T, dX) states, actual values.
+        t: (T, dX) targets, expected values.
+        w: (T, dX) weights, scale error of each feature at each timestep.
 
     Returns:
         l: (T,) cost at each timestep.
@@ -41,31 +41,34 @@ def loss_l2(d, wp):
 
     """
     # Get trajectory length.
-    T, D = d.shape
+    _, dX = x.shape
+
+    d = t - x  # Error
 
     # Total cost
-    # l = 0.5 * d^2 * wp
-    l = 0.5 * np.sum(d**2 * wp, axis=1)
+    # l = sum(0.5 * (t - x)^2 * w)
+    l = 0.5 * np.sum(d**2 * w, axis=1)
 
     # First order derivative
-    # lx = d * wp
-    lx = d * wp
+    # lx = (t - x) * w
+    lx = d * w
 
     # Second order derivative
     # lxx = w
-    lxx = np.einsum('ij,jk->ijk', wp, np.eye(D))
+    lxx = np.einsum('ij,jk->ijk', w, np.eye(dX))
 
     return l, lx, lxx
 
 
-def loss_log_cosh(d, wp):
+def loss_log_cosh(x, t, w):
     """Evaluate and compute derivatives for log-cosh loss.
 
-    loss = log(cosh(d)) * wp
+    loss = sum(log(cosh(t - x)) * w)
 
     Args:
-        d: (T, D) states to evaluate norm on.
-        wp: (T, D) matrix with weights for each dimension and time step.
+        x: (T, dX) states, actual values.
+        t: (T, dX) targets, expected values.
+        w: (T, dX) weights, scale error of each feature at each timestep.
 
     Returns:
         l: (T,) cost at each timestep.
@@ -74,18 +77,19 @@ def loss_log_cosh(d, wp):
 
     """
     # Get trajectory length.
-    T, D = d.shape
+    _, dX = x.shape
+    d = t - x
 
     # Total cost
-    # l = log(cosh(d)) * wp
-    l = np.sum(np.log(np.cosh(d)) * wp, axis=1)
+    # l = sum(log(cosh(t - x)) * w)
+    l = np.sum(np.log(np.cosh(d)) * w, axis=1)
 
     # First order derivative
-    # lx = tanh(d) * wp
-    lx = np.tanh(d) * wp
+    # lx = tanh(t - x) * ws
+    lx = np.tanh(d) * w
 
     # Second order derivative
-    # lxx = wp / cosh^2(d)
-    lxx = np.einsum('ij,jk->ijk', wp / np.cosh(d)**2, np.eye(D))
+    # lxx = w / cosh^2(t - x)
+    lxx = np.einsum('ij,jk->ijk', w / np.cosh(d)**2, np.eye(dX))
 
     return l, lx, lxx

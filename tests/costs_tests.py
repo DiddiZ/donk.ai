@@ -34,27 +34,27 @@ def _evaluate_loss(d, wp, d_sym, wp_sym, loss):
     return l, lx, lxx
 
 
-def loss_l2_ref(d, wp):
+def loss_l2_ref(x, t, w):
     """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
-    _, D = d.shape
-    d_sym, wp_sym = _create_symbols(D)
+    _, dX = x.shape
+    d_sym, wp_sym = _create_symbols(dX)
 
     # Loss function
     loss = 0.5 * sum(d_sym**2 * wp_sym)
 
-    return _evaluate_loss(d, wp, d_sym, wp_sym, loss)
+    return _evaluate_loss(t - x, w, d_sym, wp_sym, loss)
 
 
-def loss_log_cosh_ref(d, wp):
+def loss_log_cosh_ref(x, t, w):
     """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
     from sympy import log, cosh
-    _, D = d.shape
-    d_sym, wp_sym = _create_symbols(D)
+    _, dX = x.shape
+    d_sym, wp_sym = _create_symbols(dX)
 
     # Loss function
-    loss = sum([log(cosh(d_sym[i])) * wp_sym[i] for i in range(D)])
+    loss = sum([log(cosh(d_sym[i])) * wp_sym[i] for i in range(dX)])
 
-    return _evaluate_loss(d, wp, d_sym, wp_sym, loss)
+    return _evaluate_loss(t - x, w, d_sym, wp_sym, loss)
 
 
 class Test_Losses(unittest.TestCase):
@@ -62,12 +62,13 @@ class Test_Losses(unittest.TestCase):
         """Test loss_l2 implementation agains reference implementation using random values."""
         from donk.costs import loss_l2
 
-        T, D = 10, 3
-        d = np.random.randn(T, D)
-        wp = np.random.uniform(size=(T, D))
+        T, dX = 10, 3
+        x = np.random.randn(T, dX)
+        t = np.random.randn(T, dX)
+        w = np.random.uniform(size=(T, dX))
 
-        l_ref, lx_ref, lxx_ref = loss_l2_ref(d, wp)
-        l, lx, lxx = loss_l2(d, wp)
+        l_ref, lx_ref, lxx_ref = loss_l2_ref(x, t, w)
+        l, lx, lxx = loss_l2(x, t, w)
 
         assert_array_almost_equal(l_ref, l)
         assert_array_almost_equal(lx_ref, lx)
@@ -77,12 +78,13 @@ class Test_Losses(unittest.TestCase):
         """Test loss_log_cosh implementation agains reference implementation using random values."""
         from donk.costs import loss_log_cosh
 
-        T, D = 10, 3
-        d = np.random.randn(T, D)
-        wp = np.random.uniform(size=(T, D))
+        T, dX = 10, 3
+        x = np.random.randn(T, dX)
+        t = np.random.randn(T, dX)
+        w = np.random.uniform(size=(T, dX))
 
-        l_ref, lx_ref, lxx_ref = loss_log_cosh_ref(d, wp)
-        l, lx, lxx = loss_log_cosh(d, wp)
+        l_ref, lx_ref, lxx_ref = loss_log_cosh_ref(x, t, w)
+        l, lx, lxx = loss_log_cosh(x, t, w)
 
         assert_array_almost_equal(l_ref, l)
         assert_array_almost_equal(lx_ref, lx)
@@ -92,26 +94,28 @@ class Test_Losses(unittest.TestCase):
         """Test loss_combined summing up two losses."""
         from donk.costs import loss_log_cosh, loss_l2, loss_combined
 
-        T, D = 10, 3
-        d = np.random.randn(T, D)
-        wp = np.random.uniform(size=(T, D))
+        T, dX = 10, 3
+        x = np.random.randn(T, dX)
+        t = np.random.randn(T, dX)
+        w = np.random.uniform(size=(T, dX))
 
         # Reference
-        l_l2_ref, lx_l2_ref, lxx_l2_ref = loss_l2(d, wp)
-        l_log_cosh_ref, lx_log_cosh_ref, lxx_log_cosh_ref = loss_log_cosh_ref(d, wp)
+        l_l2_ref, lx_l2_ref, lxx_l2_ref = loss_l2(x, t, w)
+        l_log_cosh_ref, lx_log_cosh_ref, lxx_log_cosh_ref = loss_log_cosh_ref(x, t, w)
         l_ref = l_l2_ref + l_log_cosh_ref
         lx_ref = lx_l2_ref + lx_log_cosh_ref
         lxx_ref = lxx_l2_ref + lxx_log_cosh_ref
 
         # Impl
-        l, lx, lxx = loss_combined(d, wp, [
-            {
-                'loss': loss_l2,
-                'kwargs': {}
-            },
-            {
-                'loss': loss_log_cosh,
-            },
+        l, lx, lxx = loss_combined(x, [
+            (loss_l2, {
+                't': t,
+                'w': w,
+            }),
+            (loss_log_cosh, {
+                't': t,
+                'w': w,
+            }),
         ])
 
         assert_array_almost_equal(l_ref, l)
@@ -122,15 +126,21 @@ class Test_Losses(unittest.TestCase):
         """Test loss_combined with only a single loss to sum up."""
         from donk.costs import loss_l2, loss_combined
 
-        T, D = 10, 3
-        d = np.random.randn(T, D)
-        wp = np.random.uniform(size=(T, D))
+        T, dX = 10, 3
+        x = np.random.randn(T, dX)
+        t = np.random.randn(T, dX)
+        w = np.random.uniform(size=(T, dX))
 
         # Reference
-        l_ref, lx_ref, lxx_ref = loss_l2_ref(d, wp)
+        l_ref, lx_ref, lxx_ref = loss_l2_ref(x, t, w)
 
         # Impl
-        l, lx, lxx = loss_combined(d, wp, [{'loss': loss_l2}])
+        l, lx, lxx = loss_combined(x, [
+            (loss_l2, {
+                't': t,
+                'w': w,
+            }),
+        ])
 
         assert_array_almost_equal(l_ref, l)
         assert_array_almost_equal(lx_ref, lx)
@@ -140,16 +150,15 @@ class Test_Losses(unittest.TestCase):
         """Test loss_combined raises errors on missing arguments."""
         from donk.costs import loss_combined
 
-        T, D = 10, 3
-        d = np.random.randn(T, D)
-        wp = np.random.uniform(size=(T, D))
+        T, dX = 10, 3
+        x = np.random.randn(T, dX)
 
         # No losses to sum up
         with self.assertRaises(ValueError):
-            loss_combined(d, wp, [])
+            loss_combined(x, [])
 
         # Missing 'loss'
         with self.assertRaises(KeyError):
-            loss_combined(d, wp, [
+            loss_combined(x, [
                 {},
             ])
