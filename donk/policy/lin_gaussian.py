@@ -1,0 +1,40 @@
+import numpy as np
+from donk.policy import Policy
+from donk.utils.batched import batched_inv_spd, batched_cholesky
+
+
+class LinearGaussianPolicy(Policy):
+    """Time-varying linear Gaussian policy.
+
+    U ~ N(K_t * x + k_t | chol_pol_covar_t)
+    """
+
+    def __init__(self, K, k, pol_covar=None, inv_pol_covar=None):
+        if pol_covar is None and inv_pol_covar is None:
+            raise ValueError('Must provide pol_covar or inv_pol_covar.')
+
+        Policy.__init__(self)
+        self.T, self.dU, self.dX = K.shape
+
+        self.K = K
+        self.k = k
+        # Compute covariance from precision, if neccesary.
+        self.pol_covar = pol_covar if pol_covar is not None else batched_inv_spd(batched_cholesky(inv_pol_covar))
+        self.chol_pol_covar = batched_cholesky(self.pol_covar)
+        # Compute precision from covariance, if neccesary.
+        self.inv_pol_covar = inv_pol_covar if inv_pol_covar is not None else batched_inv_spd(self.chol_pol_covar)
+
+    def act(self, x, t):
+        """Decides an action for the given state at the current timestep.
+
+        Samples action from the Gaussian distributing given by U ~ N(K_t * x + k_t | chol_pol_covar_t).
+
+        Args:
+            x: State vector.
+            t: Current timestep, required
+
+        Returns:
+            A dU dimensional action vector.
+
+        """
+        return self.K[t].dot(x) + self.k[t] + self.chol_pol_covar[t].dot(np.random.randn(self.dU))

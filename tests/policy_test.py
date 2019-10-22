@@ -1,0 +1,83 @@
+import unittest
+import numpy as np
+from numpy.testing import assert_array_almost_equal, assert_array_less
+from tests.utils import random_spd
+
+
+class Test_LinearGaussianPolicy(unittest.TestCase):
+    def test_init_from_pol_covar(self):
+        """Test __init__ using pol_covar."""
+        from donk.policy import LinearGaussianPolicy
+
+        T, dX, dU = 10, 10, 6
+
+        K = np.random.randn(T, dU, dX)
+        k = np.random.randn(T, dU)
+        pol_covar = np.array([random_spd(dU) for t in range(T)])
+        chol_pol_covar = np.empty_like(pol_covar)
+        inv_pol_covar = np.empty_like(pol_covar)
+
+        # Compute Cholesky decomposition and inverse
+        for t in range(T):
+            chol_pol_covar[t] = np.linalg.cholesky(pol_covar[t])
+            inv_pol_covar[t] = np.linalg.inv(pol_covar[t])
+
+        pol = LinearGaussianPolicy(K, k, pol_covar)
+
+        assert_array_almost_equal(K, pol.K)
+        assert_array_almost_equal(k, pol.k)
+        assert_array_almost_equal(pol_covar, pol.pol_covar)
+        assert_array_almost_equal(chol_pol_covar, pol.chol_pol_covar)
+        assert_array_almost_equal(inv_pol_covar, pol.inv_pol_covar)
+
+    def test_init_from_inv_pol_covar(self):
+        """Test __init__ using inv_pol_covar."""
+        from donk.policy import LinearGaussianPolicy
+
+        T, dX, dU = 10, 10, 6
+
+        K = np.random.randn(T, dU, dX)
+        k = np.random.randn(T, dU)
+        pol_covar = np.array([random_spd(dU) for t in range(T)])
+        chol_pol_covar = np.empty_like(pol_covar)
+        inv_pol_covar = np.empty_like(pol_covar)
+
+        # Compute Cholesky decomposition and inverse
+        for t in range(T):
+            chol_pol_covar[t] = np.linalg.cholesky(pol_covar[t])
+            inv_pol_covar[t] = np.linalg.inv(pol_covar[t])
+
+        pol = LinearGaussianPolicy(K, k, inv_pol_covar=inv_pol_covar)
+
+        assert_array_almost_equal(K, pol.K)
+        assert_array_almost_equal(k, pol.k)
+        assert_array_almost_equal(pol_covar, pol.pol_covar)
+        assert_array_almost_equal(chol_pol_covar, pol.chol_pol_covar)
+        assert_array_almost_equal(inv_pol_covar, pol.inv_pol_covar)
+
+    def test_act(self):
+        """Check act producing proper distribution."""
+        from donk.policy import LinearGaussianPolicy
+
+        T, dX, dU = 1, 2, 3
+
+        K = np.tile(np.arange(dU * dX).reshape(dU, dX), (T, 1, 1))
+        k = np.tile(np.arange(dU), (T, 1))
+        pol_covar = np.tile(np.diag(np.arange(dU) + 1.0), (T, 1, 1))
+
+        pol = LinearGaussianPolicy(K, k, pol_covar)
+
+        N = 200
+        u = np.empty((N, T, dU))
+        for i in range(N):
+            u[i] = pol.act(np.ones(dX), 0)
+
+        u_mean_ref = np.array([1, 6, 11])
+        u_var_ref = np.array([1, 2, 3])
+
+        u_mean = np.mean(u, axis=0)
+        u_var = np.var(u, axis=0)
+
+        # Broad probablistic assertions. May randomly fail.
+        assert_array_less(np.abs(u_mean - u_mean_ref) / u_var_ref, 0.5 * np.ones((T, dU)))
+        assert_array_less(np.abs(u_var - u_var_ref), np.ones((T, dU)))

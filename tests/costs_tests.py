@@ -158,7 +158,7 @@ class Test_Losses(unittest.TestCase):
             loss_combined(x, [])
 
         # Missing 'loss'
-        with self.assertRaises(KeyError):
+        with self.assertRaises(IndexError):
             loss_combined(x, [
-                {},
+                (),
             ])
