@@ -27,7 +27,7 @@ def loss_combined(x, losses):
 def loss_l2(x, t, w):
     """Evaluate and compute derivatives for l2 norm penalty.
 
-    loss = sum(0.5 * (t - x)^2 * w)
+    loss = sum(0.5 * (x - t)^2 * w)
 
     Args:
         x: (T, dX) states, actual values.
@@ -43,14 +43,14 @@ def loss_l2(x, t, w):
     # Get trajectory length.
     _, dX = x.shape
 
-    d = t - x  # Error
+    d = x - t  # Error
 
     # Total cost
-    # l = sum(0.5 * (t - x)^2 * w)
+    # l = sum(0.5 * (x - t)^2 * w)
     l = 0.5 * np.sum(d**2 * w, axis=1)
 
     # First order derivative
-    # lx = (t - x) * w
+    # lx = (x - t) * w
     lx = d * w
 
     # Second order derivative
@@ -63,7 +63,7 @@ def loss_l2(x, t, w):
 def loss_log_cosh(x, t, w):
     """Evaluate and compute derivatives for log-cosh loss.
 
-    loss = sum(log(cosh(t - x)) * w)
+    loss = sum(log(cosh(x - t)) * w)
 
     Args:
         x: (T, dX) states, actual values.
@@ -78,18 +78,19 @@ def loss_log_cosh(x, t, w):
     """
     # Get trajectory length.
     _, dX = x.shape
-    d = t - x
+
+    d = x - t  # Error
 
     # Total cost
-    # l = sum(log(cosh(t - x)) * w)
+    # l = sum(log(cosh(x - t)) * w)
     l = np.sum(np.log(np.cosh(d)) * w, axis=1)
 
     # First order derivative
-    # lx = tanh(t - x) * ws
+    # lx = tanh(x - t) * ws
     lx = np.tanh(d) * w
 
     # Second order derivative
-    # lxx = w / cosh^2(t - x)
+    # lxx = w / cosh^2(x - t)
     lxx = np.einsum('ij,jk->ijk', w / np.cosh(d)**2, np.eye(dX))
 
     return l, lx, lxx

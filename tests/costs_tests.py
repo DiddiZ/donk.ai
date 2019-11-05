@@ -42,7 +42,7 @@ def loss_l2_ref(x, t, w):
     # Loss function
     loss = 0.5 * sum(d_sym**2 * wp_sym)
 
-    return _evaluate_loss(t - x, w, d_sym, wp_sym, loss)
+    return _evaluate_loss(x - t, w, d_sym, wp_sym, loss)
 
 
 def loss_log_cosh_ref(x, t, w):
@@ -54,7 +54,7 @@ def loss_log_cosh_ref(x, t, w):
     # Loss function
     loss = sum([log(cosh(d_sym[i])) * wp_sym[i] for i in range(dX)])
 
-    return _evaluate_loss(t - x, w, d_sym, wp_sym, loss)
+    return _evaluate_loss(x - t, w, d_sym, wp_sym, loss)
 
 
 class Test_Losses(unittest.TestCase):
