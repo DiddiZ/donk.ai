@@ -5,8 +5,18 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 class Test_LinearDynamics(unittest.TestCase):
 
+    def test_predict(self):
+        from donk.dynamics import LinearDynamics
+
+        dynamics = LinearDynamics(
+            Fm=np.array([[[1, 0, 1], [0, 1, 1]]]),
+            fv=np.array([[0, 1]]),
+            dyn_covar=np.array([[[0.1, 0.1], [0.1, 0.1]]]),
+        )
+
+        assert_array_equal(dynamics.predict(x=[1, 1], u=[1], t=0, noise=None), [2, 3])
+
     def test_fit_lr(self):
-        """Test __init__ using pol_covar."""
         from donk.dynamics.linear_dynamics import fit_lr
 
         with np.load("tests/data/traj_00.npz") as data:
@@ -39,7 +49,6 @@ class Test_LinearDynamics(unittest.TestCase):
         )
 
     def test_fit_lr_with_prior(self):
-        """Test __init__ using pol_covar."""
         from donk.dynamics.linear_dynamics import fit_lr
         from donk.dynamics.prior import GMMPrior
 

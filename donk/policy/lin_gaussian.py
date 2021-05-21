@@ -1,4 +1,3 @@
-import numpy as np
 from donk.policy import Policy
 from donk.utils.batched import batched_inv_spd, batched_cholesky
 
@@ -6,7 +5,7 @@ from donk.utils.batched import batched_inv_spd, batched_cholesky
 class LinearGaussianPolicy(Policy):
     """Time-varying linear Gaussian policy.
 
-    U ~ N(K_t * x + k_t, pol_covar_t)
+    u ~ N(K_t * x + k_t, pol_covar_t)
     """
 
     def __init__(self, K, k, pol_covar=None, inv_pol_covar=None):
@@ -27,7 +26,7 @@ class LinearGaussianPolicy(Policy):
     def act(self, x, t: int, noise=None):
         """Decides an action for the given state at the current timestep.
 
-        Samples action from the Gaussian distributing given by U ~ N(K_t * x + k_t, pol_covar_t).
+        Samples action from the Gaussian distributing given by u ~ N(K_t * x + k_t, pol_covar_t).
 
         Args:
             x: (dX,) Current state
