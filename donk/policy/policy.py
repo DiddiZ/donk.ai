@@ -5,21 +5,18 @@ class Policy(ABC):
     """Baseclass for policies.
 
     Defines an `act` method.
-
     """
 
     @abstractmethod
-    def act(self, x, t):
+    def act(self, x, t: int = None, noise=None):
         """Decides an action for the given state at the current timestep.
 
-        `t` can be used
-
         Args:
-            x: State vector.
-            t: Current timestep, may be `None`.
+            x: (dX,) Current state
+            t: Current timestep, may be `None`
+            noise: (dU,) Action noise
 
         Returns:
-            A dU dimensional action vector.
-
+            u: (dU,) Selected action
         """
         pass

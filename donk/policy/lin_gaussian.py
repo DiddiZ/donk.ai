@@ -6,7 +6,7 @@ from donk.utils.batched import batched_inv_spd, batched_cholesky
 class LinearGaussianPolicy(Policy):
     """Time-varying linear Gaussian policy.
 
-    U ~ N(K_t * x + k_t | chol_pol_covar_t)
+    U ~ N(K_t * x + k_t, pol_covar_t)
     """
 
     def __init__(self, K, k, pol_covar=None, inv_pol_covar=None):
@@ -24,17 +24,20 @@ class LinearGaussianPolicy(Policy):
         # Compute precision from covariance, if neccesary.
         self.inv_pol_covar = inv_pol_covar if inv_pol_covar is not None else batched_inv_spd(self.chol_pol_covar)
 
-    def act(self, x, t):
+    def act(self, x, t: int, noise=None):
         """Decides an action for the given state at the current timestep.
 
-        Samples action from the Gaussian distributing given by U ~ N(K_t * x + k_t | chol_pol_covar_t).
+        Samples action from the Gaussian distributing given by U ~ N(K_t * x + k_t, pol_covar_t).
 
         Args:
-            x: State vector.
+            x: (dX,) Current state
             t: Current timestep, required
+            noise: (dU,) Action noise
 
         Returns:
-            A dU dimensional action vector.
-
+            u: (dU,) Selected action
         """
-        return self.K[t].dot(x) + self.k[t] + self.chol_pol_covar[t].dot(np.random.randn(self.dU))
+        u = self.K[t].dot(x) + self.k[t]
+        if noise is not None:
+            u += self.chol_pol_covar[t].dot(noise)
+        return u
