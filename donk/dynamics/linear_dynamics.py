@@ -21,7 +21,7 @@ class LinearDynamics:
         self.dyn_covar = dyn_covar
 
 
-def fit_lr(X, U, regularization=1e-6):
+def fit_lr(X, U, prior=None, regularization=1e-6):
     """Fit dynamics with least squares linear regression.
 
     Args:
@@ -45,13 +45,27 @@ def fit_lr(X, U, regularization=1e-6):
     # Perform regression for all time steps
     for t in range(T - 1):
         xux = np.c_[X[:, t], U[:, t], X[:, t + 1]]
-        xux_mean = np.mean(xux, axis=0)
-        empsig = (xux - xux_mean).T.dot(xux - xux_mean) / N
+        empmu = np.mean(xux, axis=0)
+        empsig = (xux - empmu).T.dot(xux - empmu) / N
 
-        sigma = empsig
-        sigma[:dXU, :dXU] += sig_reg  # Apply regularization to ensure non-sigularity
+        if prior is None:
+            mu = empmu
+            sigma = empsig
+        else:
+            mu0, Phi, m, n0 = prior.eval(xux)
+            mu = empmu  # Instead of using the correct one, suggested by Finn et al. in gps repo
+            # mu = (m * mu0 + n0 * empmu) / (m + n0) # The correct one
+            sigma = (Phi + (N - 1) * empsig + (N * m) / (N + m) * (empmu - mu0).T.dot(empmu - mu0)) / (N + n0)
 
+        # Apply regularization to ensure non-sigularity
+        sigma[:dXU, :dXU] += sig_reg
+
+        # Condition on x_t, u_t
         Fm[t] = np.linalg.solve(sigma[:dXU, :dXU], sigma[:dXU, dXU:]).T
-        fv[t] = xux_mean[dXU:] - Fm[t].dot(xux_mean[:dXU])
+        fv[t] = mu[dXU:] - Fm[t].dot(mu[:dXU])
         dyn_covar[t] = sigma[dXU:, dXU:] - Fm[t].dot(sigma[:dXU, :dXU]).dot(Fm[t].T)
+
+        # Symmetrize
+        dyn_covar[t] = (dyn_covar[t].T + dyn_covar[t]) / 2
+
     return Fm, fv, dyn_covar
