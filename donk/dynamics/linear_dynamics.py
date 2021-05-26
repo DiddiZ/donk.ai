@@ -61,28 +61,31 @@ class LinearDynamics(DynamicsModel):
             test_U: (N_test, T, dU), Test set actions
         """
         import pandas as pd
-        from donk.visualization.linear import visualize_linear_model, visualize_coefficients, visualize_covariance
+        import donk.visualization as vis
 
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Compute prediction errors
         N = test_X.shape[0]
-        errors = np.empty((N, self.T))
+        prediction = np.empty((N, self.T, self.dX))
         for n in range(N):
             for t in range(self.T):
-                errors[n, t] = np.mean((self.predict(test_X[n, t], test_U[n, t], t, noise=None) - test_X[n, t + 1])**2)
+                prediction[n, t] = self.predict(test_X[n, t], test_U[n, t], t, noise=None)
+        errors = np.mean((prediction - test_X[:, 1:])**2, axis=-1)
 
         # Create plots
-        visualize_linear_model(
+        vis.visualize_linear_model(
             output_dir / "parameters.pdf",
             self.Fm,
             self.fv,
             self.dyn_covar,
             x=np.mean(np.c_[train_X[:, :-1], train_U], axis=0),  # Sample mean
         )
-        visualize_coefficients(str(output_dir / "coefficients_{:02d}.pdf"), self.Fm)
-        visualize_covariance(output_dir / "covariance.pdf", self.dyn_covar.mean(axis=0))
+        vis.visualize_coefficients(str(output_dir / "coefficients_{:02d}.pdf"), self.Fm)
+        vis.visualize_covariance(output_dir / "covariance.pdf", self.dyn_covar.mean(axis=0))
+        vis.visualize_prediction(str(output_dir / "prediction_{:02d}.pdf"), prediction, test_X[:, 1:])
+        vis.visualize_prediction_error(output_dir / "error.pdf", errors)
 
         # Write statistics
         df = pd.DataFrame(
@@ -96,9 +99,6 @@ class LinearDynamics(DynamicsModel):
             columns=['metric', 'score']
         )
         df.to_csv(output_dir / "statistics.csv", index=False)
-
-        # TODO Plot correlation instead of covariance?
-        # TODO Compare prediciton and actial test data (three plots: prediciton, targets, errors)
 
 
 def fit_lr(X, U, prior=None, regularization=1e-6):

@@ -1,6 +1,7 @@
 """Visualization tool for linear models."""
 from pathlib import Path
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import seaborn as sns
@@ -114,8 +115,9 @@ def visualize_linear_model(
 def visualize_coefficients(output_file_pattern, coeff):
     """Visualize coefficietns of a linear model.
 
-        Args:
-            coeff: shape (T, dY, dX), linear coefficients
+    Args:
+        output_file_pattern: Pattern for files to write the plots to.
+        coeff: shape (T, dY, dX), linear coefficients
     """
     import matplotlib.pyplot as plt
     import seaborn as sns
@@ -150,6 +152,49 @@ def visualize_covariance(output_file, covar):
         covar,
         mask=np.triu(np.ones_like(covar, dtype=bool), 1),  # Mask upper triangle
     )
+
+    plt.tight_layout()
+    if output_file is not None:
+        plt.savefig(output_file)
+    else:
+        plt.show()
+    plt.close()
+
+
+def visualize_prediction(output_file_pattern, prediction, truth):
+    """Visualize the prediction errors of a linear model.
+
+    Args:
+        output_file_pattern: Pattern for files to write the plots to.
+        prediction: shape (N, T, dY), model predictions
+        truth: shape (N, T, dY), target values
+    """
+    N, T, dY = prediction.shape
+
+    for y in range(dY):
+        df = pd.DataFrame(
+            [(t, prediction[n, t, y], "prediction") for n in range(N)
+             for t in range(T)] + [(t, truth[n, t, y], "truth") for n in range(N) for t in range(T)],
+            columns=["t", "v", "k"]
+        )
+        sns.lineplot(data=df, x="t", y="v", hue="k")
+
+        plt.tight_layout()
+        if output_file_pattern is not None:
+            plt.savefig(output_file_pattern.format(y))
+        else:
+            plt.show()
+        plt.close()
+
+
+def visualize_prediction_error(output_file, errors):
+    """Visualize the prediction errors of a linear model.
+
+    Args:
+        output_file: File to write the plot to.
+        errors: shape (N, T), model prediction errors
+    """
+    plt.plot(errors.mean(axis=0))
 
     plt.tight_layout()
     if output_file is not None:
