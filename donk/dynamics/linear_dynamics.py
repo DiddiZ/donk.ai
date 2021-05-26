@@ -1,3 +1,4 @@
+from pathlib import Path
 import numpy as np
 from donk.dynamics import DynamicsModel
 from donk.utils.batched import batched_cholesky
@@ -48,6 +49,56 @@ class LinearDynamics(DynamicsModel):
                 self.chol_dyn_covar = batched_cholesky(self.dyn_covar)
             next_x += self.chol_dyn_covar[t].dot(noise)
         return next_x
+
+    def evaluate(self, output_dir, train_X, train_U, test_X, test_U):
+        """Create diagnostics and evaluation plots for this dynamics model.
+
+        Args:
+            output_dir: Directory to write the plots to
+            train_X: (N_train, T+1, dX), Train set states
+            train_U: (N_train, T, dU), Train set actions
+            test_X: (N_test, T+1, dX), Test set states
+            test_U: (N_test, T, dU), Test set actions
+        """
+        import pandas as pd
+        from donk.visualization.linear import visualize_linear_model, visualize_coefficients, visualize_covariance
+
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Compute prediction errors
+        N = test_X.shape[0]
+        errors = np.empty((N, self.T))
+        for n in range(N):
+            for t in range(self.T):
+                errors[n, t] = np.mean((self.predict(test_X[n, t], test_U[n, t], t, noise=None) - test_X[n, t + 1])**2)
+
+        # Create plots
+        visualize_linear_model(
+            output_dir / "parameters.pdf",
+            self.Fm,
+            self.fv,
+            self.dyn_covar,
+            x=np.mean(np.c_[train_X[:, :-1], train_U], axis=0),  # Sample mean
+        )
+        visualize_coefficients(str(output_dir / "coefficients_{:02d}.pdf"), self.Fm)
+        visualize_covariance(output_dir / "covariance.pdf", self.dyn_covar.mean(axis=0))
+
+        # Write statistics
+        df = pd.DataFrame(
+            [
+                ("T", self.T),
+                ("dX", self.dX),
+                ("dU", self.dU),
+                ("coefficients_variance", np.var(self.Fm, axis=0).mean()),
+                ("prediction_error", errors.mean()),
+            ],
+            columns=['metric', 'score']
+        )
+        df.to_csv(output_dir / "statistics.csv", index=False)
+
+        # TODO Plot correlation instead of covariance?
+        # TODO Compare prediciton and actial test data (three plots: prediciton, targets, errors)
 
 
 def fit_lr(X, U, prior=None, regularization=1e-6):
