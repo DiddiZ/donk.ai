@@ -71,8 +71,7 @@ class LinearDynamics(DynamicsModel):
         U = np.concatenate([U_train, U_test], axis=0)
 
         # Compute prediction errors
-        N_test, _, dX = X_test.shape
-        _, _, dU = U_test.shape
+        N_test = X_test.shape[0]
         prediction = np.empty((N_test, self.T, self.dX))
         for n in range(N_test):
             for t in range(self.T):
@@ -94,8 +93,8 @@ class LinearDynamics(DynamicsModel):
             vis.visualize_prediction_error(output_dir / "error.pdf", errors)
             vis.visualize_predictor_target_correlation(
                 output_dir / "state_correlation.pdf",
-                X=np.concatenate([X[:, :-1], U], axis=-1).reshape(-1, dX + dU),
-                Y=X[:, 1:].reshape(-1, dX),
+                X=np.concatenate([X[:, :-1], U], axis=-1).reshape(-1, self.dX + self.dU),
+                Y=X[:, 1:].reshape(-1, self.dX),
                 xlabel="$xu_t$",
                 ylabel="$x_{t+1}$"
             )

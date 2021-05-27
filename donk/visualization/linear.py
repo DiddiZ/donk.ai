@@ -1,7 +1,6 @@
 """Visualization tool for linear models."""
 from pathlib import Path
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import seaborn as sns
@@ -172,12 +171,31 @@ def visualize_prediction(output_file_pattern, prediction, truth):
     N, T, dY = prediction.shape
 
     for y in range(dY):
-        df = pd.DataFrame(
-            [(t, prediction[n, t, y], "prediction") for n in range(N)
-             for t in range(T)] + [(t, truth[n, t, y], "truth") for n in range(N) for t in range(T)],
-            columns=["t", "v", "k"]
-        )
-        sns.lineplot(data=df, x="t", y="v", hue="k")
+        if N <= 4:
+            for n in range(N):
+                plt.subplot(2, 2, 1 + n)
+                plt.plot(prediction[n, :, y], c="C0", linewidth=1, label="prediction" if n + 1 == N else None)
+                plt.plot(truth[n, :, y], c="C1", linewidth=1, label="truth" if n + 1 == N else None)
+            plt.legend()
+        else:
+            plt.plot(prediction[:, :, y].mean(axis=0), c="C0", linewidth=1)
+            plt.fill_between(
+                np.arange(T),
+                prediction[:, :, y].min(axis=0),
+                prediction[:, :, y].max(axis=0),
+                facecolor="C0",
+                alpha=0.25,
+                interpolate=True
+            )
+            plt.plot(truth[:, :, y].mean(axis=0), c="C1", linewidth=1)
+            plt.fill_between(
+                np.arange(T),
+                truth[:, :, y].min(axis=0),
+                truth[:, :, y].max(axis=0),
+                facecolor="C1",
+                alpha=0.25,
+                interpolate=True
+            )
 
         plt.tight_layout()
         if output_file_pattern is not None:
