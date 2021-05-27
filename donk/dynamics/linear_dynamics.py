@@ -67,10 +67,14 @@ class LinearDynamics(DynamicsModel):
             output_dir = Path(output_dir)
             output_dir.mkdir(parents=True, exist_ok=True)
 
+        X = np.concatenate([X_train, X_test], axis=0)
+        U = np.concatenate([U_train, U_test], axis=0)
+
         # Compute prediction errors
-        N, _, dX = X_train.shape
-        prediction = np.empty((N, self.T, self.dX))
-        for n in range(N):
+        N_test, _, dX = X_test.shape
+        _, _, dU = U_test.shape
+        prediction = np.empty((N_test, self.T, self.dX))
+        for n in range(N_test):
             for t in range(self.T):
                 prediction[n, t] = self.predict(X_test[n, t], U_test[n, t], t, noise=None)
         errors = np.mean((prediction - X_test[:, 1:])**2, axis=-1)
@@ -88,9 +92,12 @@ class LinearDynamics(DynamicsModel):
             vis.visualize_covariance(output_dir / "covariance.pdf", self.dyn_covar.mean(axis=0))
             vis.visualize_prediction(str(output_dir / "prediction_{:02d}.pdf"), prediction, X_test[:, 1:])
             vis.visualize_prediction_error(output_dir / "error.pdf", errors)
-            vis.visualize_correlation(
+            vis.visualize_predictor_target_correlation(
                 output_dir / "state_correlation.pdf",
-                np.concatenate([X_train.reshape(-1, dX), X_test.reshape(-1, dX)], axis=0)
+                X=np.concatenate([X[:, :-1], U], axis=-1).reshape(-1, dX + dU),
+                Y=X[:, 1:].reshape(-1, dX),
+                xlabel="$xu_t$",
+                ylabel="$x_{t+1}$"
             )
 
         # Gather statistics

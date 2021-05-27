@@ -202,3 +202,29 @@ def visualize_prediction_error(output_file, errors):
     else:
         plt.show()
     plt.close()
+
+
+def visualize_predictor_target_correlation(output_file, X, Y, xlabel="$x$", ylabel="$y$"):
+    """Visualize the correlation between predictors and targets.
+
+    Args:
+        output_file: File to write the plot to.
+        X: shape (N, dX), predictors
+        Y: shape (N, dY), targets
+    """
+    dX, dY = X.shape[-1], Y.shape[-1]
+    corr = np.empty((dY, dX))
+    for i in range(dX):
+        for j in range(dY):
+            corr[j, i] = np.cov(X[:, i], Y[:, j])[0, 1]  # TODO can be calculated more efficiently
+    sns.heatmap(corr, cmap="bwr", vmin=-1, vmax=1)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title("Correlation")
+
+    plt.tight_layout()
+    if output_file is not None:
+        plt.savefig(output_file)
+    else:
+        plt.show()
+    plt.close()
