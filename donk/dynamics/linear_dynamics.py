@@ -67,7 +67,7 @@ class LinearDynamics(DynamicsModel):
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Compute prediction errors
-        N = test_X.shape[0]
+        N, _, dX = test_X.shape
         prediction = np.empty((N, self.T, self.dX))
         for n in range(N):
             for t in range(self.T):
@@ -86,6 +86,10 @@ class LinearDynamics(DynamicsModel):
         vis.visualize_covariance(output_dir / "covariance.pdf", self.dyn_covar.mean(axis=0))
         vis.visualize_prediction(str(output_dir / "prediction_{:02d}.pdf"), prediction, test_X[:, 1:])
         vis.visualize_prediction_error(output_dir / "error.pdf", errors)
+        vis.visualize_correlation(
+            output_dir / "state_correlation.pdf",
+            np.concatenate([train_X.reshape(-1, dX), test_X.reshape(-1, dX)], axis=0)
+        )
 
         # Write statistics
         df = pd.DataFrame(
