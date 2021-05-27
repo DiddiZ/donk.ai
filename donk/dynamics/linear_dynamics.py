@@ -50,7 +50,7 @@ class LinearDynamics(DynamicsModel):
             next_x += self.chol_dyn_covar[t].dot(noise)
         return next_x
 
-    def evaluate(self, output_dir, train_X, train_U, test_X, test_U):
+    def evaluate(self, output_dir, X_train, U_train, X_test, U_test):
         """Create diagnostics and evaluation plots for this dynamics model.
 
         Args:
@@ -63,36 +63,38 @@ class LinearDynamics(DynamicsModel):
         import pandas as pd
         import donk.visualization as vis
 
-        output_dir = Path(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
+        if output_dir is not None:
+            output_dir = Path(output_dir)
+            output_dir.mkdir(parents=True, exist_ok=True)
 
         # Compute prediction errors
-        N, _, dX = test_X.shape
+        N, _, dX = X_train.shape
         prediction = np.empty((N, self.T, self.dX))
         for n in range(N):
             for t in range(self.T):
-                prediction[n, t] = self.predict(test_X[n, t], test_U[n, t], t, noise=None)
-        errors = np.mean((prediction - test_X[:, 1:])**2, axis=-1)
+                prediction[n, t] = self.predict(X_test[n, t], U_test[n, t], t, noise=None)
+        errors = np.mean((prediction - X_test[:, 1:])**2, axis=-1)
 
         # Create plots
-        vis.visualize_linear_model(
-            output_dir / "parameters.pdf",
-            self.Fm,
-            self.fv,
-            self.dyn_covar,
-            x=np.mean(np.c_[train_X[:, :-1], train_U], axis=0),  # Sample mean
-        )
-        vis.visualize_coefficients(str(output_dir / "coefficients_{:02d}.pdf"), self.Fm)
-        vis.visualize_covariance(output_dir / "covariance.pdf", self.dyn_covar.mean(axis=0))
-        vis.visualize_prediction(str(output_dir / "prediction_{:02d}.pdf"), prediction, test_X[:, 1:])
-        vis.visualize_prediction_error(output_dir / "error.pdf", errors)
-        vis.visualize_correlation(
-            output_dir / "state_correlation.pdf",
-            np.concatenate([train_X.reshape(-1, dX), test_X.reshape(-1, dX)], axis=0)
-        )
+        if output_dir is not None:
+            vis.visualize_linear_model(
+                output_dir / "parameters.pdf",
+                self.Fm,
+                self.fv,
+                self.dyn_covar,
+                x=np.mean(np.c_[X_train[:, :-1], U_train], axis=0),  # Sample mean
+            )
+            vis.visualize_coefficients(str(output_dir / "coefficients_{:02d}.pdf"), self.Fm)
+            vis.visualize_covariance(output_dir / "covariance.pdf", self.dyn_covar.mean(axis=0))
+            vis.visualize_prediction(str(output_dir / "prediction_{:02d}.pdf"), prediction, X_test[:, 1:])
+            vis.visualize_prediction_error(output_dir / "error.pdf", errors)
+            vis.visualize_correlation(
+                output_dir / "state_correlation.pdf",
+                np.concatenate([X_train.reshape(-1, dX), X_test.reshape(-1, dX)], axis=0)
+            )
 
-        # Write statistics
-        df = pd.DataFrame(
+        # Gather statistics
+        statistics = pd.DataFrame(
             [
                 ("T", self.T),
                 ("dX", self.dX),
@@ -102,7 +104,10 @@ class LinearDynamics(DynamicsModel):
             ],
             columns=['metric', 'score']
         )
-        df.to_csv(output_dir / "statistics.csv", index=False)
+        if output_dir is not None:
+            statistics.to_csv(output_dir / "statistics.csv", index=False)
+
+        return statistics
 
 
 def fit_lr(X, U, prior=None, regularization=1e-6):
