@@ -246,3 +246,31 @@ def visualize_predictor_target_correlation(output_file, X, Y, xlabel="$x$", ylab
     else:
         plt.show()
     plt.close()
+
+
+def visualize_predictor_target_scatter(output_file, X, Y, cmap=plt.cm.plasma):
+    """Visualize the correlation between predictors and targets.
+
+    Args:
+        output_file: File to write the plot to.
+        X: shape (N, T, dX), predictors
+        Y: shape (N, T, dY), targets
+    """
+    N, T, dX = X.shape
+    dY = Y.shape[-1]
+
+    _, axes = plt.subplots(dX, dY, squeeze=False, figsize=(dY * 2, dX * 2))
+    colors = cmap(np.tile(np.linspace(0, 1, T), (N, 1)).flatten())
+    for i in range(dX):  # Columns
+        for j in range(dY):  # Rows
+            ax = axes[i][j]
+            ax.scatter(X[:, :, i].flatten(), Y[:, :, j].flatten(), c=colors, alpha=0.5)
+            ax.axis("equal")
+            ax.tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+
+    plt.tight_layout()
+    if output_file is not None:
+        plt.savefig(output_file, dpi=300)
+    else:
+        plt.show()
+    plt.close()

@@ -98,6 +98,9 @@ class LinearDynamics(DynamicsModel):
                 xlabel="$xu_t$",
                 ylabel="$x_{t+1}$"
             )
+            vis.visualize_predictor_target_scatter(
+                output_dir / "state_correlation_scatter.png", X=np.concatenate([X[:, :-1], U], axis=-1), Y=X[:, 1:]
+            )
 
         # Gather statistics
         statistics = pd.DataFrame(
