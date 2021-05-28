@@ -259,12 +259,12 @@ def visualize_predictor_target_scatter(output_file, X, Y, cmap=plt.cm.plasma):
     N, T, dX = X.shape
     dY = Y.shape[-1]
 
-    _, axes = plt.subplots(dX, dY, squeeze=False, figsize=(dY * 2, dX * 2))
+    _, axes = plt.subplots(dY, dX, squeeze=False, figsize=(dX * 2, dY * 2))
     colors = cmap(np.tile(np.linspace(0, 1, T), (N, 1)).flatten())
-    for i in range(dX):  # Columns
-        for j in range(dY):  # Rows
-            ax = axes[i][j]
-            ax.scatter(X[:, :, i].flatten(), Y[:, :, j].flatten(), c=colors, alpha=0.5)
+    for y in range(dY):  # Rows
+        for x in range(dX):  # Columns
+            ax = axes[y][x]
+            ax.scatter(X[:, :, x].flatten(), Y[:, :, y].flatten(), c=colors, alpha=0.5)
             ax.axis("equal")
             ax.tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
 
