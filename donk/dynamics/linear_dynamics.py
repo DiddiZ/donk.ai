@@ -76,7 +76,6 @@ class LinearDynamics(DynamicsModel):
         for n in range(N_test):
             for t in range(self.T):
                 prediction[n, t] = self.predict(X_test[n, t], U_test[n, t], t, noise=None)
-        errors = np.mean((prediction - X_test[:, 1:])**2, axis=-1)
 
         # Create plots
         if output_dir is not None:
@@ -90,7 +89,7 @@ class LinearDynamics(DynamicsModel):
             vis.visualize_coefficients(str(output_dir / "coefficients_{:02d}.pdf"), self.Fm)
             vis.visualize_covariance(output_dir / "covariance.pdf", self.dyn_covar.mean(axis=0))
             vis.visualize_prediction(str(output_dir / "prediction_{:02d}.pdf"), prediction, X_test[:, 1:])
-            vis.visualize_prediction_error(output_dir / "error.pdf", errors)
+            vis.visualize_prediction_error(output_dir / "error.pdf", prediction, X_test[:, 1:])
             vis.visualize_predictor_target_correlation(
                 output_dir / "state_correlation.pdf",
                 X=np.concatenate([X[:, :-1], U], axis=-1).reshape(-1, self.dX + self.dU),

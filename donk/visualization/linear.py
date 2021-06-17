@@ -205,14 +205,52 @@ def visualize_prediction(output_file_pattern, prediction, truth):
         plt.close()
 
 
-def visualize_prediction_error(output_file, errors):
+def visualize_prediction_error(output_file, predictions, targets):
     """Visualize the prediction errors of a linear model.
 
     Args:
         output_file: File to write the plot to.
-        errors: shape (N, T), model prediction errors
+        prediction: shape (N, T, dX), model predictions
+        target: shape (N, T, dX), targets
     """
-    plt.plot(errors.mean(axis=0))
+    errors = (predictions - targets)**2
+    mse = np.mean(errors)
+    N, T, dX = errors.shape
+    plt.figure(figsize=(12, 8))
+
+    # Error over time
+    plt.subplot(2, 2, 1)
+    sns.lineplot(
+        x=np.tile(np.arange(T), (N, 1)).flatten(),
+        y=np.mean(errors, axis=2).flatten(),
+    )
+    plt.axhline(mse, color="black", linewidth=1, linestyle="dashed")
+    plt.xlabel("$t$")
+    plt.ylabel("$err$")
+
+    # Error over states
+    plt.subplot(2, 2, 2)
+    sns.barplot(
+        x=np.tile(np.arange(dX), (N, T, 1)).flatten(),
+        y=errors.flatten(),
+    )
+    plt.axhline(mse, color="black", linewidth=1, linestyle="dashed")
+    plt.xlabel("state")
+    plt.ylabel("$err$")
+
+    # Error over samples
+    plt.subplot(2, 2, 3)
+    sns.barplot(
+        x=np.tile(np.arange(N), (1, T)).flatten(),
+        y=np.mean(errors, axis=2).flatten(),
+    )
+    plt.axhline(mse, color="black", linewidth=1, linestyle="dashed")
+    plt.xlabel("sample")
+    plt.ylabel("$err$")
+
+    plt.subplot(2, 2, 4)
+    plt.text(0.5, 0.5, f"MSE: {mse:04f}")
+    plt.axis("off")
 
     plt.tight_layout()
     if output_file is not None:
