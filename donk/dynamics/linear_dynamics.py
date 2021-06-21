@@ -108,7 +108,7 @@ class LinearDynamics(DynamicsModel):
                 ("dX", self.dX),
                 ("dU", self.dU),
                 ("coefficients_variance", np.var(self.Fm, axis=0).mean()),
-                ("prediction_error", errors.mean()),
+                ("prediction_error", np.mean((prediction - X_test[:, 1:])**2)),
             ],
             columns=['metric', 'score']
         )
