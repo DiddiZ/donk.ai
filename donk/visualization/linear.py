@@ -272,7 +272,7 @@ def visualize_predictor_target_correlation(output_file, X, Y, xlabel="$x$", ylab
     corr = np.empty((dY, dX))
     for i in range(dX):
         for j in range(dY):
-            corr[j, i] = np.cov(X[:, i], Y[:, j])[0, 1]  # TODO can be calculated more efficiently
+            corr[j, i] = np.corrcoef(X[:, i], Y[:, j])[0, 1]  # TODO can be calculated more efficiently
     sns.heatmap(corr, cmap="bwr", vmin=-1, vmax=1)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
