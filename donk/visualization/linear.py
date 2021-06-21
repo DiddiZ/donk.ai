@@ -213,9 +213,13 @@ def visualize_prediction_error(output_file, predictions, targets):
         prediction: shape (N, T, dX), model predictions
         target: shape (N, T, dX), targets
     """
+    from sklearn.metrics import r2_score
+
     errors = (predictions - targets)**2
     mse = np.mean(errors)
     N, T, dX = errors.shape
+    r2 = r2_score(targets.reshape(N * T, dX), predictions.reshape(N * T, dX))
+
     plt.figure(figsize=(12, 8))
 
     # Error over time
@@ -249,7 +253,16 @@ def visualize_prediction_error(output_file, predictions, targets):
     plt.ylabel("$err$")
 
     plt.subplot(2, 2, 4)
-    plt.text(0.5, 0.5, f"MSE: {mse:04f}")
+    plt.table(
+        [
+            ["MSE", f"{mse:.04f}"],
+            ["$R^2$", f"{r2:.04f}"],
+        ],
+        loc='center',
+        cellLoc="left",
+        colWidths=[.25, .25],
+        edges="open"
+    )
     plt.axis("off")
 
     plt.tight_layout()
