@@ -21,16 +21,16 @@ class Test_LinearDynamics(unittest.TestCase):
 
         with np.load("tests/data/traj_00.npz") as data:
             X = data['X']
-            U = data['U']
-        N, T, dX = X.shape
-        _, _, dU = U.shape
+            U = data['U'][:, :-1]
+        N, _, dX = X.shape
+        _, T, dU = U.shape
 
         Fm, fv, dyn_covar = fit_lr(X, U, regularization=1e-6)
 
         # Check shapes
-        assert_array_equal(Fm.shape, (T - 1, dX, dX + dU))
-        assert_array_equal(fv.shape, (T - 1, dX))
-        assert_array_equal(dyn_covar.shape, (T - 1, dX, dX))
+        assert_array_equal(Fm.shape, (T, dX, dX + dU))
+        assert_array_equal(fv.shape, (T, dX))
+        assert_array_equal(dyn_covar.shape, (T, dX, dX))
 
         # Check some values
         assert_array_almost_equal(
@@ -54,10 +54,10 @@ class Test_LinearDynamics(unittest.TestCase):
 
         with np.load("tests/data/traj_00.npz") as data:
             X = data['X']
-            U = data['U']
-        N, T, dX = X.shape
-        _, _, dU = U.shape
-        transitions = np.c_[X[:, :-1], U[:, :-1], X[:, 1:]].reshape(N * (T - 1), dX + dU + dX)
+            U = data['U'][:, :-1]
+        N, _, dX = X.shape
+        _, T, dU = U.shape
+        transitions = np.c_[X[:, :-1], U, X[:, 1:]].reshape(N * T, dX + dU + dX)
 
         prior = GMMPrior(max_clusters=8, random_state=0)
         prior.update(transitions)
@@ -65,9 +65,9 @@ class Test_LinearDynamics(unittest.TestCase):
         Fm, fv, dyn_covar = fit_lr(X[:3], U[:3], regularization=1e-6)
 
         # Check shapes
-        assert_array_equal(Fm.shape, (T - 1, dX, dX + dU))
-        assert_array_equal(fv.shape, (T - 1, dX))
-        assert_array_equal(dyn_covar.shape, (T - 1, dX, dX))
+        assert_array_equal(Fm.shape, (T, dX, dX + dU))
+        assert_array_equal(fv.shape, (T, dX))
+        assert_array_equal(dyn_covar.shape, (T, dX, dX))
 
         # Check some values
         assert_array_almost_equal(
