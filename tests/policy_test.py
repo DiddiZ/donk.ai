@@ -76,3 +76,24 @@ class Test_LinearGaussianPolicy(unittest.TestCase):
 
         assert_array_almost_equal(np.mean(u, axis=0), [[1.031999, 5.962399, 10.705097]])
         assert_array_almost_equal(np.var(u, axis=0), [[1.039798, 2.04722, 2.807949]])
+
+
+class Test_Noise(unittest.TestCase):
+
+    def test_smooth_noise(self):
+        """Test smooth_noise."""
+        from donk.policy import smooth_noise
+
+        # Uniform noise
+        noise = np.random.default_rng(0).uniform(-1, 1, (20, 4))
+        smoothed = smooth_noise(noise, 1)
+
+        assert_array_almost_equal(np.var(smoothed, axis=0), np.var(noise, axis=0))
+        assert_array_almost_equal(np.mean(smoothed, axis=0), np.mean(noise, axis=0))
+
+        # Normal noise
+        noise = np.random.default_rng(0).normal(0, 1, (10, 3))
+        smoothed = smooth_noise(noise, 2)
+
+        assert_array_almost_equal(np.var(smoothed, axis=0), np.var(noise, axis=0))
+        assert_array_almost_equal(np.mean(smoothed, axis=0), np.mean(noise, axis=0))
