@@ -213,12 +213,13 @@ def visualize_prediction_error(output_file, predictions, targets):
         prediction: shape (N, T, dX), model predictions
         target: shape (N, T, dX), targets
     """
-    from sklearn.metrics import r2_score
+    from sklearn.metrics import r2_score, explained_variance_score
 
     errors = (predictions - targets)**2
     mse = np.mean(errors)
     N, T, dX = errors.shape
     r2 = r2_score(targets.reshape(N * T, dX), predictions.reshape(N * T, dX))
+    explained_variance = explained_variance_score(targets.reshape(N * T, dX), predictions.reshape(N * T, dX))
 
     plt.figure(figsize=(12, 8))
 
@@ -257,6 +258,7 @@ def visualize_prediction_error(output_file, predictions, targets):
         [
             ["MSE", f"{mse:.04f}"],
             ["$R^2$", f"{r2:.04f}"],
+            ["Explained variance", f"{explained_variance:.04f}"],
         ],
         loc='center',
         cellLoc="left",
