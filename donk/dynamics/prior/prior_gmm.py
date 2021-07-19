@@ -17,7 +17,7 @@ class GMMPrior(DynamicsPrior):
         """
         self.gmm.fit(XUX)
 
-        # Enable warm start fpr further updates
+        # Enable warm start for further updates
         self.gmm.warm_start = True
 
     def eval(self, XUX):
