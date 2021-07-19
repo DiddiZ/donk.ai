@@ -122,25 +122,25 @@ def fit_lr(X, U, prior=None, regularization=1e-6):
     """Fit dynamics with least squares linear regression.
 
     Args:
-        X: (N, T, dX), States
+        X: (N, T+1, dX), States
         U: (N, T, dU), Actions
         regularization: Added to the diagonal of the joint distribution variance. Ensures matrix is not singular.
     """
-    N, T, dX = X.shape
-    _, _, dU = U.shape
+    N, _, dX = X.shape
+    _, T, dU = U.shape
     dXU = dX + dU
 
-    if N == 1:
-        raise ValueError("Cannot fit dynamics to 1 sample")
+    if N <= 1:
+        raise ValueError(f"Cannot fit dynamics to {N} sample(s)")
 
-    Fm = np.empty([T - 1, dX, dX + dU])
-    fv = np.empty([T - 1, dX])
-    dyn_covar = np.empty([T - 1, dX, dX])
+    Fm = np.empty([T, dX, dX + dU])
+    fv = np.empty([T, dX])
+    dyn_covar = np.empty([T, dX, dX])
 
     sig_reg = regularization * np.eye(dXU)
 
     # Perform regression for all time steps
-    for t in range(T - 1):
+    for t in range(T):
         xux = np.c_[X[:, t], U[:, t], X[:, t + 1]]
         empmu = np.mean(xux, axis=0)
         empsig = (xux - empmu).T.dot(xux - empmu) / N
