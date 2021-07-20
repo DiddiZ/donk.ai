@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_array_less
+from numpy.testing import assert_array_almost_equal
 from tests.utils import random_spd
 
 
@@ -11,10 +11,11 @@ class Test_LinearGaussianPolicy(unittest.TestCase):
         from donk.policy import LinearGaussianPolicy
 
         T, dX, dU = 10, 10, 6
+        rng = np.random.default_rng(0)
 
-        K = np.random.randn(T, dU, dX)
-        k = np.random.randn(T, dU)
-        pol_covar = np.array([random_spd(dU) for t in range(T)])
+        K = rng.normal(size=(T, dU, dX))
+        k = rng.normal(size=(T, dU))
+        pol_covar = random_spd((T, dU, dU), rng)
         chol_pol_covar = np.empty_like(pol_covar)
         inv_pol_covar = np.empty_like(pol_covar)
 
@@ -36,10 +37,11 @@ class Test_LinearGaussianPolicy(unittest.TestCase):
         from donk.policy import LinearGaussianPolicy
 
         T, dX, dU = 10, 10, 6
+        rng = np.random.default_rng(1)
 
-        K = np.random.randn(T, dU, dX)
-        k = np.random.randn(T, dU)
-        pol_covar = np.array([random_spd(dU) for t in range(T)])
+        K = rng.normal(size=(T, dU, dX))
+        k = rng.normal(size=(T, dU))
+        pol_covar = random_spd((T, dU, dU), rng)
         chol_pol_covar = np.empty_like(pol_covar)
         inv_pol_covar = np.empty_like(pol_covar)
 

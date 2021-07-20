@@ -11,12 +11,12 @@ class Test_Batches(unittest.TestCase):
         from donk.utils.batched import batched_inv_spd, batched_cholesky
 
         T, dX = 10, 10
+        rng = np.random.default_rng(0)
 
-        a = np.empty((T, dX, dX))
+        a = random_spd((T, dX, dX), rng)
         a_chol_ref = np.empty_like(a)
         a_inv_ref = np.empty_like(a)
         for t in range(T):
-            a[t] = random_spd(dX)
             a_chol_ref[t] = np.linalg.cholesky(a[t])
             a_inv_ref[t] = np.linalg.inv(a[t])
 
