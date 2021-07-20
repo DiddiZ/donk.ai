@@ -9,11 +9,26 @@ class LinearGaussianPolicy(Policy):
     """
 
     def __init__(self, K, k, pol_covar=None, inv_pol_covar=None):
+        """Initialize this LinearGaussianPolicy object.
+
+        Args:
+            K: (T, dU, dX), Linear term
+            k: (T, dU), Constant term
+            pol_covar: (T, dU, dU), Covariances
+        """
         if pol_covar is None and inv_pol_covar is None:
             raise ValueError('Must provide pol_covar or inv_pol_covar.')
 
         Policy.__init__(self)
         self.T, self.dU, self.dX = K.shape
+
+        # Check shapes
+        assert K.shape == (self.T, self.dU, self.dX), f"{K.shape} != {(self.T, self.dU, self.dX )}"
+        assert k.shape == (self.T, self.dU), f"{k.shape} != {(self.T, self.dU)}"
+        if pol_covar is not None:
+            assert pol_covar.shape == (self.T, self.dU, self.dU), f"{pol_covar.shape} != {(self.T, self.dU, self.dU)}"
+        if inv_pol_covar is not None:
+            assert inv_pol_covar.shape == (self.T, self.dU, self.dU), f"{inv_pol_covar.shape} != {(self.T, self.dU, self.dU)}"
 
         self.K = K
         self.k = k
