@@ -75,7 +75,7 @@ def visualize_linear_model(
     # Prediction
     y_ = np.empty((N, T, dY))  # Approx y using the model
     for t in range(T):
-        mu = np.dot(coeff[t], x[t]) + intercept[t]
+        mu = coeff[t] @ x[t] + intercept[t]
         y_[:, t] = np.random.multivariate_normal(mean=mu, cov=cov[t], size=N)
     y_mean = np.mean(y_, axis=0)
     y_std = np.std(y_, axis=0)
@@ -96,7 +96,7 @@ def visualize_linear_model(
             y_mean[:, dim] + y_std[:, dim],
             facecolor=c,
             alpha=0.25,
-            interpolate=True
+            interpolate=True,
         )
 
     # Export
@@ -194,7 +194,7 @@ def visualize_prediction(output_file_pattern, prediction, truth):
                 truth[:, :, y].max(axis=0),
                 facecolor="C1",
                 alpha=0.25,
-                interpolate=True
+                interpolate=True,
             )
 
         plt.tight_layout()

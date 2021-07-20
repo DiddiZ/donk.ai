@@ -43,11 +43,11 @@ class LinearDynamics(DynamicsModel):
         Returns:
             x: (dX,) Next state
         """
-        next_x = self.Fm[t, :, :self.dX].dot(x) + self.Fm[t, :, self.dX:].dot(u) + self.fv[t]
+        next_x = self.Fm[t, :, :self.dX] @ x + self.Fm[t, :, self.dX:] @ u + self.fv[t]
         if noise is not None:  # Add noise
             if self.chol_dyn_covar is None:  # Compute Cholesky decompositions if required
                 self.chol_dyn_covar = batched_cholesky(self.dyn_covar)
-            next_x += self.chol_dyn_covar[t].dot(noise)
+            next_x += self.chol_dyn_covar[t] @ noise
         return next_x
 
     def evaluate(self, output_dir, X_train, U_train, X_test, U_test):
@@ -143,7 +143,7 @@ def fit_lr(X, U, prior=None, regularization=1e-6):
     for t in range(T):
         xux = np.c_[X[:, t], U[:, t], X[:, t + 1]]
         empmu = np.mean(xux, axis=0)
-        empsig = (xux - empmu).T.dot(xux - empmu) / N
+        empsig = (xux - empmu).T @ (xux - empmu) / N
 
         if prior is None:
             mu = empmu
@@ -152,15 +152,15 @@ def fit_lr(X, U, prior=None, regularization=1e-6):
             mu0, Phi, m, n0 = prior.eval(xux)
             mu = empmu  # Instead of using the correct one, suggested by Finn et al. in gps repo
             # mu = (m * mu0 + n0 * empmu) / (m + n0) # The correct one
-            sigma = (Phi + (N - 1) * empsig + (N * m) / (N + m) * (empmu - mu0).T.dot(empmu - mu0)) / (N + n0)
+            sigma = (Phi + (N - 1) * empsig + (N * m) / (N + m) * (empmu - mu0).T @ (empmu - mu0)) / (N + n0)
 
         # Apply regularization to ensure non-sigularity
         sigma[:dXU, :dXU] += sig_reg
 
         # Condition on x_t, u_t
         Fm[t] = np.linalg.solve(sigma[:dXU, :dXU], sigma[:dXU, dXU:]).T
-        fv[t] = mu[dXU:] - Fm[t].dot(mu[:dXU])
-        dyn_covar[t] = sigma[dXU:, dXU:] - Fm[t].dot(sigma[:dXU, :dXU]).dot(Fm[t].T)
+        fv[t] = mu[dXU:] - Fm[t] @ (mu[:dXU])
+        dyn_covar[t] = sigma[dXU:, dXU:] - Fm[t] @ sigma[:dXU, :dXU] @ Fm[t].T
 
     symmetrize(dyn_covar)
     return Fm, fv, dyn_covar

@@ -51,7 +51,7 @@ class LinearGaussianPolicy(Policy):
         Returns:
             u: (dU,) Selected action
         """
-        u = self.K[t].dot(x) + self.k[t]
+        u = self.K[t] @ x + self.k[t]
         if noise is not None:
-            u += self.chol_pol_covar[t].dot(noise)
+            u += self.chol_pol_covar[t] @ noise
         return u
