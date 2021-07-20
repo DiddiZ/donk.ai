@@ -47,3 +47,13 @@ def batched_cholesky(a):
     for t in range(T):
         a_chol[t] = np.linalg.cholesky(a[t])
     return a_chol
+
+
+def symmetrize(A):
+    """Symmetrizes a matrix or a batch of matrices to eliminate numerical errors.
+
+    Modifies the given matrix in-place.
+    """
+    A += np.swapaxes(A, -1, -2)
+    A /= 2
+    return A
