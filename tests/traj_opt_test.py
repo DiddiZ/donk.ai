@@ -50,3 +50,30 @@ class Test_LQG(unittest.TestCase):
             ]
         )
         assert_array_equal(traj_covar, np.swapaxes(traj_covar, 1, 2), "traj_covar not symmetric")
+
+    def test_backward(self):
+        from donk.traj_opt import lqg
+        from tests.utils import random_spd, random_tvlg, random_lq_pol
+        from donk.costs import loss_l2
+
+        T, dX, dU = 5, 3, 2
+        rng = np.random.default_rng(0)
+
+        dyn = random_tvlg(T, dX, dU, rng)
+        _, c, C = loss_l2(
+            x=rng.normal(size=(T + 1, dX + dU)),
+            t=rng.normal(size=(T + 1, dX + dU)),
+            w=np.concatenate([rng.normal(size=(T + 1, dX)) > 0, 1e-2 * np.ones((T + 1, dU))], axis=1)
+        )
+        pol = lqg.backward(dyn, C, c)
+
+        # Check some values
+        assert_array_almost_equal(
+            pol.K, [
+                [[1.30823423, 1.38208415, 4.50630981], [-0.71211717, -0.19657582, -2.59400007]],
+                [[0.84046166, 1.61337651, -1.2593433], [0.12026023, -0.50799617, 1.20987989]],
+                [[2.1477244, -1.44199314, -1.17861916], [-1.37101699, 0.98956977, 0.52860322]],
+                [[-0.04972842, -0.23628132, -1.02031922], [0.3636096, -0.50788773, 0.35318357]],
+                [[-1.11351665, -1.82347015, 4.77470105], [-0.42326492, -0.27333697, 1.6068229]]
+            ]
+        )
