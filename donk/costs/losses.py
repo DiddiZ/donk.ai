@@ -60,6 +60,43 @@ def loss_l2(x, t, w):
     return l, lx, lxx
 
 
+def loss_l1(x, t, w, alpha):
+    """Evaluate and compute derivatives for l2 norm penalty.
+
+    loss = sum(sqrt((x - t)^2 + alpha) * w)
+
+    Args:
+        x: (T, dX) states, actual values.
+        t: (T, dX) targets, expected values.
+        w: (T, dX) weights, scale error of each feature at each timestep.
+
+    Returns:
+        l: (T,) cost at each timestep.
+        lx: (T, D) first order derivative.
+        lxx: (T, D, D) second order derivative.
+
+    """
+    # Get trajectory length.
+    _, dX = x.shape
+
+    d = x - t  # Error
+    abs_d = np.sqrt(alpha + d**2)
+
+    # Total cost
+    # l = sum(w * sqrt((x - t)^2 + alpha))
+    l = np.sum(w * abs_d, axis=1)
+
+    # First order derivative
+    # lx = w * (x - t) / sqrt((x - t)^2 + alpha) * w
+    lx = w * (x - t) / abs_d
+
+    # Second order derivative
+    # lxx = w * alpha / (((x-t)^2 + alpha)^(3/2))
+    lxx = np.einsum('ij,jk->ijk', w * alpha / abs_d**3, np.eye(dX))
+
+    return l, lx, lxx
+
+
 def loss_log_cosh(x, t, w):
     """Evaluate and compute derivatives for log-cosh loss.
 

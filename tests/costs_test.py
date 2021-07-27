@@ -45,6 +45,19 @@ def loss_l2_ref(x, t, w):
     return _evaluate_loss(x - t, w, d_sym, wp_sym, loss)
 
 
+def loss_l1_ref(x, t, w, alpha):
+    """Reference implmentation for loss_l1 using sympy for symbolic differentation."""
+    from sympy import sqrt
+
+    _, dX = x.shape
+    d_sym, wp_sym = _create_symbols(dX)
+
+    # Loss function
+    loss = sum(sqrt(d_sym[i]**2 + alpha) * wp_sym[i] for i in range(dX))
+
+    return _evaluate_loss(x - t, w, d_sym, wp_sym, loss)
+
+
 def loss_log_cosh_ref(x, t, w):
     """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
     from sympy import log, cosh
@@ -70,6 +83,22 @@ class Test_Losses(unittest.TestCase):
 
         l_ref, lx_ref, lxx_ref = loss_l2_ref(x, t, w)
         l, lx, lxx = loss_l2(x, t, w)
+
+        assert_array_almost_equal(l_ref, l)
+        assert_array_almost_equal(lx_ref, lx)
+        assert_array_almost_equal(lxx_ref, lxx)
+
+    def test_loss_l1(self):
+        """Test loss_l1 implementation agains reference implementation using random values."""
+        from donk.costs import loss_l1
+
+        T, dX = 10, 3
+        x = np.random.randn(T, dX)
+        t = np.random.randn(T, dX)
+        w = np.random.uniform(size=(T, dX))
+
+        l_ref, lx_ref, lxx_ref = loss_l1_ref(x, t, w, alpha=1e-2)
+        l, lx, lxx = loss_l1(x, t, w, alpha=1e-2)
 
         assert_array_almost_equal(l_ref, l)
         assert_array_almost_equal(lx_ref, lx)
