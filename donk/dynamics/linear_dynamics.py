@@ -50,15 +50,18 @@ class LinearDynamics(DynamicsModel):
             next_x += self.chol_dyn_covar[t] @ noise
         return next_x
 
+    def __str__(self) -> str:
+        return f"LinearDynamics[T={self.T}, dX={self.dX}, dU={self.dU}]"
+
     def evaluate(self, output_dir, X_train, U_train, X_test, U_test):
         """Create diagnostics and evaluation plots for this dynamics model.
 
         Args:
             output_dir: Directory to write the plots to
-            train_X: (N_train, T+1, dX), Train set states
-            train_U: (N_train, T, dU), Train set actions
-            test_X: (N_test, T+1, dX), Test set states
-            test_U: (N_test, T, dU), Test set actions
+            X_train: (N_train, T+1, dX), Train set states
+            U_train: (N_train, T, dU), Train set actions
+            X_test: (N_test, T+1, dX), Test set states
+            U_test: (N_test, T, dU), Test set actions
         """
         import pandas as pd
         import donk.visualization as vis
@@ -124,6 +127,7 @@ def fit_lr(X, U, prior=None, regularization=1e-6):
     Args:
         X: (N, T+1, dX), States
         U: (N, T, dU), Actions
+        prior: DynamicsPrior to be used. May be `None` to fit without prior.
         regularization: Added to the diagonal of the joint distribution variance. Ensures matrix is not singular.
     """
     N, _, dX = X.shape

@@ -11,10 +11,13 @@ class LinearGaussianPolicy(Policy):
     def __init__(self, K, k, pol_covar=None, inv_pol_covar=None):
         """Initialize this LinearGaussianPolicy object.
 
+        Must provide either covariance or precision, or both.
+
         Args:
             K: (T, dU, dX), Linear term
             k: (T, dU), Constant term
             pol_covar: (T, dU, dU), Covariances
+            inv_pol_covar: (T, dU, dU), Inverse covariances, also called precision.
         """
         if pol_covar is None and inv_pol_covar is None:
             raise ValueError('Must provide pol_covar or inv_pol_covar.')
@@ -55,3 +58,6 @@ class LinearGaussianPolicy(Policy):
         if noise is not None:
             u += self.chol_pol_covar[t] @ noise
         return u
+
+    def __str__(self) -> str:
+        return f"LinearGaussianPolicy[T={self.T}, dX={self.dX}, dU={self.dU}]"

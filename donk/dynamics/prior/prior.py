@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import numpy as np
 
 
 class DynamicsPrior(ABC):
@@ -7,7 +6,7 @@ class DynamicsPrior(ABC):
     @abstractmethod
     def update(self, XUX):
         """Updates the prior.
-        
+
         Args:
             XUX: Transitions with shape (N, dX+dU+dX)
         """
