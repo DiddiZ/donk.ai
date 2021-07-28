@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 from donk.dynamics import DynamicsModel
-from donk.utils.batched import batched_cholesky, symmetrize
+from donk.utils.batched import batched_cholesky, symmetrize, regularize
 
 
 class LinearDynamics(DynamicsModel):
@@ -141,8 +141,6 @@ def fit_lr(X, U, prior=None, regularization=1e-6):
     fv = np.empty([T, dX])
     dyn_covar = np.empty([T, dX, dX])
 
-    sig_reg = regularization * np.eye(dXU)
-
     # Perform regression for all time steps
     for t in range(T):
         xux = np.c_[X[:, t], U[:, t], X[:, t + 1]]
@@ -159,7 +157,7 @@ def fit_lr(X, U, prior=None, regularization=1e-6):
             sigma = (Phi + (N - 1) * empsig + (N * m) / (N + m) * (empmu - mu0).T @ (empmu - mu0)) / (N + n0)
 
         # Apply regularization to ensure non-sigularity
-        sigma[:dXU, :dXU] += sig_reg
+        regularize(sigma[:dXU, :dXU], regularization)
 
         # Condition on x_t, u_t
         Fm[t] = np.linalg.solve(sigma[:dXU, :dXU], sigma[:dXU, dXU:]).T

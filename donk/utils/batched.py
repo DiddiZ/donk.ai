@@ -57,3 +57,13 @@ def symmetrize(A):
     A += np.swapaxes(A, -1, -2)
     A /= 2
     return A
+
+
+def regularize(A, regularization):
+    """Regularizes a matrix or a batch of matrices by adding a constant to the diagonal.
+
+    Modifies the given matrix in-place.
+    """
+    idx = np.arange(A.shape[-1])
+    A[..., idx, idx] += regularization
+    return A

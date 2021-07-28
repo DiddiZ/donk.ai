@@ -48,3 +48,53 @@ class Test_Batches(unittest.TestCase):
         assert_array_equal(A_sym[0], A_sym[0].T)
         assert_array_equal(A_sym[1], A_sym[1].T)
         assert_array_equal(A_sym[2], A_sym[2].T)
+
+    def test_regularize(self):
+        from donk.utils import regularize
+
+        rng = np.random.default_rng(0)
+        A = rng.normal(size=(5, 5))
+        A_copy = A.copy()
+        A_reg = regularize(A, 1e-6)
+
+        self.assertIs(A_reg, A)
+        assert_array_equal(A_reg, A_copy + 1e-6 * np.eye(5))
+
+    def test_regularize_batched(self):
+        from donk.utils import regularize
+
+        rng = np.random.default_rng(0)
+        A = rng.normal(size=(3, 5, 5))
+        A_copy = A.copy()
+        A_reg = regularize(A, 1)
+
+        self.assertIs(A_reg, A)
+        assert_array_equal(A_reg, A_copy + 1 * np.eye(5))
+        assert_array_equal(A, A_copy + 1 * np.eye(5))
+
+    def test_regularize_slice_1(self):
+        from donk.utils import regularize
+
+        rng = np.random.default_rng(0)
+        A = rng.normal(size=(3, 5, 5))
+        A_copy = A.copy()
+        regularize(A[1], 1e-2)
+
+        assert_array_equal(A[0], A_copy[0])
+        assert_array_equal(A[1], A_copy[1] + 1e-2 * np.eye(5))
+        assert_array_equal(A[2], A_copy[2])
+
+    def test_regularize_slice_2(self):
+        from donk.utils import regularize
+
+        rng = np.random.default_rng(0)
+        A = rng.normal(size=(5, 5))
+        A_copy = A.copy()
+        A_reg = regularize(A[:3, :3], 1e-2)
+
+        self.assertIs(A_reg.base, A)
+        assert_array_equal(A_reg, A_copy[:3, :3] + 1e-2 * np.eye(3))
+        assert_array_equal(A[:3, :3], A_copy[:3, :3] + 1e-2 * np.eye(3))
+        assert_array_equal(A[3:, :3], A_copy[3:, :3])
+        assert_array_equal(A[:3, 3:], A_copy[:3, 3:])
+        assert_array_equal(A[3:, 3:], A_copy[3:, 3:])
