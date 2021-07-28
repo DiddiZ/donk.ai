@@ -1,10 +1,11 @@
 import numpy as np
 from scipy.linalg import solve
+from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
-from donk.utils import symmetrize
+from donk.utils import symmetrize, regularize
 
 
-def backward(dynamics, C, c, gamma=1):
+def backward(dynamics: LinearDynamics, C, c, gamma=1):
     """Perform LQR backward pass.
 
     `C` is required to be symmetric.
@@ -63,7 +64,7 @@ def backward(dynamics, C, c, gamma=1):
     return LinearGaussianPolicy(K, k, pol_covar, inv_pol_covar)
 
 
-def forward(dynamics, policy, X_0_mean, X_0_covar):
+def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_0_covar, regularization=1e-6):
     """Perform LQR forward pass.
 
     Computes state-action marginals from dynamics and policy.
@@ -107,6 +108,7 @@ def forward(dynamics, policy, X_0_mean, X_0_covar):
             traj_covar[t + 1, :dX, :dX] = Fm[t] @ traj_covar[t] @ Fm[t].T + dyn_covar[t]
 
         symmetrize(traj_covar[t])
+        regularize(traj_covar[t], regularization)
     return traj_mean, traj_covar
 
 
