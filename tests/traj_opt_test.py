@@ -82,10 +82,10 @@ class Test_LQG(unittest.TestCase):
         from donk.traj_opt import lqg
         from tests.utils import random_lq_pol
 
-        T, dX, dU = 5, 3, 2
+        T, dX, dU = 5, 2, 3
         rng = np.random.default_rng(0)
 
-        prev_pol = random_lq_pol(T, dU, dX, rng)
+        prev_pol = random_lq_pol(T, dX, dU, rng)
         C, c = lqg.extended_costs_kl(prev_pol)
 
         assert_array_almost_equal(
@@ -115,3 +115,17 @@ class Test_LQG(unittest.TestCase):
                 [0.22628684, -0.12542044, -0.37047029, -0.16602141, 0.03280298],
             ]
         )
+
+    def test_kl_divergence_action(self):
+        from donk.traj_opt import lqg
+        from tests.utils import random_lq_pol
+
+        T, dX, dU = 5, 3, 2
+        rng = np.random.default_rng(0)
+        X = rng.standard_normal((T, dX))
+        pol = random_lq_pol(T, dX, dU, rng)
+        prev_pol = random_lq_pol(T, dX, dU, rng)
+
+        kl_div = lqg.kl_divergence_action(X, pol, prev_pol)
+
+        self.assertAlmostEqual(kl_div, 3.914744335914712)

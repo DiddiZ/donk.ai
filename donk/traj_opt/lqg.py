@@ -139,3 +139,36 @@ def extended_costs_kl(prev_pol: LinearGaussianPolicy):
         c[t, dX:] = -inv_pol_covar[t] @ k[t]
 
     return C, c
+
+
+def kl_divergence_action(X, pol: LinearGaussianPolicy, prev_pol: LinearGaussianPolicy):
+    """Compute KL divergence between new and previous trajectory distributions.
+
+    Args:
+        X: (T, dX), mean of states to compare actions for.
+        pol: LinearGaussianPolicy, new policy.
+        prev_pol: LinearGaussianPolicy, previous policy.
+
+    Returns:
+        kl_div: The mean KL divergence between the new and previous actions over time.
+
+    See:
+        https://web.stanford.edu/~jduchi/projects/general_notes.pdf Chapter 9
+    """
+    T, dU = pol.T, pol.dU
+
+    kl_div = 0
+    for t in range(T):
+        delta_u = (prev_pol.K[t] - pol.K[t]) @ X[t] + prev_pol.k[t] - pol.k[t]
+        kl_div += 0.5 * (
+            # tr(sigma_1^-1 * sigma_0)
+            np.einsum("ij,ij->", prev_pol.inv_pol_covar[t], pol.pol_covar[t]) +
+            # (mu_1 - mu_0)^T * sigma_1^-1 * (mu_1 - mu_0)
+            delta_u.T @ prev_pol.inv_pol_covar[t] @ delta_u +
+            # -k
+            -dU +
+            # log(det(sigma_1) / det(sigma_0))
+            2 * sum(np.log(np.diag(prev_pol.chol_pol_covar[t])) - np.log(np.diag(pol.chol_pol_covar[t])))
+        )
+
+    return kl_div / T
