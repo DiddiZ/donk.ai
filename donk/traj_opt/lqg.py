@@ -108,3 +108,32 @@ def forward(dynamics, policy, X_0_mean, X_0_covar):
 
         symmetrize(traj_covar[t])
     return traj_mean, traj_covar
+
+
+def extended_costs_kl(prev_pol: LinearGaussianPolicy):
+    """Compute expansion of extended cost used in the iLQR backward pass.
+
+    The extended cost function is -log p(u_t | x_t) with p being the previous trajectory distribution.
+    Thus, rewarding similarity of actions to the previous policy.
+
+    Returns:
+        C: Quadratic term of extended costs
+        c: Linear term of extended costs
+    """
+    T, dX, dU = prev_pol.T, prev_pol.dX, prev_pol.dU
+
+    C = np.empty((T, dX + dU, dX + dU))
+    c = np.empty((T, dX + dU))
+
+    # For convenicence
+    K, k, inv_pol_covar = prev_pol.K, prev_pol.k, prev_pol.inv_pol_covar
+
+    for t in range(T):
+        C[t, :dX, :dX] = K[t].T @ inv_pol_covar[t] @ K[t]
+        C[t, :dX, dX:] = -K[t].T @ inv_pol_covar[t]
+        C[t, dX:, :dX] = -inv_pol_covar[t] @ K[t]
+        C[t, dX:, dX:] = inv_pol_covar[t]
+        c[t, :dX] = K[t].T @ inv_pol_covar[t] @ k[t]
+        c[t, dX:] = -inv_pol_covar[t] @ k[t]
+
+    return C, c
