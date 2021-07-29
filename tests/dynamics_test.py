@@ -25,7 +25,8 @@ class Test_LinearDynamics(unittest.TestCase):
         N, _, dX = X.shape
         _, T, dU = U.shape
 
-        Fm, fv, dyn_covar = fit_lr(X, U, regularization=1e-6)
+        dyn = fit_lr(X, U, regularization=1e-6)
+        Fm, fv, dyn_covar = dyn.Fm, dyn.fv, dyn.dyn_covar
 
         # Check shapes
         assert_array_equal(Fm.shape, (T, dX, dX + dU))
@@ -60,10 +61,11 @@ class Test_LinearDynamics(unittest.TestCase):
         _, T, dU = U.shape
         transitions = np.c_[X[:, :-1], U, X[:, 1:]].reshape(N * T, dX + dU + dX)
 
-        prior = GMMPrior(max_clusters=8, random_state=0)
+        prior = GMMPrior(8, random_state=0)
         prior.update(transitions)
 
-        Fm, fv, dyn_covar = fit_lr(X[:3], U[:3], regularization=1e-6)
+        dyn = fit_lr(X[:3], U[:3], regularization=1e-6)
+        Fm, fv, dyn_covar = dyn.Fm, dyn.fv, dyn.dyn_covar
 
         # Check shapes
         assert_array_equal(Fm.shape, (T, dX, dX + dU))

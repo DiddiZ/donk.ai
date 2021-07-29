@@ -6,8 +6,8 @@ from donk.dynamics.prior import DynamicsPrior
 
 class GMMPrior(DynamicsPrior):
 
-    def __init__(self, max_clusters, random_state=None) -> None:
-        self.gmm = GaussianMixture(n_components=max_clusters, random_state=random_state)
+    def __init__(self, n_clusters, random_state=None) -> None:
+        self.gmm = GaussianMixture(n_components=n_clusters, random_state=random_state)
 
     def update(self, XUX):
         """Updates the prior.

@@ -5,7 +5,7 @@ from donk.policy import LinearGaussianPolicy
 from donk.utils import symmetrize, regularize
 
 
-def backward(dynamics: LinearDynamics, C, c, gamma=1):
+def backward(dynamics: LinearDynamics, C, c, gamma=1) -> LinearGaussianPolicy:
     """Perform LQR backward pass.
 
     `C` is required to be symmetric.
@@ -30,8 +30,8 @@ def backward(dynamics: LinearDynamics, C, c, gamma=1):
     inv_pol_covar = np.empty((T, dU, dU))
 
     # Set value of final state
-    V = C[-1, :dX, :dX]
-    v = c[-1, :dX]
+    V = C[T, :dX, :dX]
+    v = c[T, :dX]
 
     # For convenicence
     Fm, fv = dynamics.Fm, dynamics.fv

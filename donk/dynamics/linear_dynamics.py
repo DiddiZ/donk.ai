@@ -1,6 +1,7 @@
 from pathlib import Path
 import numpy as np
 from donk.dynamics import DynamicsModel
+from donk.dynamics.prior import DynamicsPrior
 from donk.utils.batched import batched_cholesky, symmetrize, regularize
 
 
@@ -121,7 +122,7 @@ class LinearDynamics(DynamicsModel):
         return statistics
 
 
-def fit_lr(X, U, prior=None, regularization=1e-6):
+def fit_lr(X, U, prior: DynamicsPrior = None, regularization=1e-6) -> LinearDynamics:
     """Fit dynamics with least squares linear regression.
 
     Args:
@@ -165,4 +166,4 @@ def fit_lr(X, U, prior=None, regularization=1e-6):
         dyn_covar[t] = sigma[dXU:, dXU:] - Fm[t] @ sigma[:dXU, :dXU] @ Fm[t].T
 
     symmetrize(dyn_covar)
-    return Fm, fv, dyn_covar
+    return LinearDynamics(Fm, fv, dyn_covar)
