@@ -1,9 +1,57 @@
+from functools import lru_cache
+
 import numpy as np
+from scipy import optimize
 from scipy.linalg import solve
 
 from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
 from donk.utils import regularize, symmetrize
+
+
+def ilqg(dynamics: LinearDynamics, prev_pol: LinearGaussianPolicy, x0_mean, x0_covar, C, c, kl_step: float):
+    """Perform iLQG trajectory optimization
+
+    Args:
+        dynamics: Time-varying linear Gaussian dynamics model
+        prev_pol: Policy to contrain the new policy to
+        x0_mean: (dX, ) initial state distribution mean
+        x0_covar: (dX, dX) initial state distribution covariance
+        C: (T, dX+dU, dX+dU): Quadratic part of cost function
+        c: (T, dX+dU): Linear part of cost function
+        kl_step: KL divergence threshold to previous policy
+
+    Args:
+        pol: Optimized policy
+        kl_div: KL divergence from new to previous policy
+        traj_mean: Mean of new trajectory distribution
+        traj_covar: Covariance of new trajectory distribution
+    """
+    dX = dynamics.dX
+
+    # Compute extended costs
+    C_kl, c_kl = extended_costs_kl(prev_pol)
+
+    @lru_cache(maxsize=None)  # Cache computation results
+    def _iteration(eta):
+        C_ext = C * (1 - eta)
+        C_ext[:-1] += C_kl * eta
+        c_ext = c * (1 - eta)
+        c_ext[:-1] += c_kl * eta
+        pol = backward(dynamics, C_ext, c_ext)
+        traj_mean, traj_covar = forward(dynamics, pol, x0_mean, x0_covar)
+        kl_div = kl_divergence_action(traj_mean[:, :dX], pol, prev_pol)
+
+        return pol, kl_div, traj_mean, traj_covar
+
+    if _iteration(0)[1] < kl_step:
+        # Kl divergence is already below threshold
+        eta = 0
+    else:
+        # Find point where kl divergence equals threshold
+        eta = optimize.brentq(lambda eta: _iteration(eta)[1] - kl_step, 0, 1, rtol=0.01)
+
+    return _iteration(eta)
 
 
 def backward(dynamics: LinearDynamics, C, c, gamma=1) -> LinearGaussianPolicy:
