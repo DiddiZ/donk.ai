@@ -99,3 +99,21 @@ class Test_Noise(unittest.TestCase):
 
         assert_array_almost_equal(np.var(smoothed, axis=0), np.var(noise, axis=0))
         assert_array_almost_equal(np.mean(smoothed, axis=0), np.mean(noise, axis=0))
+
+
+class Test_Initial_Policies(unittest.TestCase):
+
+    def test_constant_policy(self):
+        """Test constant_policy."""
+        from donk.policy import initial_policies
+
+        T, dX, dU = 10, 5, 2
+        pol = initial_policies.constant_policy(T=T, dX=dX, u=[1, 2], variance=[0.5, 0.25])
+
+        for t in range(T):
+            with self.subTest(t=t):
+                assert_array_almost_equal(pol.K[t], np.zeros((dU, dX)))
+                assert_array_almost_equal(pol.k[t], [1, 2])
+                assert_array_almost_equal(pol.pol_covar[t], [[0.5, 0], [0, 0.25]])
+                assert_array_almost_equal(pol.chol_pol_covar[t], np.sqrt([[0.5, 0], [0, 0.25]]))
+                assert_array_almost_equal(pol.inv_pol_covar[t], [[2, 0], [0, 4]])
