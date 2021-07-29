@@ -1,4 +1,4 @@
-from donk.policy import Policy
+from donk.policy.policy import Policy
 from donk.utils.batched import batched_cholesky, batched_inv_spd
 
 
