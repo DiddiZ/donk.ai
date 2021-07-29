@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.linalg import solve
+
 from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
-from donk.utils import symmetrize, regularize
+from donk.utils import regularize, symmetrize
 
 
 def backward(dynamics: LinearDynamics, C, c, gamma=1) -> LinearGaussianPolicy:

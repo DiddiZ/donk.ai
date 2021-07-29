@@ -1,5 +1,5 @@
 from donk.policy import Policy
-from donk.utils.batched import batched_inv_spd, batched_cholesky
+from donk.utils.batched import batched_cholesky, batched_inv_spd
 
 
 class LinearGaussianPolicy(Policy):

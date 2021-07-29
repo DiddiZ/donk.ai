@@ -1,9 +1,10 @@
 """Visualization tool for linear models."""
 from pathlib import Path
-import numpy as np
+
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
+import numpy as np
 import seaborn as sns
+from matplotlib.ticker import MaxNLocator
 
 
 def visualize_linear_model(
@@ -119,8 +120,8 @@ def visualize_coefficients(output_file_pattern, coeff):
         coeff: shape (T, dY, dX), linear coefficients
     """
     import matplotlib.pyplot as plt
-    import seaborn as sns
     import pandas as pd
+    import seaborn as sns
     T, dY, dX = coeff.shape
 
     for y in range(dY):
@@ -213,7 +214,7 @@ def visualize_prediction_error(output_file, predictions, targets):
         prediction: shape (N, T, dX), model predictions
         target: shape (N, T, dX), targets
     """
-    from sklearn.metrics import r2_score, explained_variance_score
+    from sklearn.metrics import explained_variance_score, r2_score
 
     errors = (predictions - targets)**2
     mse = np.mean(errors)

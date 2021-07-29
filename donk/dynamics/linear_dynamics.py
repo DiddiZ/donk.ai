@@ -1,8 +1,10 @@
 from pathlib import Path
+
 import numpy as np
+
 from donk.dynamics import DynamicsModel
 from donk.dynamics.prior import DynamicsPrior
-from donk.utils.batched import batched_cholesky, symmetrize, regularize
+from donk.utils.batched import batched_cholesky, regularize, symmetrize
 
 
 class LinearDynamics(DynamicsModel):

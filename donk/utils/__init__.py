@@ -1,4 +1,4 @@
-from donk.utils.batched import symmetrize, regularize
+from donk.utils.batched import regularize, symmetrize
 
 __all__ = [
     'symmetrize',
