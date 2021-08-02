@@ -67,3 +67,18 @@ def regularize(A, regularization):
     idx = np.arange(A.shape[-1])
     A[..., idx, idx] += regularization
     return A
+
+
+def trace_of_product(A, B):
+    """Compute the trace of a matrix product Tr(A @ B).
+
+    This is an O(n²) operation, as it avoids to compute the actial matrix product.
+
+    Args:
+        A: (..., n, m) Matrix, or stack of matrices
+        B: (..., m, n) Matrix, or stack of matrices
+
+    Returns:
+        trace: Trace of stack of traces
+    """
+    return np.einsum("...ij,...ji->...", A, B)

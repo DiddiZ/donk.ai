@@ -6,7 +6,7 @@ from scipy.linalg import solve
 
 from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
-from donk.utils import regularize, symmetrize
+from donk.utils import regularize, symmetrize, trace_of_product
 
 
 def ilqg(dynamics: LinearDynamics, prev_pol: LinearGaussianPolicy, x0_mean, x0_covar, C, c, kl_step: float):
@@ -211,7 +211,7 @@ def kl_divergence_action(X, pol: LinearGaussianPolicy, prev_pol: LinearGaussianP
         delta_u = (prev_pol.K[t] - pol.K[t]) @ X[t] + prev_pol.k[t] - pol.k[t]
         kl_div += 0.5 * (
             # tr(sigma_1^-1 * sigma_0)
-            np.einsum("ij,ij->", prev_pol.inv_pol_covar[t], pol.pol_covar[t]) +
+            trace_of_product(prev_pol.inv_pol_covar[t], pol.pol_covar[t]) +
             # (mu_1 - mu_0)^T * sigma_1^-1 * (mu_1 - mu_0)
             delta_u.T @ prev_pol.inv_pol_covar[t] @ delta_u +
             # -k

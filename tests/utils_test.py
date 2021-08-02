@@ -98,3 +98,21 @@ class Test_Batches(unittest.TestCase):
         assert_array_equal(A[3:, :3], A_copy[3:, :3])
         assert_array_equal(A[:3, 3:], A_copy[:3, 3:])
         assert_array_equal(A[3:, 3:], A_copy[3:, 3:])
+
+    def test_trace_of_prod(self):
+        from donk.utils import trace_of_product
+
+        rng = np.random.default_rng(0)
+        A = rng.normal(size=(5, 6))
+        B = rng.normal(size=(6, 5))
+        assert_array_almost_equal(trace_of_product(A, B), np.trace(A @ B))
+
+    def test_trace_of_prod_batched(self):
+        from donk.utils import trace_of_product
+
+        rng = np.random.default_rng(0)
+        A = rng.normal(size=(3, 5, 6))
+        B = rng.normal(size=(3, 6, 5))
+
+        for i in range(3):
+            assert_array_almost_equal(trace_of_product(A, B)[i], np.trace(A[i] @ B[i]))
