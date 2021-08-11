@@ -21,7 +21,7 @@ def ilqg(dynamics: LinearDynamics, prev_pol: LinearGaussianPolicy, x0_mean, x0_c
         c: (T, dX+dU): Linear part of cost function
         kl_step: KL divergence threshold to previous policy
 
-    Args:
+    Returns:
         pol: Optimized policy
         kl_div: KL divergence from new to previous policy
         traj_mean: Mean of new trajectory distribution
