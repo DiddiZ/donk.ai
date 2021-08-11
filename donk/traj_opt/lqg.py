@@ -118,6 +118,8 @@ def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_
 
     Computes state-action marginals from dynamics and policy.
 
+    Distribution of last time step only contains the state distribution, as there is no corresponding action.
+
     Args:
         dynamics: A LinearGaussianPolicy.
         policy: A LinearDynamics.
@@ -125,18 +127,22 @@ def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_
         X_0_covar: (dX, dX) Covariance of initial state distribution.
 
     Returns:
-        traj_mean: (T, dX+dU) mean state-action vectors.
-        traj_covar: (T, dX+dU, dX+dU) state-action covariance matrices.
+        traj_mean: (T+1, dX+dU) mean state-action vectors.
+        traj_covar: (T+1, dX+dU, dX+dU) state-action covariance matrices.
 
     """
     T, dX, dU = dynamics.T, dynamics.dX, dynamics.dU
 
-    traj_mean = np.empty((T, dX + dU))
-    traj_covar = np.empty((T, dX + dU, dX + dU))
+    traj_mean = np.empty((T + 1, dX + dU))
+    traj_covar = np.empty((T + 1, dX + dU, dX + dU))
 
     # Set initial state dist
     traj_mean[0, :dX] = X_0_mean
     traj_covar[0, :dX, :dX] = X_0_covar
+
+    # Set action part for final state
+    traj_mean[T, :dX:] = 0
+    traj_covar[T] = 0
 
     # For convenicence
     Fm, fv, dyn_covar = dynamics.Fm, dynamics.fv, dynamics.dyn_covar
@@ -150,14 +156,17 @@ def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_
         traj_covar[t, :dX, dX:] = traj_covar[t, dX:, :dX].T
         traj_covar[t, dX:, dX:] = traj_covar[t, dX:, :dX] @ K[t].T + pol_covar[t]
 
-        if t < T - 1:
-            # x_t+1 = Fm_t*[x_t;u_t] + fv_t
-            traj_mean[t + 1, :dX] = Fm[t] @ traj_mean[t] + fv[t]
-            # TODO Formula
-            traj_covar[t + 1, :dX, :dX] = Fm[t] @ traj_covar[t] @ Fm[t].T + dyn_covar[t]
+        # x_t+1 = Fm_t*[x_t;u_t] + fv_t
+        traj_mean[t + 1, :dX] = Fm[t] @ traj_mean[t] + fv[t]
+        # TODO Formula
+        traj_covar[t + 1, :dX, :dX] = Fm[t] @ traj_covar[t] @ Fm[t].T + dyn_covar[t]
 
         symmetrize(traj_covar[t])
         regularize(traj_covar[t], regularization)
+
+    # Symmetrize state distribution of final state
+    symmetrize(traj_covar[T, :dX, :dX])
+
     return traj_mean, traj_covar
 
 
