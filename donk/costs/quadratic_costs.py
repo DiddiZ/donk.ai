@@ -30,6 +30,22 @@ class QuadraticCosts():
         self.c = c
         self.cc = cc
 
+    def __add__(self, other):
+        """Sum two cost functions."""
+        if isinstance(other, QuadraticCosts):
+            return QuadraticCosts(self.C + other.C, self.c + other.c, self.cc + other.cc)
+        return NotImplemented
+
+    def __mul__(self, other):
+        """Scale cost function with  vonstant scalar."""
+        if np.isscalar(other):
+            return QuadraticCosts(self.C * other, self.c * other, self.cc * other)
+        return NotImplemented
+
+    def __rmul__(self, other):
+        """Scale cost function with  vonstant scalar."""
+        return self.__mul__(other)
+
     def compute_costs(self, traj):
         """Evaluate costs for trajectories.
 

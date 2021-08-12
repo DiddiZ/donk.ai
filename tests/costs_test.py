@@ -322,3 +322,69 @@ class Test_QuadraticCosts(unittest.TestCase):
         mean_costs = np.mean(cost_function.compute_costs(XU), axis=0)
 
         assert_allclose(cost_function.expected_costs(traj_mean, traj_covar), mean_costs, rtol=.25)
+
+    def test_add(self):
+        """Test QuadraticCosts.expected_costs."""
+        from donk.costs import QuadraticCosts
+
+        rng = np.random.default_rng(0)
+        T, dXU = 10, 5
+
+        cost_function_1 = QuadraticCosts.quadratic_cost_approximation_l2(
+            t=rng.standard_normal((T, dXU)),
+            w=rng.standard_normal((T, dXU)),
+        )
+        cost_function_2 = QuadraticCosts.quadratic_cost_approximation_l1(
+            xu=rng.standard_normal((T, dXU)),
+            t=rng.standard_normal((T, dXU)),
+            w=rng.standard_normal((T, dXU)),
+            alpha=1e-6,
+        )
+
+        cost_function = cost_function_1 + cost_function_2
+
+        assert_allclose(cost_function.C, cost_function_1.C + cost_function_2.C)
+        assert_allclose(cost_function.c, cost_function_1.c + cost_function_2.c)
+        assert_allclose(cost_function.cc, cost_function_1.cc + cost_function_2.cc)
+
+        with self.assertRaises(TypeError):
+            cost_function + 5
+
+    def test_mul(self):
+        """Test QuadraticCosts.expected_costs."""
+        from donk.costs import QuadraticCosts
+
+        rng = np.random.default_rng(0)
+        T, dXU = 10, 5
+
+        cost_function_1 = QuadraticCosts.quadratic_cost_approximation_l2(
+            t=rng.standard_normal((T, dXU)),
+            w=rng.standard_normal((T, dXU)),
+        )
+
+        cost_function = cost_function_1 * 2
+
+        assert_allclose(cost_function.C, cost_function_1.C * 2)
+        assert_allclose(cost_function.c, cost_function_1.c * 2)
+        assert_allclose(cost_function.cc, cost_function_1.cc * 2)
+
+        with self.assertRaises(TypeError):
+            cost_function * cost_function_1
+
+    def test_rmul(self):
+        """Test QuadraticCosts.expected_costs."""
+        from donk.costs import QuadraticCosts
+
+        rng = np.random.default_rng(0)
+        T, dXU = 10, 5
+
+        cost_function_1 = QuadraticCosts.quadratic_cost_approximation_l2(
+            t=rng.standard_normal((T, dXU)),
+            w=rng.standard_normal((T, dXU)),
+        )
+
+        cost_function = 1.2 * cost_function_1
+
+        assert_allclose(cost_function.C, cost_function_1.C * 1.2)
+        assert_allclose(cost_function.c, cost_function_1.c * 1.2)
+        assert_allclose(cost_function.cc, cost_function_1.cc * 1.2)
