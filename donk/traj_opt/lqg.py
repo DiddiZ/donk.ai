@@ -141,7 +141,7 @@ def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_
     traj_covar[0, :dX, :dX] = X_0_covar
 
     # Set action part for final state
-    traj_mean[T, :dX:] = 0
+    traj_mean[T, dX:] = 0
     traj_covar[T] = 0
 
     # For convenicence
