@@ -1,5 +1,6 @@
 """Utilities for unit testing."""
 import numpy as np
+
 from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
 from donk.utils import symmetrize

@@ -1,4 +1,5 @@
 import unittest
+
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
@@ -7,7 +8,7 @@ class Test_LQG(unittest.TestCase):
 
     def test_forward(self):
         from donk.traj_opt import lqg
-        from tests.utils import random_spd, random_tvlg, random_lq_pol
+        from tests.utils import random_lq_pol, random_spd, random_tvlg
 
         T, dX, dU = 5, 3, 2
         rng = np.random.default_rng(0)
@@ -61,9 +62,9 @@ class Test_LQG(unittest.TestCase):
         assert_array_equal(traj_covar, np.swapaxes(traj_covar, 1, 2), "traj_covar not symmetric")
 
     def test_backward(self):
+        from donk.costs import loss_l2
         from donk.traj_opt import lqg
         from tests.utils import random_tvlg
-        from donk.costs import loss_l2
 
         T, dX, dU = 5, 3, 2
         rng = np.random.default_rng(0)

@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+
 from tests.utils import random_spd
 
 

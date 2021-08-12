@@ -1,6 +1,9 @@
 import unittest
+
 import numpy as np
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_allclose, assert_array_almost_equal
+
+from tests.utils import random_spd
 
 
 def _create_symbols(D):
@@ -60,7 +63,7 @@ def loss_l1_ref(x, t, w, alpha):
 
 def loss_log_cosh_ref(x, t, w):
     """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
-    from sympy import log, cosh
+    from sympy import cosh, log
     _, dX = x.shape
     d_sym, wp_sym = _create_symbols(dX)
 
@@ -122,7 +125,7 @@ class Test_Losses(unittest.TestCase):
 
     def test_loss_sum(self):
         """Test loss_combined summing up two losses."""
-        from donk.costs import loss_log_cosh, loss_l2, loss_combined
+        from donk.costs import loss_combined, loss_l2, loss_log_cosh
 
         T, dX = 10, 3
         x = np.random.randn(T, dX)
@@ -154,7 +157,7 @@ class Test_Losses(unittest.TestCase):
 
     def test_loss_sum_single_argument(self):
         """Test loss_combined with only a single loss to sum up."""
-        from donk.costs import loss_l2, loss_combined
+        from donk.costs import loss_combined, loss_l2
 
         T, dX = 10, 3
         x = np.random.randn(T, dX)
@@ -192,3 +195,130 @@ class Test_Losses(unittest.TestCase):
             loss_combined(x, [
                 (),
             ])
+
+
+class Test_QuadraticCosts(unittest.TestCase):
+
+    def test_quadratic_cost_approximation_l2(self):
+        """Test quadratic_cost_approximation_l2 on single timesteps."""
+        from donk.costs import QuadraticCosts
+
+        cost_function = QuadraticCosts.quadratic_cost_approximation_l2(
+            t=np.array([1, 2, 3]),
+            w=np.array([1, 1, 2]),
+        )
+
+        assert_array_almost_equal(cost_function.C, np.diag([1, 1, 2]))
+        assert_array_almost_equal(cost_function.c, [-1, -2, -6])
+        assert_array_almost_equal(cost_function.cc, 0.5 + 2 + 9)
+
+    def test_quadratic_cost_approximation_l2_batched(self):
+        """Test quadratic_cost_approximation_l2 on a trajectory."""
+        from donk.costs import QuadraticCosts
+
+        cost_function = QuadraticCosts.quadratic_cost_approximation_l2(
+            t=np.array([
+                [-2, 2, 0],
+                [-1, 1, 0],
+                [0, 0, 0],
+            ]),
+            w=np.array([
+                [1, 1, 2],
+                [1, 1, 2],
+                [10, 10, 0],
+            ]),
+        )
+
+        assert_array_almost_equal(cost_function.C, [
+            np.diag([1, 1, 2]),
+            np.diag([1, 1, 2]),
+            np.diag([10, 10, 0]),
+        ])
+        assert_array_almost_equal(cost_function.c, [
+            [2, -2, 0],
+            [1, -1, 0],
+            [0, 0, 0],
+        ])
+        assert_array_almost_equal(cost_function.cc, [4, 1, 0])
+
+    def test_quadratic_cost_approximation_l1(self):
+        """Test quadratic_cost_approximation_l1 on single timesteps."""
+        from donk.costs import QuadraticCosts
+
+        cost_function = QuadraticCosts.quadratic_cost_approximation_l1(
+            xu=np.array([3, 2]),
+            t=np.array([2, 2]),
+            w=np.array([1, 2]),
+            alpha=1e-2,
+        )
+
+        assert_array_almost_equal(cost_function.C, np.diag([0.01 / 1.01**1.5, 20]))
+        assert_array_almost_equal(cost_function.c, [1 / 1.01**0.5 - 0.03 / 1.01**1.5, -40])
+        assert_array_almost_equal(cost_function.cc, 1.01**0.5 - 3 / 1.01**0.5 + 0.045 / 1.01**1.5 + 0.2 + 40)
+
+    def test_quadratic_cost_approximation_l1_batched(self):
+        """Test quadratic_cost_approximation_l1 on a trajectory."""
+        from donk.costs import QuadraticCosts
+
+        cost_function = QuadraticCosts.quadratic_cost_approximation_l1(
+            xu=np.array([
+                [-2, 0],
+                [0, 0],
+            ]),
+            t=np.array([
+                [1, 2],
+                [10, 0],
+            ]),
+            w=np.array([
+                [1, 2],
+                [10, 0],
+            ]),
+            alpha=1e-6,
+        )
+
+        assert_array_almost_equal(cost_function.C, np.zeros((2, 2, 2)))
+        assert_array_almost_equal(cost_function.c, [
+            [-1, -2],
+            [-10, 0],
+        ])
+        assert_array_almost_equal(cost_function.cc, [3 * 1 - 2 + 2 * 2, 10 * 10])
+
+    def test_compute_costs(self):
+        """Test QuadraticCosts.compute_costs."""
+        from donk.costs import QuadraticCosts
+
+        rng = np.random.default_rng(0)
+        T, dXU = 10, 5
+
+        target = rng.standard_normal((T, dXU))
+        weights = rng.standard_normal((T, dXU))
+
+        cost_function = QuadraticCosts.quadratic_cost_approximation_l2(target, weights)
+
+        # When targets reached, costs are zero
+        assert_array_almost_equal(cost_function.compute_costs(target), np.zeros(T))
+
+        X = rng.standard_normal((T, dXU))
+        assert_array_almost_equal(cost_function.compute_costs(X), np.sum(weights * (target - X)**2, axis=-1) / 2)
+
+    def test_expected_costs(self):
+        """Test QuadraticCosts.expected_costs."""
+        from donk.costs import QuadraticCosts
+
+        rng = np.random.default_rng(0)
+        N, T, dXU = 1000, 10, 5
+
+        target = rng.standard_normal((T, dXU))
+        weights = rng.standard_normal((T, dXU))
+        cost_function = QuadraticCosts.quadratic_cost_approximation_l2(target, weights)
+
+        traj_mean = rng.standard_normal((T, dXU))
+        traj_covar = random_spd((T, dXU, dXU), rng)
+
+        XU = np.empty((N, T, dXU))
+        for t in range(T):
+            XU[:, t] = rng.multivariate_normal(traj_mean[t], traj_covar[t], N)
+
+        mean_costs = np.mean(cost_function.compute_costs(XU), axis=0)
+
+        assert_allclose(cost_function.expected_costs(traj_mean, traj_covar), mean_costs, rtol=.25)

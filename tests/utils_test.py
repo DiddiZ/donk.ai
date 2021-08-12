@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+
 from tests.utils import random_spd
 
 
@@ -8,7 +10,7 @@ class Test_Batches(unittest.TestCase):
 
     def test_batched_inv_spd(self):
         """Test batched_inv_spd implementation agains reference implementation using random values."""
-        from donk.utils.batched import batched_inv_spd, batched_cholesky
+        from donk.utils.batched import batched_cholesky, batched_inv_spd
 
         T, dX = 10, 10
         rng = np.random.default_rng(0)

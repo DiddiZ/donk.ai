@@ -67,6 +67,7 @@ class LinearDynamics(DynamicsModel):
             U_test: (N_test, T, dU), Test set actions
         """
         import pandas as pd
+
         import donk.visualization as vis
 
         if output_dir is not None:
