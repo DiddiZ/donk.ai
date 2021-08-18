@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_allclose, assert_array_equal
 
 from tests.utils import random_spd
 
@@ -25,8 +25,8 @@ class Test_Batches(unittest.TestCase):
         a_chol = batched_cholesky(a)
         a_inv = batched_inv_spd(a_chol)
 
-        assert_array_almost_equal(a_chol_ref, a_chol)
-        assert_array_almost_equal(a_inv_ref, a_inv)
+        assert_allclose(a_chol_ref, a_chol)
+        assert_allclose(a_inv_ref, a_inv)
 
     def test_symmetrize(self):
         from donk.utils import symmetrize
@@ -107,7 +107,7 @@ class Test_Batches(unittest.TestCase):
         rng = np.random.default_rng(0)
         A = rng.normal(size=(5, 6))
         B = rng.normal(size=(6, 5))
-        assert_array_almost_equal(trace_of_product(A, B), np.trace(A @ B))
+        assert_allclose(trace_of_product(A, B), np.trace(A @ B))
 
     def test_trace_of_prod_batched(self):
         from donk.utils import trace_of_product
@@ -117,4 +117,4 @@ class Test_Batches(unittest.TestCase):
         B = rng.normal(size=(3, 6, 5))
 
         for i in range(3):
-            assert_array_almost_equal(trace_of_product(A, B)[i], np.trace(A[i] @ B[i]))
+            assert_allclose(trace_of_product(A, B)[i], np.trace(A[i] @ B[i]))

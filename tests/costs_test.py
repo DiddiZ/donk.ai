@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_almost_equal
+from numpy.testing import assert_allclose
 
 from tests.utils import random_spd
 
@@ -87,9 +87,9 @@ class Test_Losses(unittest.TestCase):
         l_ref, lx_ref, lxx_ref = loss_l2_ref(x, t, w)
         l, lx, lxx = loss_l2(x, t, w)
 
-        assert_array_almost_equal(l_ref, l)
-        assert_array_almost_equal(lx_ref, lx)
-        assert_array_almost_equal(lxx_ref, lxx)
+        assert_allclose(l_ref, l)
+        assert_allclose(lx_ref, lx)
+        assert_allclose(lxx_ref, lxx)
 
     def test_loss_l1(self):
         """Test loss_l1 implementation agains reference implementation using random values."""
@@ -103,9 +103,9 @@ class Test_Losses(unittest.TestCase):
         l_ref, lx_ref, lxx_ref = loss_l1_ref(x, t, w, alpha=1e-2)
         l, lx, lxx = loss_l1(x, t, w, alpha=1e-2)
 
-        assert_array_almost_equal(l_ref, l)
-        assert_array_almost_equal(lx_ref, lx)
-        assert_array_almost_equal(lxx_ref, lxx)
+        assert_allclose(l_ref, l)
+        assert_allclose(lx_ref, lx)
+        assert_allclose(lxx_ref, lxx)
 
     def test_loss_log_cosh(self):
         """Test loss_log_cosh implementation agains reference implementation using random values."""
@@ -119,9 +119,9 @@ class Test_Losses(unittest.TestCase):
         l_ref, lx_ref, lxx_ref = loss_log_cosh_ref(x, t, w)
         l, lx, lxx = loss_log_cosh(x, t, w)
 
-        assert_array_almost_equal(l_ref, l)
-        assert_array_almost_equal(lx_ref, lx)
-        assert_array_almost_equal(lxx_ref, lxx)
+        assert_allclose(l_ref, l)
+        assert_allclose(lx_ref, lx)
+        assert_allclose(lxx_ref, lxx)
 
     def test_loss_sum(self):
         """Test loss_combined summing up two losses."""
@@ -151,9 +151,9 @@ class Test_Losses(unittest.TestCase):
             }),
         ])
 
-        assert_array_almost_equal(l_ref, l)
-        assert_array_almost_equal(lx_ref, lx)
-        assert_array_almost_equal(lxx_ref, lxx)
+        assert_allclose(l_ref, l)
+        assert_allclose(lx_ref, lx)
+        assert_allclose(lxx_ref, lxx)
 
     def test_loss_sum_single_argument(self):
         """Test loss_combined with only a single loss to sum up."""
@@ -175,9 +175,9 @@ class Test_Losses(unittest.TestCase):
             }),
         ])
 
-        assert_array_almost_equal(l_ref, l)
-        assert_array_almost_equal(lx_ref, lx)
-        assert_array_almost_equal(lxx_ref, lxx)
+        assert_allclose(l_ref, l)
+        assert_allclose(lx_ref, lx)
+        assert_allclose(lxx_ref, lxx)
 
     def test_loss_sum_missing_arguments(self):
         """Test loss_combined raises errors on missing arguments."""
@@ -208,9 +208,9 @@ class Test_QuadraticCosts(unittest.TestCase):
             w=np.array([1, 1, 2]),
         )
 
-        assert_array_almost_equal(cost_function.C, np.diag([1, 1, 2]))
-        assert_array_almost_equal(cost_function.c, [-1, -2, -6])
-        assert_array_almost_equal(cost_function.cc, 0.5 + 2 + 9)
+        assert_allclose(cost_function.C, np.diag([1, 1, 2]))
+        assert_allclose(cost_function.c, [-1, -2, -6])
+        assert_allclose(cost_function.cc, 0.5 + 2 + 9)
 
     def test_quadratic_cost_approximation_l2_batched(self):
         """Test quadratic_cost_approximation_l2 on a trajectory."""
@@ -229,17 +229,17 @@ class Test_QuadraticCosts(unittest.TestCase):
             ]),
         )
 
-        assert_array_almost_equal(cost_function.C, [
+        assert_allclose(cost_function.C, [
             np.diag([1, 1, 2]),
             np.diag([1, 1, 2]),
             np.diag([10, 10, 0]),
         ])
-        assert_array_almost_equal(cost_function.c, [
+        assert_allclose(cost_function.c, [
             [2, -2, 0],
             [1, -1, 0],
             [0, 0, 0],
         ])
-        assert_array_almost_equal(cost_function.cc, [4, 1, 0])
+        assert_allclose(cost_function.cc, [4, 1, 0])
 
     def test_quadratic_cost_approximation_l1(self):
         """Test quadratic_cost_approximation_l1 on single timesteps."""
@@ -252,9 +252,9 @@ class Test_QuadraticCosts(unittest.TestCase):
             alpha=1e-2,
         )
 
-        assert_array_almost_equal(cost_function.C, np.diag([0.01 / 1.01**1.5, 20]))
-        assert_array_almost_equal(cost_function.c, [1 / 1.01**0.5 - 0.03 / 1.01**1.5, -40])
-        assert_array_almost_equal(cost_function.cc, 1.01**0.5 - 3 / 1.01**0.5 + 0.045 / 1.01**1.5 + 0.2 + 40)
+        assert_allclose(cost_function.C, np.diag([0.01 / 1.01**1.5, 20]))
+        assert_allclose(cost_function.c, [1 / 1.01**0.5 - 0.03 / 1.01**1.5, -40])
+        assert_allclose(cost_function.cc, 1.01**0.5 - 3 / 1.01**0.5 + 0.045 / 1.01**1.5 + 0.2 + 40)
 
     def test_quadratic_cost_approximation_l1_batched(self):
         """Test quadratic_cost_approximation_l1 on a trajectory."""
@@ -276,12 +276,12 @@ class Test_QuadraticCosts(unittest.TestCase):
             alpha=1e-6,
         )
 
-        assert_array_almost_equal(cost_function.C, np.zeros((2, 2, 2)))
-        assert_array_almost_equal(cost_function.c, [
+        assert_allclose(cost_function.C, np.zeros((2, 2, 2)), atol=1e-6)
+        assert_allclose(cost_function.c, [
             [-1, -2],
             [-10, 0],
-        ])
-        assert_array_almost_equal(cost_function.cc, [3 * 1 - 2 + 2 * 2, 10 * 10])
+        ], atol=1e-6)
+        assert_allclose(cost_function.cc, [3 * 1 - 2 + 2 * 2, 10 * 10], atol=1e-6)
 
     def test_compute_costs(self):
         """Test QuadraticCosts.compute_costs."""
@@ -296,10 +296,10 @@ class Test_QuadraticCosts(unittest.TestCase):
         cost_function = QuadraticCosts.quadratic_cost_approximation_l2(target, weights)
 
         # When targets reached, costs are zero
-        assert_array_almost_equal(cost_function.compute_costs(target), np.zeros(T))
+        assert_allclose(cost_function.compute_costs(target), np.zeros(T))
 
         X = rng.standard_normal((T, dXU))
-        assert_array_almost_equal(cost_function.compute_costs(X), np.sum(weights * (target - X)**2, axis=-1) / 2)
+        assert_allclose(cost_function.compute_costs(X), np.sum(weights * (target - X)**2, axis=-1) / 2)
 
     def test_expected_costs(self):
         """Test QuadraticCosts.expected_costs."""

@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_allclose, assert_array_equal
 
 
 class Test_LinearDynamics(unittest.TestCase):
@@ -35,14 +35,14 @@ class Test_LinearDynamics(unittest.TestCase):
         assert_array_equal(dyn_covar.shape, (T, dX, dX))
 
         # Check some values
-        assert_array_almost_equal(
+        assert_allclose(
             Fm[0, -1], [
                 0.00000000e+00, -9.98390720e+00, -1.29479403e+01, -1.32099334e+00, -1.61173430e+00, -6.70051884e+01, 2.30815914e+01,
                 2.17293139e-01, 0.00000000e+00, 2.69500687e-23, -2.69500687e-23, 0.00000000e+00, -5.39001375e-23, 3.36875859e-24,
                 -1.34750344e-23, 4.56497288e-01, -2.70607228e-01
             ]
         )
-        assert_array_almost_equal(
+        assert_allclose(
             Fm[-1, 0], [
                 4.14986607e-02, -4.61995618e-01, -1.18756810e+00, 3.43210881e-01, 5.92291666e-01, -3.09607786e-01, -4.69028078e-02,
                 -2.30810980e-01, 3.50226060e-03, -1.19272129e-01, 9.78285647e-02, 6.28585341e-01, 4.32602881e-01, -8.24673225e-13,
@@ -74,17 +74,20 @@ class Test_LinearDynamics(unittest.TestCase):
         assert_array_equal(dyn_covar.shape, (T, dX, dX))
 
         # Check some values
-        assert_array_almost_equal(
+        assert_allclose(
             Fm[0, -1], [
                 0.00000000e+00, -1.59097886e-03, -1.55670197e-03, 3.66813669e-03, -5.80934222e-06, 2.65460765e-05, -4.26546524e-06,
                 1.35521681e-01, 0.00000000e+00, 3.62010170e-26, -3.62010170e-26, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
                 1.81005085e-26, -5.38810305e-02, 4.05879352e-02
             ]
         )
-        assert_array_almost_equal(
-            Fm[-1, 0], [
-                -0.01492868, -0.05346967, 0.02899837, 0.00083401, -0.02374431, -0.00567905, 0.00396877, 0.03335041, 0.05123336, 0.03796068,
-                0.04711648, 0.02343822, 0.02809063, 0., -0.01798136, 0.0703149, 0.03685244
-            ]
+        assert_allclose(
+            Fm[-1, 0],
+            [
+                -0.014928676887479259, -0.0534696701687503, 0.02899836537278755, 0.0008340094783329371, -0.02374431115562987,
+                -0.005679050952136661, 0.003968766254604431, 0.033350408132203094, 0.05123335573315034, 0.03796067826102325,
+                0.04711647692994283, 0.02343822112658693, 0.028090633129104786, 0., -0.017981364898149155, 0.07031489952016969,
+                0.0368524392432764
+            ],
         )
         assert_array_equal(dyn_covar, np.swapaxes(dyn_covar, 1, 2), "dyn_covar not symmetric")
