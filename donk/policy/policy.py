@@ -9,7 +9,7 @@ class Policy(ABC):
 
     @abstractmethod
     def act(self, x, t: int = None, noise=None):
-        """Decides an action for the given state at the current timestep.
+        """Decide an action for the given state at the current timestep.
 
         For time-varying policies `t` is required.
 
