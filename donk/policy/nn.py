@@ -11,11 +11,12 @@ from donk.policy.policy import Policy
 class Neural_Network_Policy(Policy):
     """Neural network state-action mapping policy."""
 
-    def __init__(self, model):
+    def __init__(self, model, normalize_states=True):
         """Initialize this policy.
 
         Args:
             model: A `tf.keras.Model`
+            normalize_states: Adds a `Normalization` layer directly after the input of the model.
 
         """
         # Extract dimensions
@@ -23,13 +24,17 @@ class Neural_Network_Policy(Policy):
         self.dU = model.output.shape[-1]
 
         # Add state normalization to model
-        self.state_normalization = layers.Normalization(name="normalized_state")
+        if normalize_states:
+            self.state_normalization = layers.Normalization(name="normalized_state")
 
-        state = tf.keras.Input((self.dX, ), name="state")
-        normalized_state = self.state_normalization(state)
-        action = model(normalized_state)
+            state = tf.keras.Input((self.dX, ), name="state")
+            normalized_state = self.state_normalization(state)
+            action = model(normalized_state)
 
-        self.model = tf.keras.Model(inputs=state, outputs=action)
+            self.model = tf.keras.Model(inputs=state, outputs=action)
+        else:
+            self.state_normalization = None
+            self.model = model
 
         # Add metrics to model
         self.model.metric_loss_kl = tf.keras.metrics.Mean('train/loss_kl')
@@ -56,7 +61,8 @@ class Neural_Network_Policy(Policy):
         N_train, _ = X_train.shape
 
         # Normalize states
-        self.state_normalization.adapt(X_train)
+        if self.state_normalization is not None:
+            self.state_normalization.adapt(X_train)
 
         # Normalize precision
         prc_scale = np.einsum("ijj->", prc_train) / N_train / self.dU
@@ -130,7 +136,10 @@ class Neural_Network_Policy(Policy):
                     tf.summary.scalar(metric.name, metric.result(), step=epoch)
 
                 # Update progress bar
-                pbar.set_description("Train loss: %.6f" % (self.model.metric_loss.result()))
+                pbar.set_description(
+                    f"Train loss: {self.model.metric_loss.result():.6f}" +
+                    (f" Val loss: {self.model.metric_loss_val.result():.6f}" if X_val is not None else "")
+                )
 
     def act(self, x, t: int = None, noise=None):
         """Decide an action for the given state(s).
