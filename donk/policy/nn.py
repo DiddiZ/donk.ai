@@ -157,7 +157,7 @@ class Neural_Network_Policy(Policy):
         u = self.model(x.reshape(-1, self.dX).astype(np.float32, copy=False), training=False).numpy()
         return u.reshape(x.shape[:-1] + (self.dU, ))
 
-    def linearize(self, X):
+    def linearize(self, X, regularization: float = 1e-6):
         """Compute linearization of this policy.
 
         Args:
@@ -186,7 +186,7 @@ class Neural_Network_Policy(Policy):
         # Consutruct policy object
         K = du_dx.numpy()
         k = U_mean.numpy() - np.einsum("tux,tx->tu", K, np.mean(X, axis=0))
-        pol_covar = tfp.stats.covariance(U).numpy()  # Use sample covariance
+        pol_covar = tfp.stats.covariance(U).numpy() + np.eye(self.dU) * regularization  # Use sample covariance
 
         pol_lin = LinearGaussianPolicy(K, k, pol_covar)
         return pol_lin
