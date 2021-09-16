@@ -1,3 +1,5 @@
+import numpy as np
+
 from donk.policy.policy import Policy
 from donk.utils.batched import batched_cholesky, batched_inv_spd
 
@@ -47,16 +49,23 @@ class LinearGaussianPolicy(Policy):
         Samples action from the Gaussian distributing given by u ~ N(K_t * x + k_t, pol_covar_t).
 
         Args:
-            x: (dX,) Current state
-            t: Current timestep, required
-            noise: (dU,) Action noise
+            x: (..., dX) or (..., T, dX) Current state
+            t: Current timestep, required unless the a state for each timestep is supplied
+            noise: (..., dU,) Action noise
 
         Returns:
-            u: (dU,) Selected action
+            u: (..., dU,) Selected action
         """
-        u = self.K[t] @ x + self.k[t]
-        if noise is not None:
-            u += self.chol_pol_covar[t] @ noise
+        if t is not None:
+            u = self.K[t] @ x + self.k[t]
+            if noise is not None:
+                u += self.chol_pol_covar[t] @ noise
+        else:
+            if x.shape[-2:] != (self.T, self.dX):
+                raise ValueError(f"x must have shape (..., {self.T}, {self.dX}), not {x.shape}")
+            if noise is not None:
+                raise NotImplementedError("Noise not supported yet")
+            u = np.einsum("tux,...tx->...tu", self.K, x) + self.k
         return u
 
     def __str__(self) -> str:
