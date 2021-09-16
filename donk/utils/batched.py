@@ -41,7 +41,7 @@ def batched_cholesky(a):
         Batch of lower triangular matrices.
 
     """
-    T, dX, _ = a.shape
+    T, _, _ = a.shape
     a_chol = np.empty_like(a)
 
     for t in range(T):
@@ -82,3 +82,24 @@ def trace_of_product(A, B):
         trace: Trace of stack of traces
     """
     return np.einsum("...ij,...ji->...", A, B)
+
+
+def batched_multivariate_normal(mean, covar, N: int, rng):
+    """Draw `N` samples from `T` multivariate normal distributions each.
+
+    Args:
+        mean: (T, dX)
+        covar: (T, dX, dX)
+        N: Number of samples
+        rng: Random number generator
+
+    Returns:
+        X: (N, T, dX) Radnom samples
+    """
+    T, dX = mean.shape
+
+    X = np.empty((N, T, dX))
+    for t in range(T):
+        X[:, t] = rng.multivariate_normal(mean[t], covar[t], N)
+
+    return X
