@@ -70,17 +70,21 @@ class Neural_Network_Policy(Policy):
         prc_val = prc_val / prc_scale
 
         # Build dataset
-        dataset = tf.data.Dataset.from_tensor_slices((
-            X_train,
-            U_train,
-            prc_train,
-        )).shuffle(N_train).batch(batch_size)
+        dataset = tf.data.Dataset.from_tensor_slices(
+            (
+                X_train.astype(np.float32, copy=False),
+                U_train.astype(np.float32, copy=False),
+                prc_train.astype(np.float32, copy=False),
+            )
+        ).shuffle(N_train).batch(batch_size)
         if X_val is not None:
-            dataset_test = tf.data.Dataset.from_tensor_slices((
-                X_val,
-                U_val,
-                prc_val,
-            )).batch(256)
+            dataset_test = tf.data.Dataset.from_tensor_slices(
+                (
+                    X_val.astype(np.float32, copy=False),
+                    U_val.astype(np.float32, copy=False),
+                    prc_val.astype(np.float32, copy=False),
+                )
+            ).batch(256)
 
         @tf.function
         def train_step(model, opt, state, action, precision):
