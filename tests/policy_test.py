@@ -30,9 +30,9 @@ class Test_LinearGaussianPolicy(unittest.TestCase):
 
         assert_allclose(K, pol.K)
         assert_allclose(k, pol.k)
-        assert_allclose(pol_covar, pol.pol_covar)
-        assert_allclose(chol_pol_covar, pol.chol_pol_covar)
-        assert_allclose(inv_pol_covar, pol.inv_pol_covar)
+        assert_allclose(pol_covar, pol.covar)
+        assert_allclose(chol_pol_covar, pol.chol_covar)
+        assert_allclose(inv_pol_covar, pol.inv_covar)
 
     def test_init_from_inv_pol_covar(self):
         """Test __init__ using inv_pol_covar."""
@@ -52,13 +52,13 @@ class Test_LinearGaussianPolicy(unittest.TestCase):
             chol_pol_covar[t] = np.linalg.cholesky(pol_covar[t])
             inv_pol_covar[t] = np.linalg.inv(pol_covar[t])
 
-        pol = LinearGaussianPolicy(K, k, inv_pol_covar=inv_pol_covar)
+        pol = LinearGaussianPolicy(K, k, inv_covar=inv_pol_covar)
 
         assert_allclose(K, pol.K)
         assert_allclose(k, pol.k)
-        assert_allclose(pol_covar, pol.pol_covar)
-        assert_allclose(chol_pol_covar, pol.chol_pol_covar)
-        assert_allclose(inv_pol_covar, pol.inv_pol_covar)
+        assert_allclose(pol_covar, pol.covar)
+        assert_allclose(chol_pol_covar, pol.chol_covar)
+        assert_allclose(inv_pol_covar, pol.inv_covar)
 
     def test_act(self):
         """Check act producing proper distribution."""
@@ -116,6 +116,6 @@ class Test_Initial_Policies(unittest.TestCase):
             with self.subTest(t=t):
                 assert_allclose(pol.K[t], np.zeros((dU, dX)))
                 assert_allclose(pol.k[t], [1, 2])
-                assert_allclose(pol.pol_covar[t], [[0.5, 0], [0, 0.25]])
-                assert_allclose(pol.chol_pol_covar[t], np.sqrt([[0.5, 0], [0, 0.25]]))
-                assert_allclose(pol.inv_pol_covar[t], [[2, 0], [0, 4]])
+                assert_allclose(pol.covar[t], [[0.5, 0], [0, 0.25]])
+                assert_allclose(pol.chol_covar[t], np.sqrt([[0.5, 0], [0, 0.25]]))
+                assert_allclose(pol.inv_covar[t], [[2, 0], [0, 4]])

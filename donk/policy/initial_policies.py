@@ -18,6 +18,6 @@ def constant_policy(T: int, dX: int, u, variance) -> LinearGaussianPolicy:
     return LinearGaussianPolicy(
         K=np.zeros((T, dU, dX)),
         k=np.tile(u, (T, 1)),
-        pol_covar=np.tile(np.diag(variance), (T, 1, 1)),
-        inv_pol_covar=np.tile(np.diag(1 / variance), (T, 1, 1)),
+        covar=np.tile(np.diag(variance), (T, 1, 1)),
+        inv_covar=np.tile(np.diag(1 / variance), (T, 1, 1)),
     )

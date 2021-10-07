@@ -4,13 +4,14 @@ import numpy as np
 
 from donk.dynamics import DynamicsModel
 from donk.dynamics.prior import DynamicsPrior
-from donk.utils.batched import batched_cholesky, regularize, symmetrize
+from donk.models import TimeVaryingLinearGaussian
+from donk.utils.batched import regularize, symmetrize
 
 
-class LinearDynamics(DynamicsModel):
+class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
     """Stochastic linear dynamics model."""
 
-    def __init__(self, Fm, fv, dyn_covar):
+    def __init__(self, F: np.ndarray, f: np.ndarray, covar: np.ndarray):
         """Initialize this LinearDynamics object.
 
         Args:
@@ -19,18 +20,12 @@ class LinearDynamics(DynamicsModel):
             dyn_covar: (T, dX, dX), Covariances
 
         """
-        self.T, self.dX = fv.shape
-        self.dU = Fm.shape[2] - self.dX
+        TimeVaryingLinearGaussian.__init__(self, F, f, covar)
+        _, self.dX = f.shape
+        self.dU = F.shape[2] - self.dX
 
-        # Check shapes
-        assert Fm.shape == (self.T, self.dX, self.dX + self.dU), f"{Fm.shape} != {(self.T, self.dX, self.dX + self.dU)}"
-        assert fv.shape == (self.T, self.dX), f"{fv.shape} != {(self.T, self.dX)}"
-        assert dyn_covar.shape == (self.T, self.dX, self.dX), f"{dyn_covar.shape} != {(self.T, self.dX, self.dX)}"
-
-        self.Fm = Fm
-        self.fv = fv
-        self.dyn_covar = dyn_covar
-        self.chol_dyn_covar = None
+    F = TimeVaryingLinearGaussian.coefficients
+    f = TimeVaryingLinearGaussian.intercept
 
     def predict(self, x, u, t: int, noise=None):
         """Predict the next state.
@@ -46,12 +41,7 @@ class LinearDynamics(DynamicsModel):
         Returns:
             x: (dX,) Next state
         """
-        next_x = self.Fm[t, :, :self.dX] @ x + self.Fm[t, :, self.dX:] @ u + self.fv[t]
-        if noise is not None:  # Add noise
-            if self.chol_dyn_covar is None:  # Compute Cholesky decompositions if required
-                self.chol_dyn_covar = batched_cholesky(self.dyn_covar)
-            next_x += self.chol_dyn_covar[t] @ noise
-        return next_x
+        return TimeVaryingLinearGaussian.predict(self, np.concatenate([x, u], axis=-1), t, noise)
 
     def __str__(self) -> str:
         return f"LinearDynamics[T={self.T}, dX={self.dX}, dU={self.dU}]"

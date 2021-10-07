@@ -83,13 +83,13 @@ def backward(dynamics: LinearDynamics, C, c, gamma=1) -> LinearGaussianPolicy:
     v = c[T, :dX]
 
     # For convenicence
-    Fm, fv = dynamics.Fm, dynamics.fv
+    F, f = dynamics.F, dynamics.f
 
     # Compute state-action-state function at each time step.
     for t in reversed(range(T)):
         # Compute Q function.
-        Q = C[t] + gamma * Fm[t].T @ V @ Fm[t]
-        q = c[t] + gamma * Fm[t].T @ (V @ fv[t] + v)
+        Q = C[t] + gamma * F[t].T @ V @ F[t]
+        q = c[t] + gamma * F[t].T @ (V @ f[t] + v)
         symmetrize(Q)
 
         # Compute inverse of Q function action component (as it's required explicitely anyway).
@@ -145,8 +145,8 @@ def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_
     traj_covar[T] = 0
 
     # For convenicence
-    Fm, fv, dyn_covar = dynamics.Fm, dynamics.fv, dynamics.dyn_covar
-    K, k, pol_covar = policy.K, policy.k, policy.pol_covar
+    F, f, dyn_covar = dynamics.F, dynamics.f, dynamics.covar
+    K, k, pol_covar = policy.K, policy.k, policy.covar
 
     for t in range(T):
         # u_t = K_t*x_t + k_t
@@ -157,9 +157,9 @@ def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_
         traj_covar[t, dX:, dX:] = traj_covar[t, dX:, :dX] @ K[t].T + pol_covar[t]
 
         # x_t+1 = Fm_t*[x_t;u_t] + fv_t
-        traj_mean[t + 1, :dX] = Fm[t] @ traj_mean[t] + fv[t]
+        traj_mean[t + 1, :dX] = F[t] @ traj_mean[t] + f[t]
         # TODO Formula
-        traj_covar[t + 1, :dX, :dX] = Fm[t] @ traj_covar[t] @ Fm[t].T + dyn_covar[t]
+        traj_covar[t + 1, :dX, :dX] = F[t] @ traj_covar[t] @ F[t].T + dyn_covar[t]
 
         symmetrize(traj_covar[t])
         regularize(traj_covar[t], regularization)
@@ -186,7 +186,7 @@ def extended_costs_kl(prev_pol: LinearGaussianPolicy):
     c = np.empty((T, dX + dU))
 
     # For convenicence
-    K, k, inv_pol_covar = prev_pol.K, prev_pol.k, prev_pol.inv_pol_covar
+    K, k, inv_pol_covar = prev_pol.K, prev_pol.k, prev_pol.inv_covar
 
     for t in range(T):
         C[t, :dX, :dX] = K[t].T @ inv_pol_covar[t] @ K[t]
@@ -220,13 +220,13 @@ def kl_divergence_action(X, pol: LinearGaussianPolicy, prev_pol: LinearGaussianP
         delta_u = (prev_pol.K[t] - pol.K[t]) @ X[t] + prev_pol.k[t] - pol.k[t]
         kl_div += 0.5 * (
             # tr(sigma_1^-1 * sigma_0)
-            trace_of_product(prev_pol.inv_pol_covar[t], pol.pol_covar[t]) +
+            trace_of_product(prev_pol.inv_covar[t], pol.covar[t]) +
             # (mu_1 - mu_0)^T * sigma_1^-1 * (mu_1 - mu_0)
-            delta_u.T @ prev_pol.inv_pol_covar[t] @ delta_u +
+            delta_u.T @ prev_pol.inv_covar[t] @ delta_u +
             # -k
             -dU +
             # log(det(sigma_1) / det(sigma_0))
-            2 * sum(np.log(np.diag(prev_pol.chol_pol_covar[t])) - np.log(np.diag(pol.chol_pol_covar[t])))
+            2 * sum(np.log(np.diag(prev_pol.chol_covar[t])) - np.log(np.diag(pol.chol_covar[t])))
         )
 
     return kl_div / T

@@ -3,7 +3,7 @@ import numpy as np
 from scipy.linalg import solve_triangular
 
 
-def batched_inv_spd(a_chol):
+def batched_inv_spd(a_chol) -> np.ndarray:
     """Computes inverse of a batch of s.p.d. matrices from their cholesky decomposition.
 
     Exploits s.p.d.-ness for faster inverse.
@@ -31,7 +31,7 @@ def batched_inv_spd(a_chol):
     return a_inv
 
 
-def batched_cholesky(a):
+def batched_cholesky(a) -> np.ndarray:
     """Computes cholesky decomposition of a batch of s.p.d. matrices.
 
     Args:
@@ -49,7 +49,7 @@ def batched_cholesky(a):
     return a_chol
 
 
-def symmetrize(A):
+def symmetrize(A: np.ndarray) -> np.ndarray:
     """Symmetrizes a matrix or a batch of matrices to eliminate numerical errors.
 
     Modifies the given matrix in-place.
@@ -59,7 +59,7 @@ def symmetrize(A):
     return A
 
 
-def regularize(A, regularization):
+def regularize(A: np.ndarray, regularization) -> np.ndarray:
     """Regularizes a matrix or a batch of matrices by adding a constant to the diagonal.
 
     Modifies the given matrix in-place.
@@ -69,7 +69,7 @@ def regularize(A, regularization):
     return A
 
 
-def trace_of_product(A, B):
+def trace_of_product(A, B) -> np.ndarray:
     """Compute the trace of a matrix product Tr(A @ B).
 
     This is an O(n²) operation, as it avoids to compute the actial matrix product.
@@ -84,7 +84,7 @@ def trace_of_product(A, B):
     return np.einsum("...ij,...ji->...", A, B)
 
 
-def batched_multivariate_normal(mean, covar, N: int, rng):
+def batched_multivariate_normal(mean, covar, N: int, rng) -> np.ndarray:
     """Draw `N` samples from `T` multivariate normal distributions each.
 
     Args:
