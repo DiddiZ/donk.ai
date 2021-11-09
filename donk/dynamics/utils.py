@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def to_transitions(X, U):
+def to_transitions(X: np.ndarray, U: np.ndarray) -> np.ndarray:
     """Convert state-action sequences to state-action-state tuples.
 
     Args:

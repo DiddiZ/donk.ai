@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 from donk.utils import trace_of_product
@@ -9,7 +11,7 @@ class QuadraticCosts():
     cost(x, u) = 1/2 [x u]^T*C*[x u] + [x u]^T*c + cc
     """
 
-    def __init__(self, C, c, cc):
+    def __init__(self, C: np.ndarray, c: np.ndarray, cc: np.ndarray):
         """Initialize this LinearDynamics object.
 
         Args:
@@ -30,23 +32,23 @@ class QuadraticCosts():
         self.c = c
         self.cc = cc
 
-    def __add__(self, other):
+    def __add__(self, other) -> QuadraticCosts:
         """Sum two cost functions."""
         if isinstance(other, QuadraticCosts):
             return QuadraticCosts(self.C + other.C, self.c + other.c, self.cc + other.cc)
         return NotImplemented
 
-    def __mul__(self, other):
+    def __mul__(self, other) -> QuadraticCosts:
         """Scale cost function with  vonstant scalar."""
         if np.isscalar(other):
             return QuadraticCosts(self.C * other, self.c * other, self.cc * other)
         return NotImplemented
 
-    def __rmul__(self, other):
+    def __rmul__(self, other) -> QuadraticCosts:
         """Scale cost function with  vonstant scalar."""
         return self.__mul__(other)
 
-    def compute_costs(self, traj):
+    def compute_costs(self, traj: np.ndarray) -> np.ndarray:
         """Evaluate costs for trajectories.
 
         Args:
@@ -68,7 +70,7 @@ class QuadraticCosts():
         )
         return costs
 
-    def expected_costs(self, traj_mean, traj_covar):
+    def expected_costs(self, traj_mean: np.ndarray, traj_covar: np.ndarray) -> np.ndarray:
         """Compute estimated costs for trajectory distribution under quadratic cost approximation.
 
         1/2 * (Tr(C Sigma) + mu^t C mu) + mu^T c + cc
@@ -84,7 +86,7 @@ class QuadraticCosts():
         return expectation
 
     @staticmethod
-    def quadratic_cost_approximation_l2(t, w):
+    def quadratic_cost_approximation_l2(t: np.ndarray, w: np.ndarray) -> QuadraticCosts:
         """Constructs a quadratic cost function for a non-equilibrium L2 loss.
 
         L(xu) = sum_i w_i*(t_i-xu_i)**2
@@ -104,7 +106,7 @@ class QuadraticCosts():
         return QuadraticCosts(C, c, cc)
 
     @staticmethod
-    def quadratic_cost_approximation_l1(xu, t, w, alpha: float):
+    def quadratic_cost_approximation_l1(xu: np.ndarray, t: np.ndarray, w: np.ndarray, alpha: float) -> QuadraticCosts:
         """Constructs a quadratic cost function approximation for a non-equilibrium L1 loss.
 
         L(xu) = sum_i w_i*sqrt((t_i-xu_i)**2 + alpha)

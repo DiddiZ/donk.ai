@@ -15,7 +15,7 @@ class TransitionPool:
         self._XUX = None
         self.capacity = capacity
 
-    def add(self, X, U) -> None:
+    def add(self, X: np.ndarray, U: np.ndarray) -> None:
         """Add state-action sequences to the pool.
 
         Args:

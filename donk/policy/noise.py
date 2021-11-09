@@ -2,7 +2,7 @@ import numpy as np
 from scipy.ndimage import gaussian_filter1d
 
 
-def smooth_noise(noise, kernel_std):
+def smooth_noise(noise: np.ndarray, kernel_std: float) -> np.ndarray:
     """Apply a Gaussian filter to smooth noise.
 
     Maintains mean and variance of input.
