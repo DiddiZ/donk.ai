@@ -1,5 +1,5 @@
-from donk.samples.pool import TransitionsPool
+from donk.samples.pool import TransitionPool
 
 __all__ = [
-    'TransitionsPool',
+    'TransitionPool',
 ]

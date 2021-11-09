@@ -3,11 +3,11 @@ import numpy as np
 from donk.dynamics import to_transitions
 
 
-class TransitionsPool:
+class TransitionPool:
     """Stores transition tuples."""
 
     def __init__(self, capacity: int = None) -> None:
-        """Init this TransitionsPool.
+        """Init this TransitionPool.
 
         Args:
             capacity: Site limit of this pool. Oldest transitions will be discarted first. `None` means no limit.

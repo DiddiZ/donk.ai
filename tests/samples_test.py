@@ -4,18 +4,18 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 
-class Test_TransitionsPool(unittest.TestCase):
+class Test_TransitionPool(unittest.TestCase):
 
     def test_add(self):
-        """Test TransitionsPool.add()."""
-        from donk.samples import TransitionsPool
+        """Test TransitionPool.add()."""
+        from donk.samples import TransitionPool
 
         N, T, dX, dU = 3, 10, 5, 3
         rng = np.random.default_rng(0)
 
         X = rng.standard_normal((N, T + 1, dX))
         U = rng.standard_normal((N, T, dU))
-        pool = TransitionsPool()
+        pool = TransitionPool()
         pool.add(X, U)
 
         # Retrieve all
