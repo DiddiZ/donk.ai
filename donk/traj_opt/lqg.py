@@ -4,12 +4,16 @@ import numpy as np
 from scipy import optimize
 from scipy.linalg import solve
 
+from donk.costs import QuadraticCosts
 from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
 from donk.utils import regularize, symmetrize, trace_of_product
 
 
-def ilqg(dynamics: LinearDynamics, prev_pol: LinearGaussianPolicy, x0_mean, x0_covar, C, c, kl_step: float):
+def ilqg(
+    dynamics: LinearDynamics, prev_pol: LinearGaussianPolicy, costs: QuadraticCosts, x0_mean: np.ndarray, x0_covar: np.ndarray,
+    kl_step: float
+):
     """Perform iLQG trajectory optimization
 
     Args:
@@ -34,9 +38,9 @@ def ilqg(dynamics: LinearDynamics, prev_pol: LinearGaussianPolicy, x0_mean, x0_c
 
     @lru_cache(maxsize=None)  # Cache computation results
     def _iteration(eta):
-        C_ext = C * (1 - eta)
+        C_ext = costs.C * (1 - eta)
         C_ext[:-1] += C_kl * eta
-        c_ext = c * (1 - eta)
+        c_ext = costs.c * (1 - eta)
         c_ext[:-1] += c_kl * eta
         pol = backward(dynamics, C_ext, c_ext)
         traj_mean, traj_covar = forward(dynamics, pol, x0_mean, x0_covar)
