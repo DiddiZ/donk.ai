@@ -71,7 +71,7 @@ class ILQR:
 
         return ILQRStepResult(eta, pol, kl_div, expected_costs, traj_mean, traj_covar)
 
-    def sample_surface(self, min_eta: float = 1e-6, max_eta: float = 1e16, N: int = 100) -> list[ILQRStepResult]:
+    def sample_surface(self, min_eta: float = 1e-6, max_eta: float = 1e16, N: int = 100):
         """Sample the Lagrangian at different values for eta.
 
         For visualization/debugging purposes.
