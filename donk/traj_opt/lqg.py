@@ -7,6 +7,8 @@ from scipy.linalg import solve
 from donk.costs import QuadraticCosts
 from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
+from donk.samples import StateDistribution
+from donk.traj_opt.traj_dist import TrajectoryDistribution
 from donk.utils import regularize, symmetrize, trace_of_product
 
 
@@ -16,8 +18,7 @@ class ILQRStepResult:
     policy: LinearGaussianPolicy
     kl_div: float
     expected_costs: float
-    traj_mean: np.ndarray
-    traj_covar: np.ndarray
+    trajectory: TrajectoryDistribution
 
 
 class ILQR:
@@ -28,23 +29,20 @@ class ILQR:
         dynamics: LinearDynamics,
         prev_pol: LinearGaussianPolicy,
         costs: QuadraticCosts,
-        x0_mean: np.ndarray,
-        x0_covar: np.ndarray,
+        initial_state: StateDistribution,
     ) -> None:
         """Initialize this object.
 
         Args:
             dynamics: Time-varying linear Gaussian dynamics model
             prev_pol: Policy to contrain the new policy to
-            x0_mean: (dX, ) initial state distribution mean
-            x0_covar: (dX, dX) initial state distribution covariance
+            initial_state: initial state distribution mean
             costs: (T, dX+dU, dX+dU): Quadratic cost function
         """
         self.dynamics = dynamics
         self.prev_pol = prev_pol
         self.costs = costs
-        self.x0_mean = x0_mean
-        self.x0_covar = x0_covar
+        self.initial_state = initial_state
 
         # Compute extended costs
         self.C_kl, self.c_kl = extended_costs_kl(prev_pol)
@@ -65,11 +63,11 @@ class ILQR:
         pol = backward(self.dynamics, C_ext, c_ext)
 
         # Compute KL-divergence and expected costs of the new policy
-        traj_mean, traj_covar = forward(self.dynamics, pol, self.x0_mean, self.x0_covar)
-        kl_div = kl_divergence_action(traj_mean[:, :self.dynamics.dX], pol, self.prev_pol)
-        expected_costs = np.sum(self.costs.expected_costs(traj_mean, traj_covar))
+        traj = forward(self.dynamics, pol, self.initial_state)
+        kl_div = kl_divergence_action(traj.X_mean, pol, self.prev_pol)
+        expected_costs = np.sum(self.costs.expected_costs(traj.mean, traj.covar))
 
-        return ILQRStepResult(eta, pol, kl_div, expected_costs, traj_mean, traj_covar)
+        return ILQRStepResult(eta, pol, kl_div, expected_costs, traj)
 
     def sample_surface(self, min_eta: float = 1e-6, max_eta: float = 1e16, N: int = 100):
         """Sample the Lagrangian at different values for eta.
@@ -172,7 +170,12 @@ def backward(dynamics: LinearDynamics, C, c, gamma=1) -> LinearGaussianPolicy:
     return LinearGaussianPolicy(K, k, pol_covar, inv_pol_covar)
 
 
-def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_0_covar, regularization=1e-6):
+def forward(
+    dynamics: LinearDynamics,
+    policy: LinearGaussianPolicy,
+    initial_state: StateDistribution,
+    regularization=1e-6,
+) -> TrajectoryDistribution:
     """Perform LQR forward pass.
 
     Computes state-action marginals from dynamics and policy.
@@ -196,8 +199,8 @@ def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_
     traj_covar = np.empty((T + 1, dX + dU, dX + dU))
 
     # Set initial state dist
-    traj_mean[0, :dX] = X_0_mean
-    traj_covar[0, :dX, :dX] = X_0_covar
+    traj_mean[0, :dX] = initial_state.mean
+    traj_covar[0, :dX, :dX] = initial_state.covar
 
     # Set action part for final state
     traj_mean[T, dX:] = 0
@@ -226,7 +229,7 @@ def forward(dynamics: LinearDynamics, policy: LinearGaussianPolicy, X_0_mean, X_
     # Symmetrize state distribution of final state
     symmetrize(traj_covar[T, :dX, :dX])
 
-    return traj_mean, traj_covar
+    return TrajectoryDistribution(traj_mean, traj_covar, dX, dU)
 
 
 def extended_costs_kl(prev_pol: LinearGaussianPolicy):
