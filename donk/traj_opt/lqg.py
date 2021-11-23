@@ -1,4 +1,4 @@
-from functools import lru_cache
+from dataclasses import dataclass
 
 import numpy as np
 from scipy import optimize
@@ -10,52 +10,107 @@ from donk.policy import LinearGaussianPolicy
 from donk.utils import regularize, symmetrize, trace_of_product
 
 
-def ilqg(
-    dynamics: LinearDynamics, prev_pol: LinearGaussianPolicy, costs: QuadraticCosts, x0_mean: np.ndarray, x0_covar: np.ndarray,
-    kl_step: float
-):
-    """Perform iLQG trajectory optimization
+@dataclass
+class ILQRStepResult:
+    eta: float
+    policy: LinearGaussianPolicy
+    kl_div: float
+    expected_costs: float
+    traj_mean: np.ndarray
+    traj_covar: np.ndarray
 
-    Args:
-        dynamics: Time-varying linear Gaussian dynamics model
-        prev_pol: Policy to contrain the new policy to
-        x0_mean: (dX, ) initial state distribution mean
-        x0_covar: (dX, dX) initial state distribution covariance
-        C: (T, dX+dU, dX+dU): Quadratic part of cost function
-        c: (T, dX+dU): Linear part of cost function
-        kl_step: KL divergence threshold to previous policy
 
-    Returns:
-        pol: Optimized policy
-        kl_div: KL divergence from new to previous policy
-        traj_mean: Mean of new trajectory distribution
-        traj_covar: Covariance of new trajectory distribution
-    """
-    dX = dynamics.dX
+class ILQR:
+    """iLQG trajectory optimization."""
 
-    # Compute extended costs
-    C_kl, c_kl = extended_costs_kl(prev_pol)
+    def __init__(
+        self,
+        dynamics: LinearDynamics,
+        prev_pol: LinearGaussianPolicy,
+        costs: QuadraticCosts,
+        x0_mean: np.ndarray,
+        x0_covar: np.ndarray,
+    ) -> None:
+        """Initialize this object.
 
-    @lru_cache(maxsize=None)  # Cache computation results
-    def _iteration(eta):
-        C_ext = costs.C * (1 - eta)
-        C_ext[:-1] += C_kl * eta
-        c_ext = costs.c * (1 - eta)
-        c_ext[:-1] += c_kl * eta
-        pol = backward(dynamics, C_ext, c_ext)
-        traj_mean, traj_covar = forward(dynamics, pol, x0_mean, x0_covar)
-        kl_div = kl_divergence_action(traj_mean[:, :dX], pol, prev_pol)
+        Args:
+            dynamics: Time-varying linear Gaussian dynamics model
+            prev_pol: Policy to contrain the new policy to
+            x0_mean: (dX, ) initial state distribution mean
+            x0_covar: (dX, dX) initial state distribution covariance
+            costs: (T, dX+dU, dX+dU): Quadratic cost function
+        """
+        self.dynamics = dynamics
+        self.prev_pol = prev_pol
+        self.costs = costs
+        self.x0_mean = x0_mean
+        self.x0_covar = x0_covar
 
-        return pol, kl_div, traj_mean, traj_covar
+        # Compute extended costs
+        self.C_kl, self.c_kl = extended_costs_kl(prev_pol)
 
-    if _iteration(0)[1] < kl_step:
-        # Kl divergence is already below threshold
-        eta = 0
-    else:
-        # Find point where kl divergence equals threshold
-        eta = optimize.brentq(lambda eta: _iteration(eta)[1] - kl_step, 0, 1, rtol=0.01)
+    def step(self, eta) -> ILQRStepResult:
+        """Perfrom the unconstrained optimization under the given Lagrange multiplier.
 
-    return _iteration(eta)
+        Args:
+            eta: Lagrange multiplier
+        """
+        # Compute extended costs for the given Lagrangian multiplier
+        C_ext = self.costs.C / eta
+        C_ext[:-1] += self.C_kl
+        c_ext = self.costs.c / eta
+        c_ext[:-1] += self.c_kl
+
+        # Perform unconstrained trajectory optimization under the extended costs
+        pol = backward(self.dynamics, C_ext, c_ext)
+
+        # Compute KL-divergence and expected costs of the new policy
+        traj_mean, traj_covar = forward(self.dynamics, pol, self.x0_mean, self.x0_covar)
+        kl_div = kl_divergence_action(traj_mean[:, :self.dynamics.dX], pol, self.prev_pol)
+        expected_costs = np.sum(self.costs.expected_costs(traj_mean, traj_covar))
+
+        return ILQRStepResult(eta, pol, kl_div, expected_costs, traj_mean, traj_covar)
+
+    def sample_surface(self, min_eta: float = 1e-6, max_eta: float = 1e16, N: int = 100) -> list[ILQRStepResult]:
+        """Sample the Lagrangian at different values for eta.
+
+        For visualization/debugging purposes.
+
+        Args:
+            min_eta: Minimal value of the Lagrangian multiplier
+            max_eta: Maximal value of the Lagrangian multiplier
+            N: Number of samples. Samples are equally distanced in log space to base 10.
+        """
+        results = [self.step(eta) for eta in np.logspace(np.log10(min_eta), np.log10(max_eta), num=N)]
+        return results
+
+    def optimize(self, kl_step: float, min_eta: float = 1e-6, max_eta: float = 1e16, rtol: float = 1e-2, full_history: bool = False):
+        """Perform iLQG trajectory optimization.
+
+        Args:
+            kl_step: KL divergence threshold to previous policy
+            min_eta: Minimal value of the Lagrangian multiplier
+            max_eta: Maximal value of the Lagrangian multiplier
+            rtol: Tolerance of found solution to kl_step. Levine et al. propose a value of 0.1 in "Learning Neural Network Policies with
+                  Guided Policy Search under Unknown Dynamics", chapter 3.1
+            full_history: Whether to return ahistory of all optimization steps, for debug purposes
+
+        Returns:
+            result: A `ILQRStepResult` or
+                    a list of `ILQRStepResult` if `full_history` is enabled (in order they were visited)
+        """
+        results = [self.step(min_eta)]
+        if results[0].kl_div > kl_step:
+            # Find the point where kl divergence equals the kl_step
+            def constraint_violation(log_eta):
+                results.append(self.step(np.exp(log_eta)))
+                return results[-1].kl_div - kl_step
+
+            # Search root of the constraint violation
+            # Perform search in log-space, as this requires much fewer iterations
+            optimize.brentq(constraint_violation, np.log(min_eta), np.log(max_eta), rtol=rtol)
+
+        return results if full_history else results[-1]
 
 
 def backward(dynamics: LinearDynamics, C, c, gamma=1) -> LinearGaussianPolicy:
