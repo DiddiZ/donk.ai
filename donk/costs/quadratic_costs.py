@@ -5,7 +5,7 @@ import numpy as np
 from donk.utils import trace_of_product
 
 
-class QuadraticCosts():
+class QuadraticCosts:
     """Quadratic cost function.
 
     cost(x, u) = 1/2 [x u]^T*C*[x u] + [x u]^T*c + cc

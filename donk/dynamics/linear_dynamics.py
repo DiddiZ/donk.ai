@@ -92,7 +92,7 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
                 X=np.concatenate([X[:, :-1], U], axis=-1).reshape(-1, self.dX + self.dU),
                 Y=X[:, 1:].reshape(-1, self.dX),
                 xlabel="$xu_t$",
-                ylabel="$x_{t+1}$"
+                ylabel="$x_{t+1}$",
             )
             vis.visualize_predictor_target_scatter(
                 output_dir / "state_correlation_scatter.png", X=np.concatenate([X[:, :-1], U], axis=-1), Y=X[:, 1:]
@@ -107,7 +107,7 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
                 ("coefficients_variance", np.var(self.Fm, axis=0).mean()),
                 ("prediction_error", np.mean((prediction - X_test[:, 1:])**2)),
             ],
-            columns=['metric', 'score']
+            columns=["metric", "score"],
         )
         if output_dir is not None:
             statistics.to_csv(output_dir / "statistics.csv", index=False)

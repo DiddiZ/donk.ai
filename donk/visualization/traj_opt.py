@@ -19,10 +19,10 @@ def visualize_iLQR(output_file, results, kl_step: float, opt_result=None, cost_c
         1,
         where=results["kl_div"] <= kl_step,
         facecolor=constraint_color,
-        alpha=.1,
+        alpha=0.1,
         transform=mtransforms.blended_transform_factory(plt.gca().transData,
                                                         plt.gca().transAxes),
-        label="constraint"
+        label="constraint",
     )
 
     plt.xlabel(r"$\eta$")

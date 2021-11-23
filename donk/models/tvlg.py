@@ -21,7 +21,7 @@ class TimeVaryingLinearGaussian:
             inv_covar: (T, dY, dY), Inverse covariances, precision.
         """
         if covar is None and inv_covar is None:
-            raise ValueError('Must provide covar or inv_covar.')
+            raise ValueError("Must provide covar or inv_covar.")
 
         self.T, dY, dX = coefficients.shape
 

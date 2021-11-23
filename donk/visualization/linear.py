@@ -3,6 +3,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import MaxNLocator
 
@@ -15,11 +16,11 @@ def visualize_linear_model(
     x,
     y=None,
     N=100,
-    coeff_label='coefficients',
-    intercept_label='intercept',
-    cov_label='covariance',
-    y_label='prediction',
-    time_label='$t$',
+    coeff_label="coefficients",
+    intercept_label="intercept",
+    cov_label="covariance",
+    y_label="prediction",
+    time_label="$t$",
     export_data=True,
 ):
     """Creates a figure visualizing a timeseries of linear Gausian models.
@@ -49,29 +50,29 @@ def visualize_linear_model(
     ax1.set_ylabel(intercept_label)
     ax1.set_xlabel(time_label)
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax1.grid(linestyle=':')
+    ax1.grid(linestyle=":")
     for dim in range(dY):
-        line, = ax1.plot(np.arange(T), intercept[:, dim], linewidth=1)
+        line = ax1.plot(np.arange(T), intercept[:, dim], linewidth=1)[0]
 
     # Coefficients
     ax2 = fig.add_subplot(222, sharex=ax1)
     ax2.set_ylabel(coeff_label)
     ax2.set_xlabel(time_label)
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax2.grid(linestyle=':')
+    ax2.grid(linestyle=":")
     for dim1 in range(dY):
         for dim2 in range(dX):
-            line, = ax2.plot(np.arange(T, dtype=int), coeff[:, dim1, dim2], linewidth=1)
+            line = ax2.plot(np.arange(T, dtype=int), coeff[:, dim1, dim2], linewidth=1)[0]
 
     # Covariance
     ax3 = fig.add_subplot(223, sharex=ax1)
     ax3.set_ylabel(cov_label)
     ax3.set_xlabel(time_label)
     ax3.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax3.grid(linestyle=':')
+    ax3.grid(linestyle=":")
     for dim1 in range(dY):
         for dim2 in range(dY):
-            line, = ax3.plot(np.arange(T), cov[:, dim1, dim2], linewidth=1)
+            line = ax3.plot(np.arange(T), cov[:, dim1, dim2], linewidth=1)[0]
 
     # Prediction
     y_ = np.empty((N, T, dY))  # Approx y using the model
@@ -85,12 +86,12 @@ def visualize_linear_model(
     ax4.set_ylabel(y_label)
     ax4.set_xlabel(time_label)
     ax4.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax4.grid(linestyle=':')
+    ax4.grid(linestyle=":")
     for dim in range(dY):
-        line, = ax4.plot(np.arange(T), y_mean[:, dim], linewidth=1)
+        line = ax4.plot(np.arange(T), y_mean[:, dim], linewidth=1)[0]
         c = line.get_color()
         if y is not None:
-            ax4.plot(np.arange(T), y[:, dim], ':', color=c)
+            ax4.plot(np.arange(T), y[:, dim], ":", color=c)
         ax4.fill_between(
             np.arange(T),
             y_mean[:, dim] - y_std[:, dim],
@@ -119,9 +120,7 @@ def visualize_coefficients(output_file_pattern, coeff):
         output_file_pattern: Pattern for files to write the plots to.
         coeff: shape (T, dY, dX), linear coefficients
     """
-    import matplotlib.pyplot as plt
-    import pandas as pd
-    import seaborn as sns
+
     T, dY, dX = coeff.shape
 
     for y in range(dY):
@@ -261,10 +260,10 @@ def visualize_prediction_error(output_file, predictions, targets):
             ["$R^2$", f"{r2:.04f}"],
             ["Explained variance", f"{explained_variance:.04f}"],
         ],
-        loc='center',
+        loc="center",
         cellLoc="left",
-        colWidths=[.25, .25],
-        edges="open"
+        colWidths=[0.25, 0.25],
+        edges="open",
     )
     plt.axis("off")
 
@@ -320,7 +319,7 @@ def visualize_predictor_target_scatter(output_file, X, Y, cmap=plt.cm.plasma):
             ax = axes[y][x]
             ax.scatter(X[:, :, x].flatten(), Y[:, :, y].flatten(), c=colors, alpha=0.5)
             ax.axis("equal")
-            ax.tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+            ax.tick_params(axis="both", which="both", left=False, bottom=False, labelleft=False, labelbottom=False)
 
     plt.tight_layout()
     if output_file is not None:

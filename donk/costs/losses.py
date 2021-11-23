@@ -55,7 +55,7 @@ def loss_l2(x, t, w):
 
     # Second order derivative
     # lxx = w
-    lxx = np.einsum('ij,jk->ijk', w, np.eye(dX))
+    lxx = np.einsum("ij,jk->ijk", w, np.eye(dX))
 
     return l, lx, lxx
 
@@ -92,7 +92,7 @@ def loss_l1(x, t, w, alpha):
 
     # Second order derivative
     # lxx = w * alpha / (((x-t)^2 + alpha)^(3/2))
-    lxx = np.einsum('ij,jk->ijk', w * alpha / abs_d**3, np.eye(dX))
+    lxx = np.einsum("ij,jk->ijk", w * alpha / abs_d**3, np.eye(dX))
 
     return l, lx, lxx
 
@@ -128,6 +128,6 @@ def loss_log_cosh(x, t, w):
 
     # Second order derivative
     # lxx = w / cosh^2(x - t)
-    lxx = np.einsum('ij,jk->ijk', w / np.cosh(d)**2, np.eye(dX))
+    lxx = np.einsum("ij,jk->ijk", w / np.cosh(d)**2, np.eye(dX))
 
     return l, lx, lxx

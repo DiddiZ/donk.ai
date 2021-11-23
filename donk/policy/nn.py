@@ -37,10 +37,10 @@ class Neural_Network_Policy(Policy):
             self.model = model
 
         # Add metrics to model
-        self.model.metric_loss_kl = tf.keras.metrics.Mean('train/loss_kl')
-        self.model.metric_loss_reg = tf.keras.metrics.Mean('train/loss_reg')
-        self.model.metric_loss = tf.keras.metrics.Mean('train/loss')
-        self.model.metric_loss_val = tf.keras.metrics.Mean('val/loss')
+        self.model.metric_loss_kl = tf.keras.metrics.Mean("train/loss_kl")
+        self.model.metric_loss_reg = tf.keras.metrics.Mean("train/loss_reg")
+        self.model.metric_loss = tf.keras.metrics.Mean("train/loss")
+        self.model.metric_loss_val = tf.keras.metrics.Mean("val/loss")
 
     def update(self, X_train, U_train, prc_train, epochs: int, batch_size: int, X_val=None, U_val=None, prc_val=None, silent: bool = False):
         """Train the model on new data.
@@ -95,7 +95,7 @@ class Neural_Network_Policy(Policy):
                 # KL divergence loss
                 #  loss_kl = 1/2 delta_action^T * prc * delta_action
                 delta_action = action - action_pred
-                loss_kl = tf.reduce_mean(tf.einsum('in,inm,im->i', delta_action, precision, delta_action)) / 2
+                loss_kl = tf.reduce_mean(tf.einsum("in,inm,im->i", delta_action, precision, delta_action)) / 2
 
                 # Regularization loss
                 loss_reg = tf.reduce_sum(model.losses)
@@ -116,7 +116,7 @@ class Neural_Network_Policy(Policy):
             action_pred = model(state, training=False)
 
             delta_action = action - action_pred
-            loss = tf.reduce_mean(tf.einsum('in,inm,im->i', delta_action, precision, delta_action)) / 2
+            loss = tf.reduce_mean(tf.einsum("in,inm,im->i", delta_action, precision, delta_action)) / 2
             model.metric_loss_val(loss)
 
         # Reset optimizer
