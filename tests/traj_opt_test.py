@@ -8,24 +8,24 @@ class Test_LQG(unittest.TestCase):
 
     def test_forward(self):
         from donk.traj_opt import lqg
+        from donk.samples import StateDistribution
         from tests.utils import random_lq_pol, random_spd, random_tvlg
 
         T, dX, dU = 5, 3, 2
         rng = np.random.default_rng(0)
 
-        x0_mean = rng.normal(size=(dX))
-        x0_covar = random_spd((dX, dX), rng)
+        x0 = StateDistribution(mean=rng.normal(size=(dX)), covar=random_spd((dX, dX), rng))
         dyn = random_tvlg(T, dX, dU, rng)
         pol = random_lq_pol(T, dX, dU, rng)
-        traj_mean, traj_covar = lqg.forward(dyn, pol, x0_mean, x0_covar)
+        traj = lqg.forward(dyn, pol, x0)
 
         # Check shapes
-        assert_array_equal(traj_mean.shape, (T + 1, dX + dU))
-        assert_array_equal(traj_covar.shape, (T + 1, dX + dU, dX + dU))
+        assert_array_equal(traj.mean.shape, (T + 1, dX + dU))
+        assert_array_equal(traj.covar.shape, (T + 1, dX + dU, dX + dU))
 
         # Check some values
         assert_allclose(
-            traj_mean, [
+            traj.mean, [
                 [0.12573022, -0.13210486, 0.64042265, -2.21332089, 1.2562705],
                 [1.17023217, 1.8200327, 0.9955234, -3.87002688, -1.53651116],
                 [2.24876315, 2.2154459, 4.87559943, -5.68264397, -4.03765651],
@@ -35,7 +35,7 @@ class Test_LQG(unittest.TestCase):
             ]
         )
         assert_allclose(
-            traj_covar[3:], [
+            traj.covar[3:], [
                 [
                     [54.09235666, -48.4300889, 50.45096717, 105.0393554, -113.93189734],
                     [-48.4300889, 423.56745, -273.31189737, -132.74023589, 519.01789733],
@@ -59,7 +59,7 @@ class Test_LQG(unittest.TestCase):
                 ]
             ]
         )
-        assert_array_equal(traj_covar, np.swapaxes(traj_covar, 1, 2), "traj_covar not symmetric")
+        assert_array_equal(traj.covar, np.swapaxes(traj.covar, 1, 2), "traj_covar not symmetric")
 
     def test_backward(self):
         from donk.costs import loss_l2
