@@ -58,16 +58,16 @@ class Test_LinearDynamics(unittest.TestCase):
     def test_fit_lr_with_prior(self):
         from donk.dynamics.linear_dynamics import fit_lr
         from donk.dynamics.prior import GMMPrior
+        from donk.dynamics import to_transitions
 
         with np.load("tests/data/traj_00.npz") as data:
             X = data['X']
             U = data['U'][:, :-1]
         N, _, dX = X.shape
         _, T, dU = U.shape
-        transitions = np.c_[X[:, :-1], U, X[:, 1:]].reshape(N * T, dX + dU + dX)
 
         prior = GMMPrior(8, random_state=0)
-        prior.update(transitions)
+        prior.update(to_transitions(X, U).reshape(-1, dX + dU + dX))
 
         dyn = fit_lr(X[:3], U[:3], prior, regularization=1e-6)
         F, f, dyn_covar = dyn.F, dyn.f, dyn.covar
@@ -98,3 +98,29 @@ class Test_LinearDynamics(unittest.TestCase):
         for t in range(T):
             with self.subTest(t=t):
                 self.assertTrue(all(np.linalg.eigvalsh(dyn_covar[t]) >= 0), f"Negative eigenvalues {np.linalg.eigvalsh(dyn_covar[t])}")
+
+    def test_log_prob(self):
+        from donk.dynamics.linear_dynamics import fit_lr
+        from donk.dynamics.prior import GMMPrior
+        from donk.dynamics import to_transitions
+
+        with np.load("tests/data/traj_00.npz") as data:
+            X = data['X']
+            U = data['U'][:, :-1]
+        N, _, dX = X.shape
+        _, T, dU = U.shape
+
+        X_train, U_train = X[:-3], U[:-3]
+        X_test, U_test = X[-3:], U[-3:]
+
+        prior = GMMPrior(8, random_state=0)
+        prior.update(to_transitions(X_train, U_train).reshape(-1, dX + dU + dX))
+
+        dyn = fit_lr(X_train[:], U_train[:], prior, regularization=1e-6)
+
+        log_prob = dyn.log_prob(X_test, U_test)
+
+        # Check shapes
+        assert_array_equal(log_prob.shape, (3, T))
+
+        assert_allclose(np.mean(log_prob, axis=-1), [-5282.53359794, -5765.19471819, -3072937.55992457])

@@ -1,11 +1,14 @@
 from pathlib import Path
 
 import numpy as np
+from scipy.stats import multivariate_normal
 
 from donk.dynamics import DynamicsModel
 from donk.dynamics.prior import DynamicsPrior
 from donk.models import TimeVaryingLinearGaussian
 from donk.utils.batched import regularize, symmetrize
+
+multivariate_normal_logpdf = np.vectorize(multivariate_normal.logpdf, signature="(x),(x),(x,x)->()")
 
 
 class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
@@ -45,6 +48,18 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
 
     def __str__(self) -> str:
         return f"LinearDynamics[T={self.T}, dX={self.dX}, dU={self.dU}]"
+
+    def log_prob(self, X: np.ndarray, U: np.ndarray) -> float:
+        """Compute log probabilities for transitions to occur under this dynamics.
+
+        Args:
+            X: (..., T+1, dX) States
+            U: (..., T, dU) Actions
+        Returns:
+            log_prob: (..., T) log transition probabilities
+        """
+        means = self.predict(X[..., :-1, :], U, t=None)
+        return multivariate_normal_logpdf(X[..., 1:, :], means, self.covar)
 
     def evaluate(self, output_dir, X_train, U_train, X_test, U_test):
         """Create diagnostics and evaluation plots for this dynamics model.
