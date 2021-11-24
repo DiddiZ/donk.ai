@@ -122,7 +122,7 @@ def fit_lr(X, U, prior: DynamicsPrior = None, regularization=1e-6) -> LinearDyna
         X: (N, T+1, dX), States
         U: (N, T, dU), Actions
         prior: DynamicsPrior to be used. May be `None` to fit without prior.
-        regularization: Added to the diagonal of the joint distribution variance. Ensures matrix is not singular.
+        regularization: Eigenvalues of the joint distribution variance are lifted to this value. Ensures matrix is not singular.
     """
     N, _, dX = X.shape
     _, T, dU = U.shape
@@ -151,7 +151,10 @@ def fit_lr(X, U, prior: DynamicsPrior = None, regularization=1e-6) -> LinearDyna
             sigma = (Phi + (N - 1) * empsig + (N * m) / (N + m) * (empmu - mu0).T @ (empmu - mu0)) / (N + n0)
 
         # Apply regularization to ensure non-sigularity
-        regularize(sigma[:dXU, :dXU], regularization)
+        min_eigval = np.min(np.linalg.eigvalsh(sigma[:dXU, :dXU]))
+        if min_eigval < regularization:
+            # Lift eigenvalues lowest eigenvalue to regularization
+            regularize(sigma[:dXU, :dXU], regularization - min_eigval)
 
         # Condition on x_t, u_t
         Fm[t] = np.linalg.solve(sigma[:dXU, :dXU], sigma[:dXU, dXU:]).T
