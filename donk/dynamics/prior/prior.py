@@ -10,7 +10,6 @@ class DynamicsPrior(ABC):
         Args:
             XUX: Transitions with shape (N, dX+dU+dX)
         """
-        pass
 
     @abstractmethod
     def eval(self, XUX):
@@ -22,4 +21,3 @@ class DynamicsPrior(ABC):
         Returns:
             mu0, Phi, m, n0
         """
-        pass

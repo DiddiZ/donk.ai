@@ -23,7 +23,7 @@ class Test_LinearDynamics(unittest.TestCase):
         with np.load("tests/data/traj_00.npz") as data:
             X = data['X']
             U = data['U'][:, :-1]
-        N, _, dX = X.shape
+        _, _, dX = X.shape
         _, T, dU = U.shape
 
         dyn = fit_lr(X, U, regularization=1e-6)
@@ -55,6 +55,16 @@ class Test_LinearDynamics(unittest.TestCase):
             with self.subTest(t=t):
                 self.assertTrue(all(np.linalg.eigvalsh(dyn_covar[t]) >= -1e-16), f"Negative eigenvalues {np.linalg.eigvalsh(dyn_covar[t])}")
 
+    def test_fit_lr_error(self):
+        from donk.dynamics.linear_dynamics import fit_lr
+
+        N, T, dX, dU = 1, 4, 3, 2
+        X = np.empty((N, T + 1, dX))
+        U = np.empty((N, T, dU))
+
+        with self.assertRaises(ValueError):
+            fit_lr(X, U, regularization=1e-6)
+
     def test_fit_lr_with_prior(self):
         from donk.dynamics.linear_dynamics import fit_lr
         from donk.dynamics.prior import GMMPrior
@@ -63,7 +73,7 @@ class Test_LinearDynamics(unittest.TestCase):
         with np.load("tests/data/traj_00.npz") as data:
             X = data['X']
             U = data['U'][:, :-1]
-        N, _, dX = X.shape
+        _, _, dX = X.shape
         _, T, dU = U.shape
 
         prior = GMMPrior(8, random_state=0)
@@ -124,3 +134,17 @@ class Test_LinearDynamics(unittest.TestCase):
         assert_array_equal(log_prob.shape, (3, T))
 
         assert_allclose(np.mean(log_prob, axis=-1), [-5282.53359794, -5765.19471819, -3072937.55992457])
+
+    def test_str(self):
+        """Test LinearDynamics.__str__."""
+        from donk.dynamics import LinearDynamics
+
+        T, dX, dU = 4, 3, 2
+
+        dyn = LinearDynamics(
+            np.empty((T, dX, dX + dU)),
+            np.empty((T, dX)),
+            np.empty((T, dX, dX)),
+        )
+
+        self.assertEqual(str(dyn), "LinearDynamics[T=4, dX=3, dU=2]")

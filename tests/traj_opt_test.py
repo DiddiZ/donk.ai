@@ -139,3 +139,24 @@ class Test_LQG(unittest.TestCase):
         kl_div = lqg.kl_divergence_action(X, pol, prev_pol)
 
         self.assertAlmostEqual(kl_div, 3.914744335914712)
+
+
+class TrajectoryDistribution(unittest.TestCase):
+
+    def test_trajectory_distribution(self):
+        from donk.traj_opt import TrajectoryDistribution
+        from tests.utils import random_spd
+
+        T, dX, dU = 5, 3, 2
+        rng = np.random.default_rng(0)
+
+        mean = rng.standard_normal((T, dX + dU))
+        covar = random_spd((T, dX + dU, dX + dU), rng)
+        traj = TrajectoryDistribution(mean, covar, dX=dX)
+
+        assert_array_equal(traj.mean, mean)
+        assert_array_equal(traj.covar, covar)
+        assert_array_equal(traj.X_mean, mean[:, :dX])
+        assert_array_equal(traj.U_mean, mean[:, dX:])
+        assert_array_equal(traj.X_covar, covar[:, :dX, :dX])
+        assert_array_equal(traj.U_covar, covar[:, dX:, dX:])

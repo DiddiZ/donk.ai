@@ -81,6 +81,20 @@ class Test_LinearGaussianPolicy(unittest.TestCase):
         assert_allclose(np.mean(u, axis=0), [[1, 6, 11]], rtol=1e-2)
         assert_allclose(np.var(u, axis=0), [[1, 2, 3]], rtol=2e-1)
 
+    def test_str(self):
+        """Test LinearGaussianPolicy.__str__."""
+        from donk.policy import LinearGaussianPolicy
+
+        T, dX, dU = 4, 3, 2
+
+        pol = LinearGaussianPolicy(
+            np.empty((T, dU, dX)),
+            np.empty((T, dU)),
+            np.empty((T, dU, dU)),
+        )
+
+        self.assertEqual(str(pol), "LinearGaussianPolicy[T=4, dX=3, dU=2]")
+
 
 class Test_Noise(unittest.TestCase):
 

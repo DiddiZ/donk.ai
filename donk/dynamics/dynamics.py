@@ -22,4 +22,3 @@ class DynamicsModel(ABC):
         Returns:
             x: (dX,) Next state
         """
-        pass
