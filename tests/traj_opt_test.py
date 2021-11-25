@@ -7,8 +7,8 @@ from numpy.testing import assert_allclose, assert_array_equal
 class Test_LQG(unittest.TestCase):
 
     def test_forward(self):
-        from donk.traj_opt import lqg
         from donk.samples import StateDistribution
+        from donk.traj_opt import lqg
         from tests.utils import random_lq_pol, random_spd, random_tvlg
 
         T, dX, dU = 5, 3, 2

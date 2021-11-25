@@ -66,9 +66,9 @@ class Test_LinearDynamics(unittest.TestCase):
             fit_lr(X, U, regularization=1e-6)
 
     def test_fit_lr_with_prior(self):
+        from donk.dynamics import to_transitions
         from donk.dynamics.linear_dynamics import fit_lr
         from donk.dynamics.prior import GMMPrior
-        from donk.dynamics import to_transitions
 
         with np.load("tests/data/traj_00.npz") as data:
             X = data['X']
@@ -90,17 +90,16 @@ class Test_LinearDynamics(unittest.TestCase):
         # Check some values
         assert_allclose(
             F[0, -1], [
-                0.9403596673, -8.2294893523, -10.8861634988, -1.1014404065, -1.7100888584, 4.1934859476, 10.5373063746, 0.2593118824,
-                0.9403596719, 0.9403596719, 0.9403596719, 0.9403596719, 0.9403596719, 0.9403596719, 0.9403596719, 0.5831041918,
-                -0.1689043096
+                0.6736326838, -8.0903442087, -10.6963953896, -1.0796099879, -1.7017677633, 5.9048084858, 10.5794627851, 0.2628602686,
+                0.673632683, 0.673632683, 0.673632683, 0.673632683, 0.673632683, 0.673632683, 0.673632683, 0.5918015541, -0.1598776809
             ]
         )
         assert_allclose(
             F[-1, 0],
             [
-                0.0531501627, 0.0126418035, -0.1449997338, -0.0114061895, -0.0562531154, 0.0083263427, 0.0082598694, 0.0031456036,
-                0.0086516918, 0.0240835597, -0.0428903516, 0.0172597417, 0.1589828755, 0.4074868557, 0.0057786167, -0.0009862849,
-                0.5487683864
+                0.0531706042, 0.0126670375, -0.1447008146, -0.0114549074, -0.0559504527, 0.0082102781, 0.0082611939, 0.0031209941,
+                0.0086487127, 0.0242141114, -0.0433044194, 0.0188587933, 0.1572496046, 0.4075395808, 0.0057737154, -0.0010321551,
+                0.5487279573
             ],
         )
         # Check s.p.d.
@@ -110,9 +109,9 @@ class Test_LinearDynamics(unittest.TestCase):
                 self.assertTrue(all(np.linalg.eigvalsh(dyn_covar[t]) >= 0), f"Negative eigenvalues {np.linalg.eigvalsh(dyn_covar[t])}")
 
     def test_log_prob(self):
+        from donk.dynamics import to_transitions
         from donk.dynamics.linear_dynamics import fit_lr
         from donk.dynamics.prior import GMMPrior
-        from donk.dynamics import to_transitions
 
         with np.load("tests/data/traj_00.npz") as data:
             X = data['X']
@@ -133,7 +132,7 @@ class Test_LinearDynamics(unittest.TestCase):
         # Check shapes
         assert_array_equal(log_prob.shape, (3, T))
 
-        assert_allclose(np.mean(log_prob, axis=-1), [-5282.53359794, -5765.19471819, -3072937.55992457])
+        assert_allclose(np.mean(log_prob, axis=-1), [-5282.69861879, -5765.48452959, -3072924.46605001])
 
     def test_str(self):
         """Test LinearDynamics.__str__."""
@@ -148,3 +147,26 @@ class Test_LinearDynamics(unittest.TestCase):
         )
 
         self.assertEqual(str(dyn), "LinearDynamics[T=4, dX=3, dU=2]")
+
+
+class Test_NormalInverseWishart(unittest.TestCase):
+
+    def test_estimate_mean(self):
+        from donk.dynamics.prior import NormalInverseWishart
+
+        prior = NormalInverseWishart(np.array([0]), np.array([[1]]), 1, 1)
+
+        emp_mean = np.array([1])
+
+        assert_allclose(prior.estimate_mean(emp_mean), [0.5])
+
+    def test_estimate_covar(self):
+        from donk.dynamics.prior import NormalInverseWishart
+
+        prior = NormalInverseWishart(np.array([0]), np.array([[1]]), 1, 1)
+
+        emp_mean = np.array([1])
+        emp_covar = np.array([0.5])
+        N = 2
+
+        assert_allclose(prior.estimate_covar(emp_mean, emp_covar, N), [[8 / 9]])

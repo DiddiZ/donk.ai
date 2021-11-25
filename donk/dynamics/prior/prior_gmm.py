@@ -1,33 +1,31 @@
 import numpy as np
 from sklearn.mixture import GaussianMixture
 
-from donk.dynamics.prior import DynamicsPrior
+from donk.dynamics.prior import DynamicsPrior, NormalInverseWishart
 
 
 class GMMPrior(DynamicsPrior):
+    """A Gaussian Mixture Model (GMM) based prior."""
 
     def __init__(self, n_clusters, random_state=None) -> None:
         self.gmm = GaussianMixture(n_components=n_clusters, random_state=random_state)
 
-    def update(self, XUX):
-        """Updates the prior.
+    def update(self, XUX: np.ndarray) -> None:
+        """Update the prior.
 
         Args:
-            XUX: Transitions with shape (N, dX+dU+dX)
+            XUX: (N, dX+dU+dX), transitions
         """
         self.gmm.fit(XUX)
 
         # Enable warm start for further updates
         self.gmm.warm_start = True
 
-    def eval(self, XUX):
-        """Evaluate prior.
+    def eval(self, XUX: np.ndarray) -> NormalInverseWishart:
+        """Evaluate the prior for the given transitions.
 
         Args:
-            XUX: Transitions with shape (N, dX+dU+dX)
-
-        Returns:
-            mu0, Phi, m, n0
+            XUX: (N, dX+dU+dX), transitions
         """
         wts = np.mean(self.gmm.predict_proba(XUX), axis=0)
 
@@ -39,4 +37,4 @@ class GMMPrior(DynamicsPrior):
         # see: https://arxiv.org/abs/1509.06841
         m = n0 = 1
 
-        return mu0, Phi, m, n0
+        return NormalInverseWishart(mu0, Phi, m, n0)

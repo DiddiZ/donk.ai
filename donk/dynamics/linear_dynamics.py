@@ -160,10 +160,9 @@ def fit_lr(X, U, prior: DynamicsPrior = None, regularization=1e-6) -> LinearDyna
             mu = empmu
             sigma = empsig
         else:
-            mu0, Phi, m, n0 = prior.eval(xux)
-            mu = empmu  # Instead of using the correct one, suggested by Finn et al. in gps repo
-            # mu = (m * mu0 + n0 * empmu) / (m + n0) # The correct one
-            sigma = (Phi + (N - 1) * empsig + (N * m) / (N + m) * (empmu - mu0).T @ (empmu - mu0)) / (N + n0)
+            prior_dist = prior.eval(xux)
+            mu = empmu  # Instead of using the estimation, suggested by Finn et al. in https://github.com/cbfinn/gps
+            sigma = prior_dist.estimate_covar(empmu, empsig, N)
 
         # Apply regularization to ensure non-sigularity
         min_eigval = np.min(np.linalg.eigvalsh(sigma[:dXU, :dXU]))
