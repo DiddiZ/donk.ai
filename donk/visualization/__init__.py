@@ -4,6 +4,7 @@ from donk.visualization.linear import (
 )
 from donk.visualization.states import visualize_correlation
 from donk.visualization.traj_opt import visualize_iLQR
+from donk.visualization.trajectories import visualize_trajectories
 
 __all__ = [
     "visualize_linear_model",
@@ -15,4 +16,5 @@ __all__ = [
     "visualize_predictor_target_scatter",
     "visualize_correlation",
     "visualize_iLQR",
+    "visualize_trajectories",
 ]
