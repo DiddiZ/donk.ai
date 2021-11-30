@@ -9,34 +9,50 @@ class NormalInverseWishart:
     """A normal-inverse Wishart distribution."""
     mu0: np.ndarray
     Phi: np.ndarray
-    m: float
-    n0: float
+    N_mean: float
+    N_covar: float
 
-    def estimate_mean(self, emp_mean: np.ndarray) -> np.ndarray:
-        """Estimate posterior mean.
-
-        Args:
-            emp_mean: Emperical sample mean
-
-        See:
-            Fu et al. "One-Shot Learning of Manipulation Skills with Online Dynamics Adaptation and Neural Network Priors", eq. (1)
-        """
-        # TODO Verify formula is correct. Should n0 be N?
-        return (self.m * self.mu0 + self.n0 * emp_mean) / (self.m + self.n0)
-
-    def estimate_covar(self, emp_mean, emp_covar, N):
-        """Estimate posterior covariance.
+    def posterior(self, emp_mean: np.ndarray, emp_covar: np.ndarray, N: float):
+        """Compute prior distibution after observing samples with the given sample distribution.
 
         Args:
-            emp_mean: Emperical sample mean
-            emp_covar: Emperical sample covariance
-            N: Number of samples
+            emp_mean: (d,) Sample mean
+            emp_covar: (d, d) Sample covariance
+            N: Number of samples. May be fractional
 
         See:
-            Fu et al. "One-Shot Learning of Manipulation Skills with Online Dynamics Adaptation and Neural Network Priors", eq. (1)
+            Gelman et al. Bayesian Data Analysis, chapter 3.6
         """
-        # TODO Verify formula is correct
-        return (self.Phi + N * emp_covar + (N * self.m) / (N + self.m) * (emp_mean - self.mu0).T @ (emp_mean - self.mu0)) / (N + self.n0)
+        return NormalInverseWishart(
+            mu0=(self.N_mean * self.mu0 + N * emp_mean) / (self.N_mean + N),
+            Phi=self.Phi + N * emp_covar + self.N_mean * N /
+            (self.N_mean + N) * np.einsum("i,j->ij", emp_mean - self.mu0, emp_mean - self.mu0),
+            N_mean=self.N_mean + N,
+            N_covar=self.N_covar + N,
+        )
+
+    def map_mean(self) -> np.ndarray:
+        """Maximum aposteriory estimate for the mean."""
+        return self.mu0.copy()
+
+    def map_covar(self) -> np.ndarray:
+        """Maximum aposteriory estimate for the covariance."""
+        d = self.mu0.shape[-1]
+        return self.Phi / (self.N_covar + d + 1)
+
+    @staticmethod
+    def non_informative_prior(d):
+        """Create a non-onformative prior distribution.
+
+        Args:
+            d: Dimension
+        """
+        return NormalInverseWishart(
+            mu0=np.zeros((d, )),
+            Phi=np.zeros((d, d)),
+            N_mean=0,
+            N_covar=-(1 + d),
+        )
 
 
 class DynamicsPrior(ABC):

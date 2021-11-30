@@ -16,6 +16,7 @@ class GMMPrior(DynamicsPrior):
         Args:
             XUX: (N, dX+dU+dX), transitions
         """
+        self.N = XUX.shape[0]
         self.gmm.fit(XUX)
 
         # Enable warm start for further updates
@@ -27,14 +28,13 @@ class GMMPrior(DynamicsPrior):
         Args:
             XUX: (N, dX+dU+dX), transitions
         """
+        d = XUX.shape[1]
         wts = np.mean(self.gmm.predict_proba(XUX), axis=0)
 
         mu0 = np.sum(wts[:, np.newaxis] * self.gmm.means_, axis=0)
         Phi = np.sum(wts[:, np.newaxis, np.newaxis] * self.gmm.covariances_, axis=0)
 
-        # Use 1 for m and n0 instead of correct values as suggest by Fu et al. to compensate for discrepancies in
-        # population size between prior and sampling.
-        # see: https://arxiv.org/abs/1509.06841
-        m = n0 = 1
+        # Proportional number of samples in corresponding clusters
+        N = np.sum(wts * self.gmm.weights_) * self.N
 
-        return NormalInverseWishart(mu0, Phi, m, n0)
+        return NormalInverseWishart.non_informative_prior(d).posterior(mu0, Phi, N)
