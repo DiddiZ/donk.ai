@@ -67,7 +67,8 @@ class Neural_Network_Policy(Policy):
         # Normalize precision
         prc_scale = np.einsum("ijj->", prc_train) / N_train / self.dU
         prc_train = prc_train / prc_scale
-        prc_val = prc_val / prc_scale
+        if prc_val is not None:
+            prc_val = prc_val / prc_scale
 
         # Build dataset
         dataset = tf.data.Dataset.from_tensor_slices(

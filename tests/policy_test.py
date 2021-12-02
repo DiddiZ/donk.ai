@@ -133,3 +133,36 @@ class Test_Initial_Policies(unittest.TestCase):
                 assert_allclose(pol.covar[t], [[0.5, 0], [0, 0.25]])
                 assert_allclose(pol.chol_covar[t], np.sqrt([[0.5, 0], [0, 0.25]]))
                 assert_allclose(pol.inv_covar[t], [[2, 0], [0, 4]])
+
+
+class Test_Neural_Network_Policy(unittest.TestCase):
+
+    def test_tensorflow(self):
+        """Make sure TF dependenciesy are loaded properly."""
+        from donk.policy.nn import Neural_Network_Policy
+        import tensorflow as tf
+        import tensorflow.keras.layers as layers
+
+        rng = np.random.default_rng(0)
+
+        N, T, dX, dU = 3, 5, 7, 2
+
+        X_train = rng.standard_normal((N, T, dX))
+        U_train = rng.standard_normal((N, T, dU))
+        prc_train = np.tile(random_spd((T, dU, dU), rng), (N, 1, 1, 1))
+
+        pol = Neural_Network_Policy(
+            model=tf.keras.Sequential([
+                layers.InputLayer(input_shape=(dX, )),
+                layers.Dense(dU, activation=None),
+            ])
+        )
+
+        pol.update(
+            X_train.reshape(-1, dX),
+            U_train.reshape(-1, dU),
+            prc_train.reshape(-1, dU, dU),
+            epochs=10,
+            batch_size=16,
+            silent=True,
+        )
