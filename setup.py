@@ -136,6 +136,7 @@ setup(
         "seaborn~=0.11.1",
         "pandas~=1.3.1",
         "tensorflow~=2.6.0",
+        "tensorflow-probability",
         "keras~=2.6.0",
         "tqdm",
     ],  # Optional
