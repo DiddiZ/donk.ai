@@ -47,7 +47,7 @@ class ILQR:
         # Compute extended costs
         self.C_kl, self.c_kl = extended_costs_kl(prev_pol)
 
-    def step(self, eta) -> ILQRStepResult:
+    def step(self, eta: float) -> ILQRStepResult:
         """Perfrom the unconstrained optimization under the given Lagrange multiplier.
 
         Args:

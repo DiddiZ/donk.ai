@@ -3,7 +3,7 @@ import numpy as np
 from scipy.linalg import solve_triangular
 
 
-def batched_inv_spd(a_chol) -> np.ndarray:
+def batched_inv_spd(a_chol: np.ndarray) -> np.ndarray:
     """Computes inverse of a batch of s.p.d. matrices from their cholesky decomposition.
 
     Exploits s.p.d.-ness for faster inverse.
@@ -31,7 +31,7 @@ def batched_inv_spd(a_chol) -> np.ndarray:
     return a_inv
 
 
-def batched_cholesky(a) -> np.ndarray:
+def batched_cholesky(a: np.ndarray) -> np.ndarray:
     """Computes cholesky decomposition of a batch of s.p.d. matrices.
 
     Args:
@@ -69,7 +69,7 @@ def regularize(A: np.ndarray, regularization) -> np.ndarray:
     return A
 
 
-def trace_of_product(A, B) -> np.ndarray:
+def trace_of_product(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     """Compute the trace of a matrix product Tr(A @ B).
 
     This is an O(n²) operation, as it avoids to compute the actial matrix product.
@@ -84,7 +84,7 @@ def trace_of_product(A, B) -> np.ndarray:
     return np.einsum("...ij,...ji->...", A, B)
 
 
-def batched_multivariate_normal(mean, covar, N: int, rng) -> np.ndarray:
+def batched_multivariate_normal(mean: np.ndarray, covar: np.ndarray, N: int, rng) -> np.ndarray:
     """Draw `N` samples from `T` multivariate normal distributions each.
 
     Args:

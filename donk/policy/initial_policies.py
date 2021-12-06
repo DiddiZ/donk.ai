@@ -3,7 +3,7 @@ import numpy as np
 from donk.policy.lin_gaussian import LinearGaussianPolicy
 
 
-def constant_policy(T: int, dX: int, u, variance) -> LinearGaussianPolicy:
+def constant_policy(T: int, dX: int, u: np.ndarray, variance: np.ndarray) -> LinearGaussianPolicy:
     """Generate an initial policy of constant actions with added noise.
 
     Args:

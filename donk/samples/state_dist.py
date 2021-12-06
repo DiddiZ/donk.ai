@@ -6,7 +6,7 @@ import numpy as np
 class StateDistribution:
     """A normally distributed state."""
 
-    def __init__(self, mean, covar) -> None:
+    def __init__(self, mean: np.ndarray, covar: np.ndarray) -> None:
         """Initialize this `StateDistribution`.
 
         Args:

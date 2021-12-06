@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
@@ -30,7 +32,7 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
     F = TimeVaryingLinearGaussian.coefficients
     f = TimeVaryingLinearGaussian.intercept
 
-    def predict(self, x, u, t: int, noise=None):
+    def predict(self, x: np.ndarray, u: np.ndarray, t: int = None, noise: np.ndarray = None):
         """Predict the next state.
 
         Samples next state from the Gaussian distributing given by x' ~ N(Fm_t * [x; u] + fv_t, dyn_covar_t).
@@ -61,7 +63,7 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
         means = self.predict(X[..., :-1, :], U, t=None)
         return multivariate_normal_logpdf(X[..., 1:, :], means, self.covar)
 
-    def evaluate(self, output_dir, X_train, U_train, X_test, U_test):
+    def evaluate(self, output_dir: str | Path, X_train: np.ndarray, U_train: np.ndarray, X_test: np.ndarray, U_test: np.ndarray):
         """Create diagnostics and evaluation plots for this dynamics model.
 
         Args:
@@ -130,7 +132,7 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
         return statistics
 
 
-def fit_lr(X, U, prior: DynamicsPrior = None, regularization=1e-6) -> LinearDynamics:
+def fit_lr(X: np.ndarray, U: np.ndarray, prior: DynamicsPrior = None, regularization=1e-6) -> LinearDynamics:
     """Fit dynamics with least squares linear regression.
 
     Args:

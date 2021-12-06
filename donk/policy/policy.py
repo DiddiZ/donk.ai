@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 
 class Policy(ABC):
     """Baseclass for policies.
@@ -8,7 +10,7 @@ class Policy(ABC):
     """
 
     @abstractmethod
-    def act(self, x, t: int = None, noise=None):
+    def act(self, x: np.ndarray, t: int = None, noise: np.ndarray = None):
         """Decide an action for the given state at the current timestep.
 
         For time-varying policies `t` is required.

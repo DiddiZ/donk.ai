@@ -11,7 +11,7 @@ from donk.policy.policy import Policy
 class Neural_Network_Policy(Policy):
     """Neural network state-action mapping policy."""
 
-    def __init__(self, model, normalize_states=True):
+    def __init__(self, model, normalize_states: bool = True):
         """Initialize this policy.
 
         Args:
@@ -42,7 +42,18 @@ class Neural_Network_Policy(Policy):
         self.model.metric_loss = tf.keras.metrics.Mean("train/loss")
         self.model.metric_loss_val = tf.keras.metrics.Mean("val/loss")
 
-    def update(self, X_train, U_train, prc_train, epochs: int, batch_size: int, X_val=None, U_val=None, prc_val=None, silent: bool = False):
+    def update(
+        self,
+        X_train: np.ndarray,
+        U_train: np.ndarray,
+        prc_train: np.ndarray,
+        epochs: int,
+        batch_size: int,
+        X_val: np.ndarray = None,
+        U_val: np.ndarray = None,
+        prc_val: np.ndarray = None,
+        silent: bool = False
+    ):
         """Train the model on new data.
 
         May supply validation data.
@@ -146,7 +157,7 @@ class Neural_Network_Policy(Policy):
                     (f" Val loss: {self.model.metric_loss_val.result():.6f}" if X_val is not None else "")
                 )
 
-    def act(self, x, t: int = None, noise=None):
+    def act(self, x: np.ndarray, t: int = None, noise: np.ndarray = None):
         """Decide an action for the given state(s).
 
         Args:
@@ -162,7 +173,7 @@ class Neural_Network_Policy(Policy):
         u = self.model(x.reshape(-1, self.dX).astype(np.float32, copy=False), training=False).numpy()
         return u.reshape(x.shape[:-1] + (self.dU, ))
 
-    def linearize(self, X, regularization: float = 1e-6):
+    def linearize(self, X: np.ndarray, regularization: float = 1e-6):
         """Compute linearization of this policy.
 
         Args:
