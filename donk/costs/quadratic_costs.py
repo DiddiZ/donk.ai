@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+from donk.samples.traj_dist import TrajectoryDistribution
 
 from donk.utils import trace_of_product
 
@@ -70,7 +71,7 @@ class QuadraticCosts:
         )
         return costs
 
-    def expected_costs(self, traj_mean: np.ndarray, traj_covar: np.ndarray) -> np.ndarray:
+    def expected_costs(self, traj: TrajectoryDistribution) -> np.ndarray:
         """Compute estimated costs for trajectory distribution under quadratic cost approximation.
 
         1/2 * (Tr(C Sigma) + mu^t C mu) + mu^T c + cc
@@ -82,7 +83,7 @@ class QuadraticCosts:
         Returns:
             expectation: (..., ) Expected costs at each time step
         """
-        expectation = self.compute_costs(traj_mean) + trace_of_product(self.C, traj_covar) / 2
+        expectation = self.compute_costs(traj.mean) + trace_of_product(self.C, traj.covar) / 2
         return expectation
 
     @staticmethod

@@ -4,11 +4,11 @@ import numpy as np
 from scipy import optimize
 from scipy.linalg import solve
 
-from donk.costs import QuadraticCosts
+from donk.costs.quadratic_costs import QuadraticCosts
 from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
 from donk.samples import StateDistribution
-from donk.traj_opt.traj_dist import TrajectoryDistribution
+from donk.samples.traj_dist import TrajectoryDistribution
 from donk.utils import regularize, symmetrize, trace_of_product
 
 
@@ -65,7 +65,7 @@ class ILQR:
         # Compute KL-divergence and expected costs of the new policy
         traj = forward(self.dynamics, pol, self.initial_state)
         kl_div = kl_divergence_action(traj.X_mean, pol, self.prev_pol)
-        expected_costs = np.sum(self.costs.expected_costs(traj.mean, traj.covar))
+        expected_costs = np.sum(self.costs.expected_costs(traj))
 
         return ILQRStepResult(eta, pol, kl_div, expected_costs, traj)
 
