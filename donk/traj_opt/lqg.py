@@ -292,3 +292,39 @@ def kl_divergence_action(X, pol: LinearGaussianPolicy, prev_pol: LinearGaussianP
         )
 
     return kl_div / T
+
+
+def step_adjust(
+    step_mult: float,
+    dyn: LinearDynamics,
+    policy: LinearGaussianPolicy,
+    x0: StateDistribution,
+    costs: QuadraticCosts,
+    dyn_prev: LinearDynamics,
+    policy_prev: LinearGaussianPolicy,
+    x0_prev: StateDistribution,
+    costs_prev: QuadraticCosts,
+    max_step_mult: float = 10,
+    min_step_mult: float = 0.1,
+):
+    """Compute new multiplier for KL divergence constraint based on expected vs. actual improvement.
+
+    See:
+        Montgomery et al. "Guided Policy Search as Approximate Mirror Descent", Sec. 4.2
+    """
+    # Cost under previous dynamics and previous policy
+    previous_costs = np.sum(costs_prev.expected_costs(forward(dyn_prev, policy_prev, x0_prev)))
+
+    # Cost under previous dynamics and new policy
+    predicted_new_costs = np.sum(costs_prev.expected_costs(forward(dyn_prev, policy, x0_prev)))
+
+    # Cost under new dynamics and new policy
+    actual_new_costs = np.sum(costs.expected_costs(forward(dyn, policy, x0)))
+
+    # Compute step multiplier
+    step_mult *= 0.5 * (predicted_new_costs - previous_costs) / (predicted_new_costs - actual_new_costs)
+
+    # Ensure step bounds
+    step_mult = np.clip(step_mult, min_step_mult, max_step_mult)
+
+    return step_mult
