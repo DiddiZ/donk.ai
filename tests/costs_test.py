@@ -388,3 +388,57 @@ class Test_QuadraticCosts(unittest.TestCase):
         assert_allclose(cost_function.C, cost_function_1.C * 1.2)
         assert_allclose(cost_function.c, cost_function_1.c * 1.2)
         assert_allclose(cost_function.cc, cost_function_1.cc * 1.2)
+
+
+class Test_CostFunction(unittest.TestCase):
+
+    def test_symbolic_cost_function(self):
+        from donk.costs import SymbolicCostFunction
+
+        T, dX, dU = 2, 1, 1
+
+        def cost_fun(t, x, u):
+            c = np.sum(x**2) / 2
+            if u is not None:
+                c += np.sum(u**2) / 2
+
+            return c
+
+        cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
+
+        X = np.array([[0], [1], [2]])
+        U = np.array([[1], [-1]])
+
+        costs = cost_function.quadratic_approximation(X, U)
+
+        assert_allclose(costs.C, [np.diag([1, 1]), np.diag([1, 1]), np.diag([1, 0])])
+        assert_allclose(costs.c, [[0, 0], [0, 0], [0, 0]])
+        assert_allclose(costs.cc, [0, 0, 0])
+
+    def test_symbolic_cost_function_2(self):
+        from donk.costs import SymbolicCostFunction, QuadraticCosts
+
+        T, dX, dU = 2, 1, 1
+
+        def cost_fun(t, x, u):
+            if t == 0:
+                return (np.sum((x - 1)**2) + 0.5 * np.sum((u - 2)**2)) / 2
+            if t == 1:
+                return (np.sum(2 * (x + 1)**2) - np.sum((u + 1)**2)) / 2
+            if t == 2:
+                return (np.sum(x**2)) / 2
+
+        cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
+
+        X = np.array([[0], [1], [2]])
+        U = np.array([[1], [-1]])
+
+        costs = cost_function.quadratic_approximation(X, U)
+        costs_tgt = QuadraticCosts.quadratic_cost_approximation_l2(
+            t=np.array([[1, 2], [-1, -1], [0, 0]]),
+            w=np.array([[1, 0.5], [2, -1], [1, 0]]),
+        )
+
+        assert_allclose(costs.C, costs_tgt.C)
+        assert_allclose(costs.c, costs_tgt.c)
+        assert_allclose(costs.cc, costs_tgt.cc)

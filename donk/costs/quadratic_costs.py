@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import numpy as np
-from donk.samples.traj_dist import TrajectoryDistribution
 
+from donk.samples.traj_dist import TrajectoryDistribution
 from donk.utils import trace_of_product
 
 
@@ -90,7 +90,7 @@ class QuadraticCosts:
     def quadratic_cost_approximation_l2(t: np.ndarray, w: np.ndarray) -> QuadraticCosts:
         """Constructs a quadratic cost function for a non-equilibrium L2 loss.
 
-        L(xu) = sum_i w_i*(t_i-xu_i)**2
+        L(xu) = 0.5*sum_i w_i*(t_i-xu_i)**2
 
         Actually, this is not an approximation. Rather it's exact.
 
