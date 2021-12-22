@@ -304,6 +304,7 @@ class Test_QuadraticCosts(unittest.TestCase):
     def test_expected_costs(self):
         """Test QuadraticCosts.expected_costs."""
         from donk.costs import QuadraticCosts
+        from donk.samples import TrajectoryDistribution
 
         rng = np.random.default_rng(0)
         N, T, dXU = 1000, 10, 5
@@ -312,16 +313,15 @@ class Test_QuadraticCosts(unittest.TestCase):
         weights = rng.standard_normal((T, dXU))
         cost_function = QuadraticCosts.quadratic_cost_approximation_l2(target, weights)
 
-        traj_mean = rng.standard_normal((T, dXU))
-        traj_covar = random_spd((T, dXU, dXU), rng)
+        traj = TrajectoryDistribution(mean=rng.standard_normal((T, dXU)), covar=random_spd((T, dXU, dXU), rng), dX=3)
 
         XU = np.empty((N, T, dXU))
         for t in range(T):
-            XU[:, t] = rng.multivariate_normal(traj_mean[t], traj_covar[t], N)
+            XU[:, t] = rng.multivariate_normal(traj.mean[t], traj.covar[t], N)
 
         mean_costs = np.mean(cost_function.compute_costs(XU), axis=0)
 
-        assert_allclose(cost_function.expected_costs(traj_mean, traj_covar), mean_costs, rtol=.25)
+        assert_allclose(cost_function.expected_costs(traj), mean_costs, rtol=.25)
 
     def test_add(self):
         """Test QuadraticCosts.expected_costs."""

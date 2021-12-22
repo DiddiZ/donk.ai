@@ -144,7 +144,7 @@ class Test_LQG(unittest.TestCase):
 class TrajectoryDistribution(unittest.TestCase):
 
     def test_trajectory_distribution(self):
-        from donk.traj_opt import TrajectoryDistribution
+        from donk.samples import TrajectoryDistribution
         from tests.utils import random_spd
 
         T, dX, dU = 5, 3, 2

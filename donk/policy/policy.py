@@ -4,7 +4,7 @@ import numpy as np
 
 
 class Policy(ABC):
-    """Baseclass for policies.
+    """Base class for policies.
 
     Defines an `act` method.
     """
@@ -23,4 +23,3 @@ class Policy(ABC):
         Returns:
             u: (dU,) Selected action
         """
-        pass
