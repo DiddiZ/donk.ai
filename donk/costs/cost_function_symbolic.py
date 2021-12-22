@@ -49,7 +49,7 @@ class SymbolicCostFunction(CostFunction):
         """
         # Check shapes
         assert X.shape == (self.T + 1, self.dX), f"{X.shape} != {(self.T + 1, self.dX)}"
-        assert U.shape == (self.T, self.dX), f"{U.shape} != {(self.T , self.dX)}"
+        assert U.shape == (self.T, self.dU), f"{U.shape} != {(self.T , self.dU)}"
 
         C = []
         c = []
