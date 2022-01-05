@@ -20,7 +20,7 @@ class SymbolicCostFunction(CostFunction):
             dX: Dimension of state space
             dU: Dimension of action space
         """
-        from sympy import Matrix, diff, symbols
+        from sympy import Matrix, diff, symbols, lambdify
 
         self.T, self.dX, self.dU = T, dX, dU
 
@@ -34,9 +34,10 @@ class SymbolicCostFunction(CostFunction):
             loss_d = np.array([diff(loss, a[i]) for i in range(dX + dU)])
             loss_dd = np.array([[diff(loss_d[j], a[i]) for j in range(dX + dU)] for i in range(dX + dU)])
 
-            self.C.append(Matrix(loss_dd))
-            self.c.append(Matrix(loss_d - a @ loss_dd))
-            self.cc.append(loss - a @ loss_d + a.T @ loss_dd @ a / 2)
+            # Lambdify sympy expressions for performance
+            self.C.append(lambdify([a if t < self.T else a[:dX]], Matrix(loss_dd)))
+            self.c.append(lambdify([a if t < self.T else a[:dX]], Matrix(loss_d - a @ loss_dd)))
+            self.cc.append(lambdify([a if t < self.T else a[:dX]], loss - a @ loss_d + a.T @ loss_dd @ a / 2))
 
         self.a = a
 
@@ -55,14 +56,12 @@ class SymbolicCostFunction(CostFunction):
         c = []
         cc = []
 
+        # Numerical evaluations for each timestep
         for t in range(self.T + 1):
-            substitutions = {a: x for a, x in zip(self.a[:self.dX], X[t])}
-            if t < self.T:
-                substitutions.update({a: u for a, u in zip(self.a[self.dX:], U[t])})
-
-            C.append(self.C[t].subs(substitutions).evalf())
-            c.append(self.c[t].subs(substitutions).evalf())
-            cc.append(self.cc[t].subs(substitutions).evalf())
+            XU = np.concatenate([X[t], U[t]]) if t < self.T else X[t]
+            C.append(self.C[t](XU))
+            c.append(self.c[t](XU))
+            cc.append(self.cc[t](XU))
 
         return QuadraticCosts(
             C=np.array(C).astype(np.float64),
