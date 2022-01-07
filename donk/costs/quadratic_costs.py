@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import numpy as np
 
+from donk.costs.cost_function import CostFunction
 from donk.samples.traj_dist import TrajectoryDistribution
 from donk.utils import trace_of_product
 
 
-class QuadraticCosts:
+class QuadraticCosts(CostFunction):
     """Quadratic cost function.
 
     cost(x, u) = 1/2 [x u]^T*C*[x u] + [x u]^T*c + cc
@@ -49,15 +50,26 @@ class QuadraticCosts:
         """Scale cost function with  vonstant scalar."""
         return self.__mul__(other)
 
-    def compute_costs(self, traj: np.ndarray) -> np.ndarray:
+    def compute_costs(self, X: np.ndarray, U: np.ndarray) -> np.ndarray:
         """Evaluate costs for trajectories.
 
         Args:
-            traj: (..., dX+dU), State-action tuples
+            X: (..., T+1, dX), states
+            U: (..., T, dU), actions
 
         Returns:
-            costs: (...,), Costs at each time step
+            costs: (..., T+1), Costs at each time step
         """
+        dU = U.shape[-1]
+        # Add a dummy zero action to create a rectangular array
+        traj = np.concatenate([
+            X,
+            np.concatenate([
+                U,
+                np.zeros(U.shape[:-2] + (1, dU)),
+            ], axis=-2),
+        ], axis=-1)
+
         costs = (
             # Quadratic costs
             # 1/2 * mu^t C mu
@@ -71,6 +83,18 @@ class QuadraticCosts:
         )
         return costs
 
+    def quadratic_approximation(self, X: np.ndarray, U: np.ndarray) -> QuadraticCosts:
+        """Compute a quadratic approximation (2nd order Taylor) at the given trajectory.
+
+        This function is already quadratic, thus identical to it's quadratic approximation.
+        The location of the trarectory does not change the approximation, thus is ignored.
+
+        Args:
+            X: (T+1, dX), states. Ignored
+            U: (T, dX), actions. Ignored
+        """
+        return self
+
     def expected_costs(self, traj: TrajectoryDistribution) -> np.ndarray:
         """Compute estimated costs for trajectory distribution under quadratic cost approximation.
 
@@ -83,7 +107,7 @@ class QuadraticCosts:
         Returns:
             expectation: (..., ) Expected costs at each time step
         """
-        expectation = self.compute_costs(traj.mean) + trace_of_product(self.C, traj.covar) / 2
+        expectation = self.compute_costs(traj.X_mean, traj.U_mean) + trace_of_product(self.C, traj.covar) / 2
         return expectation
 
     @staticmethod

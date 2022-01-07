@@ -8,8 +8,8 @@ class TrajectoryDistribution:
         """Initialize this `TrajectoryDistribution`.
 
         Args:
-            mean: (..., dX+dU) Means of the trajectory distribution
-            covar: (..., dX+dU, dX+dU) Covariances of the trajectory distribution
+            mean: (..., T, dX+dU) Means of the trajectory distribution
+            covar: (..., T, dX+dU, dX+dU) Covariances of the trajectory distribution
             dX: Dimension of state space
             dU: Dimension of action space, may be inferred if not explicitly stated
         """
@@ -39,9 +39,9 @@ class TrajectoryDistribution:
     @property
     def U_mean(self):
         """Get action component of trajectory means."""
-        return self.mean[..., self.dX:]
+        return self.mean[..., :-1, self.dX:]
 
     @property
     def U_covar(self):
         """Get action component of trajectory covariances."""
-        return self.covar[..., self.dX:, self.dX:]
+        return self.covar[..., :-1, self.dX:, self.dX:]

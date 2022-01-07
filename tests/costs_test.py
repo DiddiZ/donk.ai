@@ -288,18 +288,23 @@ class Test_QuadraticCosts(unittest.TestCase):
         from donk.costs import QuadraticCosts
 
         rng = np.random.default_rng(0)
-        T, dXU = 10, 5
+        T, dX, dXU = 10, 3, 5
 
         target = rng.standard_normal((T, dXU))
+        target[-1, dX:] = 0  # No action at final state
         weights = rng.standard_normal((T, dXU))
 
         cost_function = QuadraticCosts.quadratic_cost_approximation_l2(target, weights)
 
         # When targets reached, costs are zero
-        assert_allclose(cost_function.compute_costs(target), np.zeros(T))
+        assert_allclose(cost_function.compute_costs(target[:, :dX], target[:-1, dX:]), np.zeros(T))
 
-        X = rng.standard_normal((T, dXU))
-        assert_allclose(cost_function.compute_costs(X), np.sum(weights * (target - X)**2, axis=-1) / 2)
+        XU = rng.standard_normal((T, dXU))
+        XU[-1, dX:] = 0  # No action at final state
+        assert_allclose(
+            cost_function.compute_costs(XU[:, :dX], XU[:-1, dX:]),
+            np.sum(weights * (target - XU)**2, axis=-1) / 2,
+        )
 
     def test_expected_costs(self):
         """Test QuadraticCosts.expected_costs."""
@@ -307,7 +312,7 @@ class Test_QuadraticCosts(unittest.TestCase):
         from donk.samples import TrajectoryDistribution
 
         rng = np.random.default_rng(0)
-        N, T, dXU = 1000, 10, 5
+        N, T, dX, dXU = 1000, 10, 3, 5
 
         target = rng.standard_normal((T, dXU))
         weights = rng.standard_normal((T, dXU))
@@ -319,9 +324,9 @@ class Test_QuadraticCosts(unittest.TestCase):
         for t in range(T):
             XU[:, t] = rng.multivariate_normal(traj.mean[t], traj.covar[t], N)
 
-        mean_costs = np.mean(cost_function.compute_costs(XU), axis=0)
+        mean_costs = np.mean(cost_function.compute_costs(XU[:, :, :dX], XU[:, :-1, dX:]), axis=0)
 
-        assert_allclose(cost_function.expected_costs(traj), mean_costs, rtol=.25)
+        assert_allclose(cost_function.expected_costs(traj)[:-1], mean_costs[:-1], rtol=.25)
 
     def test_add(self):
         """Test QuadraticCosts.expected_costs."""

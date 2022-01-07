@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from donk.costs.quadratic_costs import QuadraticCosts
+import donk
 
 
 class CostFunction(ABC):
@@ -12,7 +12,7 @@ class CostFunction(ABC):
     """
 
     @abstractmethod
-    def quadratic_approximation(self, X: np.ndarray, U: np.ndarray) -> QuadraticCosts:
+    def quadratic_approximation(self, X: np.ndarray, U: np.ndarray) -> "donk.costs.quadratic_costs.QuadraticCosts":
         """Compute a quadratic approximation (2nd order Taylor) at the given trajectory.
 
         Args:

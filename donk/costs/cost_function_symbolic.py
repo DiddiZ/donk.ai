@@ -21,7 +21,7 @@ class SymbolicCostFunction(CostFunction):
             dX: Dimension of state space
             dU: Dimension of action space
         """
-        from sympy import Matrix, diff, symbols, lambdify
+        from sympy import Matrix, diff, lambdify, symbols
 
         # Store base cost function as vectorized to allow broadcasting
         self.cost_fun = np.vectorize(cost_fun, signature="(v,x),(t,u)->(v)")
@@ -71,7 +71,9 @@ class SymbolicCostFunction(CostFunction):
             c[t] = self.c[t](X, U).flatten()
             cc[t] = self.cc[t](X, U)
         # Final state
+        C[T] = 0  # Zero action potion
         C[T, :dX, :dX] = self.C[T](X, U)
+        c[T, dX:] = 0  # Zero action potion
         c[T, :dX] = self.c[T](X, U).flatten()
         cc[T] = self.cc[T](X, U)
 
