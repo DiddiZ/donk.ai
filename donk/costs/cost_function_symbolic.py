@@ -23,6 +23,9 @@ class SymbolicCostFunction(CostFunction):
         """
         from sympy import Matrix, diff, symbols, lambdify
 
+        # Store base cost function as vectorized to allow broadcasting
+        self.cost_fun = np.vectorize(cost_fun, signature="(v,x),(t,u)->(v)")
+
         self.T, self.dX, self.dU = T, dX, dU
 
         X_sym = np.array(symbols(f"x:{(T+1)*dX}")).reshape(T + 1, dX)
@@ -73,3 +76,15 @@ class SymbolicCostFunction(CostFunction):
         cc[T] = self.cc[T](X, U)
 
         return QuadraticCosts(C, c, cc)
+
+    def compute_costs(self, X: np.ndarray, U: np.ndarray) -> np.ndarray:
+        """Evaluate costs for trajectories.
+
+        Args:
+            X: (..., T+1, dX), states
+            U: (..., T, dU), actions
+
+        Returns:
+            costs: (..., T+1), Costs at each time step
+        """
+        return self.cost_fun(X, U)

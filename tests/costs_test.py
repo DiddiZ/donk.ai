@@ -439,3 +439,28 @@ class Test_CostFunction(unittest.TestCase):
         assert_allclose(costs.C, costs_tgt.C, atol=1e-16)
         assert_allclose(costs.c, costs_tgt.c, atol=1e-16)
         assert_allclose(costs.cc, costs_tgt.cc, atol=1e-16)
+
+    def test_compute_costs(self):
+        from donk.costs import SymbolicCostFunction
+
+        T, dX, dU = 2, 1, 1
+
+        def cost_fun(X, U):
+            return np.array(
+                [
+                    (np.sum((X[0] - 1)**2) + 0.5 * np.sum((U[0] - 2)**2)) / 2,
+                    (np.sum(2 * (X[1] + 1)**2) - np.sum((U[1] + 1)**2)) / 2,
+                    (np.sum(X[2]**2)) / 2,
+                ]
+            )
+
+        cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
+
+        X = np.array([[0], [1], [2]])  # (T+1, dX)
+        U = np.array([[1], [-1]])  # (T, dU)
+
+        # Flat input
+        assert_allclose(cost_function.compute_costs(X, U), [.75, 4, 2])
+
+        # Nested input
+        assert_allclose(cost_function.compute_costs([X, X], [U, U]), [[.75, 4, 2], [.75, 4, 2]])

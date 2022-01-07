@@ -19,3 +19,15 @@ class CostFunction(ABC):
             X: (T+1, dX), states
             U: (T, dX), actions
         """
+
+    @abstractmethod
+    def compute_costs(self, X: np.ndarray, U: np.ndarray) -> np.ndarray:
+        """Evaluate costs for trajectories.
+
+        Args:
+            X: (..., T+1, dX), states
+            U: (..., T, dU), actions
+
+        Returns:
+            costs: (..., T+1), Costs at each time step
+        """
