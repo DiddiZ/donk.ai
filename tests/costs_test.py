@@ -397,11 +397,9 @@ class Test_CostFunction(unittest.TestCase):
 
         T, dX, dU = 2, 1, 1
 
-        def cost_fun(t, x, u):
-            c = np.sum(x**2) / 2
-            if u is not None:
-                c += np.sum(u**2) / 2
-
+        def cost_fun(X, U):
+            c = np.sum(X**2, axis=-1) / 2
+            c[:-1] += np.sum(U**2, axis=-1) / 2
             return c
 
         cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
@@ -411,22 +409,21 @@ class Test_CostFunction(unittest.TestCase):
 
         costs = cost_function.quadratic_approximation(X, U)
 
-        assert_allclose(costs.C, [np.diag([1, 1]), np.diag([1, 1]), np.diag([1, 0])])
-        assert_allclose(costs.c, [[0, 0], [0, 0], [0, 0]])
-        assert_allclose(costs.cc, [0, 0, 0])
+        assert_allclose(costs.C, [np.diag([1, 1]), np.diag([1, 1]), np.diag([1, 0])], atol=1e-16)
+        assert_allclose(costs.c, [[0, 0], [0, 0], [0, 0]], atol=1e-16)
+        assert_allclose(costs.cc, [0, 0, 0], atol=1e-16)
 
     def test_symbolic_cost_function_2(self):
         from donk.costs import SymbolicCostFunction, QuadraticCosts
 
         T, dX, dU = 2, 1, 1
 
-        def cost_fun(t, x, u):
-            if t == 0:
-                return (np.sum((x - 1)**2) + 0.5 * np.sum((u - 2)**2)) / 2
-            if t == 1:
-                return (np.sum(2 * (x + 1)**2) - np.sum((u + 1)**2)) / 2
-            if t == 2:
-                return (np.sum(x**2)) / 2
+        def cost_fun(X, U):
+            return [
+                (np.sum((X[0] - 1)**2) + 0.5 * np.sum((U[0] - 2)**2)) / 2,
+                (np.sum(2 * (X[1] + 1)**2) - np.sum((U[1] + 1)**2)) / 2,
+                (np.sum(X[2]**2)) / 2,
+            ]
 
         cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
 
@@ -439,6 +436,6 @@ class Test_CostFunction(unittest.TestCase):
             w=np.array([[1, 0.5], [2, -1], [1, 0]]),
         )
 
-        assert_allclose(costs.C, costs_tgt.C)
-        assert_allclose(costs.c, costs_tgt.c)
-        assert_allclose(costs.cc, costs_tgt.cc)
+        assert_allclose(costs.C, costs_tgt.C, atol=1e-16)
+        assert_allclose(costs.c, costs_tgt.c, atol=1e-16)
+        assert_allclose(costs.cc, costs_tgt.cc, atol=1e-16)

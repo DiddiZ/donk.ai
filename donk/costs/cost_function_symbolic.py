@@ -11,11 +11,12 @@ from donk.costs.quadratic_costs import QuadraticCosts
 class SymbolicCostFunction(CostFunction):
     """CostFunction using symbolic differentiation using SymPy to approximate arbitrary functions."""
 
-    def __init__(self, cost_fun: Callable[[int, np.ndarray, np.ndarray | None], float], T: int, dX: int, dU: int) -> None:
+    def __init__(self, cost_fun: Callable[[np.ndarray, np.ndarray], np.ndarray], T: int, dX: int, dU: int) -> None:
         """Initialize this SymbolicCostFunction.
 
         Args:
-            cost_fun: The primitive cost function. A callable which evaluates the costs for x and u at a given time step t.
+            cost_fun: The primitive cost function. A callable which evaluates the costs for a trajectory at each timestep.
+                      Returns an ndarray with shape (T, )
             T: Time horizon
             dX: Dimension of state space
             dU: Dimension of action space
@@ -24,22 +25,24 @@ class SymbolicCostFunction(CostFunction):
 
         self.T, self.dX, self.dU = T, dX, dU
 
-        a = np.array(symbols(f"a:{dX+dU}"))
+        X_sym = np.array(symbols(f"x:{(T+1)*dX}")).reshape(T + 1, dX)
+        U_sym = np.array(symbols(f"u:{T*dU}")).reshape(T, dU)
+        costs = cost_fun(X_sym, U_sym)
 
         self.C = []
         self.c = []
         self.cc = []
         for t in range(T + 1):
-            loss = cost_fun(t, a[:dX], a[dX:] if t < T else None)
-            loss_d = np.array([diff(loss, a[i]) for i in range(dX + dU)])
-            loss_dd = np.array([[diff(loss_d[j], a[i]) for j in range(dX + dU)] for i in range(dX + dU)])
+            XU = np.concatenate([X_sym[t], U_sym[t]]) if t < T else X_sym[t]
+
+            loss = costs[t]
+            loss_d = np.array([diff(loss, xu) for xu in XU])
+            loss_dd = np.array([[diff(loss_d[j], xu) for j in range(len(XU))] for xu in XU])
 
             # Lambdify sympy expressions for performance
-            self.C.append(lambdify([a if t < self.T else a[:dX]], Matrix(loss_dd)))
-            self.c.append(lambdify([a if t < self.T else a[:dX]], Matrix(loss_d - a @ loss_dd)))
-            self.cc.append(lambdify([a if t < self.T else a[:dX]], loss - a @ loss_d + a.T @ loss_dd @ a / 2))
-
-        self.a = a
+            self.C.append(lambdify([X_sym, U_sym], Matrix(loss_dd)))
+            self.c.append(lambdify([X_sym, U_sym], Matrix(loss_d - XU @ loss_dd)))
+            self.cc.append(lambdify([X_sym, U_sym], loss - XU @ loss_d + XU.T @ loss_dd @ XU / 2))
 
     def quadratic_approximation(self, X: np.ndarray, U: np.ndarray) -> QuadraticCosts:
         """Compute a quadratic approximation (2nd order Taylor) at the given trajectory.
@@ -48,23 +51,25 @@ class SymbolicCostFunction(CostFunction):
             X: (T+1, dX), states
             U: (T, dX), actions
         """
-        # Check shapes
-        assert X.shape == (self.T + 1, self.dX), f"{X.shape} != {(self.T + 1, self.dX)}"
-        assert U.shape == (self.T, self.dU), f"{U.shape} != {(self.T , self.dU)}"
+        T, dX, dU = self.T, self.dX, self.dU
 
-        C = []
-        c = []
-        cc = []
+        # Check shapes
+        assert X.shape == (T + 1, dX), f"{X.shape} != {(T + 1, dX)}"
+        assert U.shape == (T, dU), f"{U.shape} != {(T , dU)}"
+
+        # Allocate space
+        C = np.empty((T + 1, dX + dU, dX + dU))
+        c = np.empty((T + 1, dX + dU))
+        cc = np.empty((T + 1, ))
 
         # Numerical evaluations for each timestep
-        for t in range(self.T + 1):
-            XU = np.concatenate([X[t], U[t]]) if t < self.T else X[t]
-            C.append(self.C[t](XU))
-            c.append(self.c[t](XU))
-            cc.append(self.cc[t](XU))
+        for t in range(T):
+            C[t] = self.C[t](X, U)
+            c[t] = self.c[t](X, U).flatten()
+            cc[t] = self.cc[t](X, U)
+        # Final state
+        C[T, :dX, :dX] = self.C[T](X, U)
+        c[T, :dX] = self.c[T](X, U).flatten()
+        cc[T] = self.cc[T](X, U)
 
-        return QuadraticCosts(
-            C=np.array(C).astype(np.float64),
-            c=np.array(c).reshape((self.T + 1, self.dX + self.dU)).astype(np.float64),
-            cc=np.array(cc).astype(np.float64),
-        )
+        return QuadraticCosts(C, c, cc)
