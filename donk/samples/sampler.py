@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import numpy as np
 from tqdm import tqdm
 
-import donk
+import donk.policy
 
 
 class Sampler(ABC):

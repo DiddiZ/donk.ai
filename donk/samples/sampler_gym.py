@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 
 import numpy as np
@@ -15,7 +17,7 @@ class GymSampler(Sampler):
         self.smooth_kernel = smooth_kernel
 
     @abstractmethod
-    def convert_observation(obs) -> np.ndarray:
+    def convert_observation(self, obs) -> np.ndarray:
         """Convert one observation from the Gym environment to a flat numpy array."""
 
     def take_sample(self, pol: Policy, condition: int, rng: np.random.Generator = None) -> tuple[np.ndarray, np.ndarray]:
