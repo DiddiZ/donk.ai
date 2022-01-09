@@ -157,6 +157,6 @@ class TrajectoryDistribution(unittest.TestCase):
         assert_array_equal(traj.mean, mean)
         assert_array_equal(traj.covar, covar)
         assert_array_equal(traj.X_mean, mean[:, :dX])
-        assert_array_equal(traj.U_mean, mean[:, dX:])
+        assert_array_equal(traj.U_mean, mean[:-1, dX:])
         assert_array_equal(traj.X_covar, covar[:, :dX, :dX])
-        assert_array_equal(traj.U_covar, covar[:, dX:, dX:])
+        assert_array_equal(traj.U_covar, covar[:-1, dX:, dX:])
