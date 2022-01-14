@@ -45,18 +45,18 @@ class TrajOptAlgorithm:
         self.x0 = StateDistribution.fit(X[:, 0])
 
         # Fit dynamics
-        dyn = linear_dynamics.fit_lr(X, U, prior=prior, regularization=0)
+        self.dyn = linear_dynamics.fit_lr(X, U, prior=prior, regularization=0)
 
         # Evaluate costs
         # Assume trajectory mean as operating point
         self.costs = cost_function.quadratic_approximation(np.mean(X, axis=0), np.mean(U, axis=0))
 
         # Perform trajectory optimization
-        ilqr = ILQR(dyn, prev_pol, self.costs, self.x0)
+        ilqr = ILQR(self.dyn, prev_pol, self.costs, self.x0)
         self.pol = ilqr.optimize(self.kl_step * self.kl_step_mult).policy
 
         # Update kl_step
         if prev_dyn is not None:
             self.kl_step_mult = lqg.step_adjust(
-                self.kl_step_mult, dyn, self.pol, self.x0, self.costs, prev_dyn, prev_pol, prev_x0, prev_costs
+                self.kl_step_mult, self.dyn, self.pol, self.x0, self.costs, prev_dyn, prev_pol, prev_x0, prev_costs
             )
