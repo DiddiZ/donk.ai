@@ -82,7 +82,7 @@ class ILQR:
         results = [self.step(eta) for eta in np.logspace(np.log10(min_eta), np.log10(max_eta), num=N)]
         return results
 
-    def optimize(self, kl_step: float, min_eta: float = 1e-6, max_eta: float = 1e16, rtol: float = 1e-2, full_history: bool = False):
+    def optimize(self, kl_step: float, min_eta: float = 1e-6, max_eta: float = 1e16, rtol: float = 1e-2):
         """Perform iLQG trajectory optimization.
 
         Args:
@@ -97,18 +97,23 @@ class ILQR:
             result: A `ILQRStepResult` or
                     a list of `ILQRStepResult` if `full_history` is enabled (in order they were visited)
         """
-        results = [self.step(min_eta)]
-        if results[0].kl_div > kl_step:
-            # Find the point where kl divergence equals the kl_step
-            def constraint_violation(log_eta):
-                results.append(self.step(np.exp(log_eta)))
-                return results[-1].kl_div - kl_step
+        # Check if constraind is fulfilled at maximum deviation
+        if self.step(min_eta).kl_div <= kl_step:
+            return self.step(min_eta)
 
-            # Search root of the constraint violation
-            # Perform search in log-space, as this requires much fewer iterations
-            optimize.brentq(constraint_violation, np.log(min_eta), np.log(max_eta), rtol=rtol)
+        # Check if constraint cen be fulfilled at all
+        if self.step(max_eta).kl_div > kl_step:
+            raise ValueError(f"max_eta eta to low ({max_eta})")
 
-        return results if full_history else results[-1]
+        # Find the point where kl divergence equals the kl_step
+        def constraint_violation(log_eta):
+            return self.step(np.exp(log_eta)).kl_div - kl_step
+
+        # Search root of the constraint violation
+        # Perform search in log-space, as this requires much fewer iterations
+        log_eta = optimize.brentq(constraint_violation, np.log(min_eta), np.log(max_eta), rtol=rtol)
+
+        return self.step(np.exp(log_eta))
 
 
 def backward(dynamics: LinearDynamics, C, c, gamma=1) -> LinearGaussianPolicy:

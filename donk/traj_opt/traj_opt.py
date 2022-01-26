@@ -18,6 +18,7 @@ class TrajOptAlgorithm:
         self.dyn: LinearDynamics = None
         self.x0: StateDistribution = None
         self.costs: QuadraticCosts = None
+        self.ilqr: ILQR = None
 
     def iteration(
         self,
@@ -25,7 +26,7 @@ class TrajOptAlgorithm:
         U: np.ndarray,
         cost_function: CostFunction,
         prev_pol: LinearGaussianPolicy = None,
-        prior: DynamicsPrior = None
+        prior: DynamicsPrior = None,
     ):
         """Perform one iteration of trajectory optimization.
 
@@ -52,8 +53,8 @@ class TrajOptAlgorithm:
         self.costs = cost_function.quadratic_approximation(np.mean(X, axis=0), np.mean(U, axis=0))
 
         # Perform trajectory optimization
-        ilqr = ILQR(self.dyn, prev_pol, self.costs, self.x0)
-        self.pol = ilqr.optimize(self.kl_step * self.kl_step_mult).policy
+        self.ilqr = ILQR(self.dyn, prev_pol, self.costs, self.x0)
+        self.pol = self.ilqr.optimize(self.kl_step * self.kl_step_mult).policy
 
         # Update kl_step
         if prev_dyn is not None:
