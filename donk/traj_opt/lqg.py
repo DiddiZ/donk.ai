@@ -4,6 +4,7 @@ import numpy as np
 from scipy import optimize
 from scipy.linalg import solve
 
+import donk.datalogging as datalogging
 from donk.costs.quadratic_costs import QuadraticCosts
 from donk.dynamics import LinearDynamics
 from donk.policy import LinearGaussianPolicy
@@ -331,5 +332,13 @@ def step_adjust(
 
     # Ensure step bounds
     step_mult = np.clip(step_mult, min_step_mult, max_step_mult)
+
+    # Log
+    datalogging.log(
+        previous_costs=previous_costs,
+        predicted_new_costs=predicted_new_costs,
+        actual_new_costs=actual_new_costs,
+        step_mult=step_mult,
+    )
 
     return step_mult

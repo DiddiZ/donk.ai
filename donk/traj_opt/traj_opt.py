@@ -1,5 +1,6 @@
 import numpy as np
 
+import donk.datalogging as datalogging
 from donk.costs import CostFunction, QuadraticCosts
 from donk.dynamics import LinearDynamics, linear_dynamics
 from donk.dynamics.prior import DynamicsPrior
@@ -53,11 +54,22 @@ class TrajOptAlgorithm:
         self.costs = cost_function.quadratic_approximation(np.mean(X, axis=0), np.mean(U, axis=0))
 
         # Perform trajectory optimization
-        self.ilqr = ILQR(self.dyn, prev_pol, self.costs, self.x0)
-        self.pol = self.ilqr.optimize(self.kl_step * self.kl_step_mult).policy
+        ilqr = ILQR(self.dyn, prev_pol, self.costs, self.x0)
+        self.pol = ilqr.optimize(self.kl_step * self.kl_step_mult).policy
+
+        # Log
+        datalogging.log(
+            prev_pol=prev_pol,
+            pol=self.pol,
+            dyn=self.dyn,
+            x0=self.x0,
+            costs=self.costs,
+            kl_step=self.kl_step * self.kl_step_mult,
+        )
 
         # Update kl_step
         if prev_dyn is not None:
-            self.kl_step_mult = lqg.step_adjust(
-                self.kl_step_mult, self.dyn, self.pol, self.x0, self.costs, prev_dyn, prev_pol, prev_x0, prev_costs
-            )
+            with datalogging.Context("step_adjust"):
+                self.kl_step_mult = lqg.step_adjust(
+                    self.kl_step_mult, self.dyn, self.pol, self.x0, self.costs, prev_dyn, prev_pol, prev_x0, prev_costs
+                )
