@@ -20,19 +20,20 @@ class GymSampler(Sampler):
     def convert_observation(self, obs) -> np.ndarray:
         """Convert one observation from the Gym environment to a flat numpy array."""
 
-    def take_sample(self, pol: Policy, condition: int, rng: np.random.Generator = None) -> tuple[np.ndarray, np.ndarray]:
+    def take_sample(self, pol: Policy, T: int, condition: int, rng: np.random.Generator = None) -> tuple[np.ndarray, np.ndarray]:
         """Take one policy sample.
 
         Args:
             pol: Policy to sample
-            condition: Random seed for seeding the environment
+            T: Number of timesteps to sample
+            condition: Initial condition to reset the environemnt into
             rng: Generator for action noise. `None` indicates no action noise.
 
         Returns:
             X: (T+1, dX) states
             U: (T, dU) states
         """
-        T, dX, dU = pol.T, pol.dX, pol.dU
+        dX, dU = pol.dX, pol.dU
 
         # Set initial condition
         self.env.seed(condition)
@@ -50,12 +51,10 @@ class GymSampler(Sampler):
             noise = rng.standard_normal((T, dU))
             if self.smooth_kernel > 0:  # Apply smoothing
                 noise = smooth_noise(noise, self.smooth_kernel)
-        else:  # No action noise
-            noise = np.zeros((T, dU))
 
         # Perform policy rollout
         for t in range(T):
-            U[t] = pol.act(X[t], t, noise[t])
+            U[t] = pol.act(X[t], t, noise[t] if rng is not None else None)
             obs, _, done, _ = self.env.step(U[t])
             if done and t < T - 1:
                 raise Exception(f'Iteration ended prematurely {t+1}/{T}')
