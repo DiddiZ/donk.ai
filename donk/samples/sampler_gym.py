@@ -20,6 +20,10 @@ class GymSampler(Sampler):
     def convert_observation(self, obs) -> np.ndarray:
         """Convert one observation from the Gym environment to a flat numpy array."""
 
+    def convert_action(self, u: np.ndarray) -> np.ndarray:
+        """Convert one action from a flat numpy array to one action for the from the Gym environment."""
+        return u
+
     def take_sample(self, pol: Policy, T: int, condition: int, rng: np.random.Generator = None) -> tuple[np.ndarray, np.ndarray]:
         """Take one policy sample.
 
@@ -55,7 +59,7 @@ class GymSampler(Sampler):
         # Perform policy rollout
         for t in range(T):
             U[t] = pol.act(X[t], t, noise[t] if rng is not None else None)
-            obs, _, done, _ = self.env.step(U[t])
+            obs, _, done, _ = self.env.step(self.convert_action((U[t])))
             if done and t < T - 1:
                 raise Exception(f'Iteration ended prematurely {t+1}/{T}')
             X[t + 1] = self.convert_observation(obs)
