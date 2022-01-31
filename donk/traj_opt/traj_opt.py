@@ -12,9 +12,12 @@ from donk.traj_opt import ILQR, lqg
 class TrajOptAlgorithm:
     """Algorithm for iterative LQR trajectory optimization."""
 
-    def __init__(self, kl_step: float) -> None:
+    def __init__(self, kl_step: float, max_step_mult: float = 10, min_step_mult: float = 0.1) -> None:
         self.kl_step = kl_step
         self.kl_step_mult: float = 1
+        self.max_step_mult: float = max_step_mult
+        self.min_step_mult: float = min_step_mult
+
         self.pol: LinearGaussianPolicy = None
         self.dyn: LinearDynamics = None
         self.x0: StateDistribution = None
@@ -71,5 +74,6 @@ class TrajOptAlgorithm:
         if prev_dyn is not None:
             with datalogging.Context("step_adjust"):
                 self.kl_step_mult = lqg.step_adjust(
-                    self.kl_step_mult, self.dyn, self.pol, self.x0, self.costs, prev_dyn, prev_pol, prev_x0, prev_costs
+                    self.kl_step_mult, self.dyn, self.pol, self.x0, self.costs, prev_dyn, prev_pol, prev_x0, prev_costs, self.max_step_mult,
+                    self.min_step_mult
                 )
