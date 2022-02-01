@@ -138,6 +138,7 @@ setup(
         "tensorflow~=2.6.0",
         "tensorflow-probability~=0.14.1",
         "keras~=2.6.0",
+        "sympy~=1.9",
         "tqdm",
     ],  # Optional
     # List additional groups of dependencies here (e.g. development
