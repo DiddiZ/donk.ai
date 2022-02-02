@@ -8,7 +8,7 @@ class DataLogger(ABC):
     """Base class for data loggers."""
 
     @abstractmethod
-    def log(self, key: List[str], data):
+    def log(self, key: List[str], data) -> None:
         """Log one data.
 
         Args:
@@ -22,19 +22,17 @@ class DataLogger(ABC):
         _data_logger = self
         return self
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush data, if applicable."""
         pass
 
-    def __enter__(self):
+    def __enter__(self) -> DataLogger:
         global _data_logger
 
         # Store previous logger
         self.stored_logger = _data_logger
 
-        self.as_default()
-
-        return self
+        return self.as_default()
 
     def __exit__(self, type, value, traceback):
         self.flush()

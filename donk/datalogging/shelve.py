@@ -1,4 +1,7 @@
-import shelve
+from __future__ import annotations
+
+import dbm.dumb
+import pickle
 from typing import List
 
 from donk.datalogging.datalogging import DataLogger
@@ -10,9 +13,9 @@ class ShelveDataLogger(DataLogger):
     def __init__(self, file) -> None:
         super().__init__()
 
-        self.shelve = shelve.open(file)
+        self.file = file
 
-    def log(self, key: List[str], data):
+    def log(self, key: List[str], data) -> None:
         """Log one data.
 
         Args:
@@ -20,14 +23,20 @@ class ShelveDataLogger(DataLogger):
             data: Data to log, should be python primitives
         """
         # Store data
-        self.shelve["/".join(key)] = data
+        self.__data["/".join(key)] = pickle.dumps(data)
 
-    def flush(self):
+    def flush(self) -> None:
         """Write data to the file."""
-        self.shelve.sync()
+        self.__data.sync()
+
+    def __enter__(self) -> ShelveDataLogger:
+        # Open database
+        self.__data = dbm.dumb.open(self.file, "c")
+
+        return super().__enter__()
 
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
 
         # Close shelve
-        self.shelve.close()
+        self.__data.close()
