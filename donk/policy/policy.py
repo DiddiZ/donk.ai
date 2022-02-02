@@ -10,7 +10,7 @@ class Policy(ABC):
     """
 
     @abstractmethod
-    def act(self, x: np.ndarray, t: int = None, noise: np.ndarray = None):
+    def act(self, x: np.ndarray, t: int = None, noise: np.ndarray = None) -> np.ndarray:
         """Decide an action for the given state at the current timestep.
 
         For time-varying policies `t` is required.

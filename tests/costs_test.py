@@ -419,7 +419,7 @@ class Test_CostFunction(unittest.TestCase):
         assert_allclose(costs.cc, [0, 0, 0], atol=1e-16)
 
     def test_symbolic_cost_function_2(self):
-        from donk.costs import SymbolicCostFunction, QuadraticCosts
+        from donk.costs import QuadraticCosts, SymbolicCostFunction
 
         T, dX, dU = 2, 1, 1
 

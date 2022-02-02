@@ -27,7 +27,7 @@ class LinearGaussianPolicy(Policy, TimeVaryingLinearGaussian):
     K = TimeVaryingLinearGaussian.coefficients
     k = TimeVaryingLinearGaussian.intercept
 
-    def act(self, x: np.ndarray, t: int, noise: np.ndarray = None):
+    def act(self, x: np.ndarray, t: int, noise: np.ndarray = None) -> np.ndarray:
         """Decide an action for the given state at the current timestep.
 
         Uses the TVLG model to predict the next action.

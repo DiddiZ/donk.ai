@@ -7,6 +7,9 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import MaxNLocator
 
+from donk.dynamics import LinearDynamics
+from donk.policy import LinearGaussianPolicy
+
 
 def visualize_linear_model(
     output_file: Path,
@@ -111,6 +114,54 @@ def visualize_linear_model(
     else:
         plt.show()
     plt.close(fig)
+
+
+def visualize_linear_dynamics_model(output_file: Path, dyn: LinearDynamics, X: np.ndarray, U: np.ndarray, **kwargs):
+    """Creates a figure visualizing a TVLG dynamics model.
+
+    Args:
+        output_file: File to write the plot to.
+        dyn: Linear dynamics model
+        X: (N, T+1, dX) States
+        U: (N, T+1, dU) Actions
+        kwargs: Passed to `visualize_linear_model`
+    """
+    visualize_linear_model(
+        output_file,
+        dyn.F,
+        dyn.f,
+        dyn.covar,
+        np.mean(np.concatenate([X[:, :-1], U], axis=-1), axis=0),
+        np.mean(X[:, 1:], axis=0),
+        coeff_label=r"$\mathbf{F}_t$",
+        intercept_label=r"$\mathbf{f}_t$",
+        cov_label=r"$\mathbf{\Sigma}_t^{dyn}$",
+        y_label=r"$\mathbf{x}_{t+1}$",
+        **kwargs
+    )
+
+
+def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.ndarray, **kwargs):
+    """Creates a figure visualizing a TVLG policy.
+
+    Args:
+        output_file: File to write the plot to.
+        dyn: Linear dynamics model
+        X: (N, T+1, dX) States
+        kwargs: Passed to `visualize_linear_model`
+    """
+    visualize_linear_model(
+        output_file,
+        pol.K,
+        pol.k,
+        pol.covar,
+        np.mean(X[:, :-1], axis=0),
+        coeff_label=r"$\mathbf{K}_t$",
+        intercept_label=r"$\mathbf{k}_t$",
+        cov_label=r"$\mathbf{\Sigma}_t^{pol}$",
+        y_label=r"$\mathbf{u}_t$",
+        **kwargs
+    )
 
 
 def visualize_coefficients(output_file_pattern, coeff):

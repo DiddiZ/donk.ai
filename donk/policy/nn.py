@@ -157,7 +157,7 @@ class Neural_Network_Policy(Policy):
                     (f" Val loss: {self.model.metric_loss_val.result():.6f}" if X_val is not None else "")
                 )
 
-    def act(self, x: np.ndarray, t: int = None, noise: np.ndarray = None):
+    def act(self, x: np.ndarray, t: int = None, noise: np.ndarray = None) -> np.ndarray:
         """Decide an action for the given state(s).
 
         Args:
@@ -173,7 +173,7 @@ class Neural_Network_Policy(Policy):
         u = self.model(x.reshape(-1, self.dX).astype(np.float32, copy=False), training=False).numpy()
         return u.reshape(x.shape[:-1] + (self.dU, ))
 
-    def linearize(self, X: np.ndarray, regularization: float = 1e-6):
+    def linearize(self, X: np.ndarray, regularization: float = 1e-6) -> LinearGaussianPolicy:
         """Compute linearization of this policy.
 
         Args:
@@ -204,8 +204,7 @@ class Neural_Network_Policy(Policy):
         k = U_mean.numpy() - np.einsum("tux,tx->tu", K, np.mean(X, axis=0))
         pol_covar = tfp.stats.covariance(U).numpy() + np.eye(self.dU) * regularization  # Use sample covariance
 
-        pol_lin = LinearGaussianPolicy(K, k, pol_covar)
-        return pol_lin
+        return LinearGaussianPolicy(K, k, pol_covar)
 
     def load_weights(self, data_file):
         """Load the network weighs from a file.

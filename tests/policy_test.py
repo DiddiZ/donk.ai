@@ -139,9 +139,10 @@ class Test_Neural_Network_Policy(unittest.TestCase):
 
     def test_tensorflow(self):
         """Make sure TF dependenciesy are loaded properly."""
-        from donk.policy.nn import Neural_Network_Policy
         import tensorflow as tf
         import tensorflow.keras.layers as layers
+
+        from donk.policy.nn import Neural_Network_Policy
 
         rng = np.random.default_rng(0)
 
