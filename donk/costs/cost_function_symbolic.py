@@ -9,6 +9,10 @@ from donk.costs.cost_function import CostFunction
 from donk.costs.quadratic_costs import QuadraticCosts
 
 
+def _vectorize_cost_function(fun):
+    return np.vectorize(lambda X, U: np.array(fun(X, U)), signature="(v,x),(t,u)->(v)")
+
+
 class SymbolicCostFunction(CostFunction):
     """CostFunction using symbolic differentiation using SymPy to approximate arbitrary functions."""
 
@@ -24,14 +28,17 @@ class SymbolicCostFunction(CostFunction):
         """
         from sympy import Matrix, diff, lambdify, symbols
 
-        # Store base cost function as vectorized to allow broadcasting
-        self.cost_fun = np.vectorize(cost_fun, signature="(v,x),(t,u)->(v)")
-
         self.T, self.dX, self.dU = T, dX, dU
 
+        # Create symbols
         X_sym = np.array(symbols(f"x:{(T+1)*dX}")).reshape(T + 1, dX)
         U_sym = np.array(symbols(f"u:{T*dU}")).reshape(T, dU)
+
+        # Eval costs
         costs = cost_fun(X_sym, U_sym)
+
+        # Store base cost function as vectorized to allow broadcasting
+        self.cost_fun = _vectorize_cost_function(lambdify([X_sym, U_sym], costs))
 
         self.C = []
         self.c = []
@@ -99,6 +106,7 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
     def __init__(
         self, cost_funs: List[Callable[[np.ndarray, np.ndarray], np.ndarray]], cost_function_names: List[str], T: int, dX: int, dU: int
     ) -> None:
+        from sympy import lambdify, symbols
 
         def cost_fun(X, U):
             """Sum up individual parts."""
@@ -109,8 +117,13 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
 
         super().__init__(cost_fun, T, dX, dU)
 
-        # Store base cost functions as vectorized to allow broadcasting
-        self.cost_funs = [np.vectorize(cf, signature="(v,x),(t,u)->(v)") for cf in cost_funs]
+        # Create symbols
+        X_sym = np.array(symbols(f"x:{(T+1)*dX}")).reshape(T + 1, dX)
+        U_sym = np.array(symbols(f"u:{T*dU}")).reshape(T, dU)
+
+        # Lambdify and vectorize cost functions
+        self.cost_funs = [_vectorize_cost_function(lambdify([X_sym, U_sym], cf(X_sym, U_sym))) for cf in cost_funs]
+
         self.cost_function_names = cost_function_names
 
     def compute_costs_individual(self, X: np.ndarray, U: np.ndarray) -> Dict[str, np.ndarray]:

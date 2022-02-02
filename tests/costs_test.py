@@ -470,6 +470,30 @@ class Test_CostFunction(unittest.TestCase):
         # Nested input
         assert_allclose(cost_function.compute_costs([X, X], [U, U]), [[.75, 4, 2], [.75, 4, 2]])
 
+    def test_compute_costs_is_numeric(self):
+        from donk.costs import SymbolicCostFunction
+
+        T, dX, dU = 2, 1, 1
+
+        def cost_fun(X, U):
+            import sympy
+
+            return np.array([
+                sympy.sin(X[0, 0]) + sympy.sqrt(U[0, 0]),
+                sympy.log(X[1, 0]),
+                X[2, 0]**2 / 2,
+            ])
+
+        cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
+
+        X = np.array([[0], [1], [2]])  # (T+1, dX)
+        U = np.array([[1], [-1]])  # (T, dU)
+
+        # No sympy types present
+        costs = cost_function.compute_costs(X, U)
+        self.assertEqual(costs.dtype, np.float64)
+        assert_allclose(costs, [1, 0, 2])
+
     def test_multipart_cost_function_compute_costs(self):
         from donk.costs import MultipartSymbolicCostFunction
 
@@ -494,5 +518,7 @@ class Test_CostFunction(unittest.TestCase):
 
         # Individual costs
         part_costs = cost_function.compute_costs_individual(X, U)
+
         assert_allclose(part_costs["state"], [.5, 4, 2])
+
         assert_allclose(part_costs["action"], [.25, 0, 0])
