@@ -1,3 +1,4 @@
+from donk.visualization.costs import visualize_costs
 from donk.visualization.linear import (
     visualize_coefficients, visualize_covariance, visualize_linear_dynamics_model, visualize_linear_model, visualize_linear_policy,
     visualize_prediction, visualize_prediction_error, visualize_predictor_target_correlation, visualize_predictor_target_scatter
@@ -21,4 +22,5 @@ __all__ = [
     "visualize_linear_dynamics_model",
     "visualize_linear_policy",
     "visualize_policy_actions",
+    "visualize_costs",
 ]
