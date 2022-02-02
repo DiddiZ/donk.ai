@@ -469,3 +469,30 @@ class Test_CostFunction(unittest.TestCase):
 
         # Nested input
         assert_allclose(cost_function.compute_costs([X, X], [U, U]), [[.75, 4, 2], [.75, 4, 2]])
+
+    def test_multipart_cost_function_compute_costs(self):
+        from donk.costs import MultipartSymbolicCostFunction
+
+        T, dX, dU = 2, 1, 1
+
+        def state_costs(X, U):
+            return np.array([np.sum((X[0] - 1)**2) / 2, np.sum(2 * (X[1] + 1)**2) / 2, np.sum(X[2]**2) / 2])
+
+        def action_costs(X, U):
+            return np.array([0.5 * np.sum((U[0] - 2)**2) / 2, -np.sum((U[1] + 1)**2) / 2, 0])
+
+        cost_function = MultipartSymbolicCostFunction([state_costs, action_costs], ["state", "action"], T, dX, dU)
+
+        X = np.array([[0], [1], [2]])  # (T+1, dX)
+        U = np.array([[1], [-1]])  # (T, dU)
+
+        # Flat input
+        assert_allclose(cost_function.compute_costs(X, U), [.75, 4, 2])
+
+        # Nested input
+        assert_allclose(cost_function.compute_costs([X, X], [U, U]), [[.75, 4, 2], [.75, 4, 2]])
+
+        # Individual costs
+        part_costs = cost_function.compute_costs_individual(X, U)
+        assert_allclose(part_costs["state"], [.5, 4, 2])
+        assert_allclose(part_costs["action"], [.25, 0, 0])

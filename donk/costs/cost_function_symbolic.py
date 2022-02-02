@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Dict, List
 
 import numpy as np
 
@@ -90,3 +91,36 @@ class SymbolicCostFunction(CostFunction):
             costs: (..., T+1), Costs at each time step
         """
         return self.cost_fun(X, U)
+
+
+class MultipartSymbolicCostFunction(SymbolicCostFunction):
+    """SymbolicCostFunction composed of named partial cost functions."""
+
+    def __init__(
+        self, cost_funs: List[Callable[[np.ndarray, np.ndarray], np.ndarray]], cost_function_names: List[str], T: int, dX: int, dU: int
+    ) -> None:
+
+        def cost_fun(X, U):
+            """Sum up individual parts."""
+            cost = cost_funs[0](X, U)
+            for fn in cost_funs[1:]:
+                cost += fn(X, U)
+            return cost
+
+        super().__init__(cost_fun, T, dX, dU)
+
+        # Store base cost functions as vectorized to allow broadcasting
+        self.cost_funs = [np.vectorize(cf, signature="(v,x),(t,u)->(v)") for cf in cost_funs]
+        self.cost_function_names = cost_function_names
+
+    def compute_costs_individual(self, X: np.ndarray, U: np.ndarray) -> Dict[str, np.ndarray]:
+        """Evaluate costs for trajectories.
+
+        Args:
+            X: (..., T+1, dX), states
+            U: (..., T, dU), actions
+
+        Returns:
+            costs: {name: (..., T+1)}, Costs at each time step, of each sub-cost function
+        """
+        return {name: cf(X, U) for cf, name in zip(self.cost_funs, self.cost_function_names)}
