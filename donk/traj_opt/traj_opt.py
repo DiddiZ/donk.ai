@@ -12,11 +12,14 @@ from donk.traj_opt import ILQR, lqg
 class TrajOptAlgorithm:
     """Algorithm for iterative LQR trajectory optimization."""
 
-    def __init__(self, kl_step: float, max_step_mult: float = 10, min_step_mult: float = 0.1) -> None:
+    def __init__(
+        self, kl_step: float, max_step_mult: float = 10, min_step_mult: float = 0.1, dynamics_regularization: float = 1e-6
+    ) -> None:
         self.kl_step = kl_step
         self.kl_step_mult: float = 1
         self.max_step_mult: float = max_step_mult
         self.min_step_mult: float = min_step_mult
+        self.dynamics_regularization: float = dynamics_regularization
 
         self.pol: LinearGaussianPolicy = None
         self.dyn: LinearDynamics = None
@@ -50,7 +53,7 @@ class TrajOptAlgorithm:
         self.x0 = StateDistribution.fit(X[:, 0])
 
         # Fit dynamics
-        self.dyn = linear_dynamics.fit_lr(X, U, prior=prior, regularization=0)
+        self.dyn = linear_dynamics.fit_lr(X, U, prior=prior, regularization=self.dynamics_regularization)
 
         # Evaluate costs
         # Assume trajectory mean as operating point
