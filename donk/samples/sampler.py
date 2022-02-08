@@ -47,8 +47,8 @@ class Sampler(ABC):
             U: (N, T, dU) states
         """
         # Allocate space
-        X = np.empty((N, pol.T + 1, pol.dX))
-        U = np.empty((N, pol.T, pol.dU))
+        X = np.empty((N, T + 1, pol.dX))
+        U = np.empty((N, T, pol.dU))
 
         # Take N samples
         for i in tqdm(range(N), desc="Sampling", disable=silent):
