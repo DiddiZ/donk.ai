@@ -97,9 +97,9 @@ setup(
         # These classifiers are *not* checked by 'pip install'. See instead
         # 'python_requires' below.
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     # This field adds keywords for your project which will appear on the
     # project page. What does your project relate to?
@@ -121,7 +121,7 @@ setup(
     # and refuse to install the project if the version does not match. If you
     # do not support Python 2, you can simplify this to '>=3.5' or similar, see
     # https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
-    python_requires=">=3.7, <4",
+    python_requires=">=3.8, <4",
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
     # installed, so they must be valid existing projects.
@@ -129,15 +129,15 @@ setup(
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        "numpy~=1.19",
+        "numpy~=1.21",
         "scipy~=1.7.0",
         "scikit-learn~=0.24.2",
         "matplotlib~=3.4.2",
         "seaborn~=0.11.1",
         "pandas~=1.3.1",
-        "tensorflow~=2.6.0",
-        "tensorflow-probability~=0.14.1",
-        "keras~=2.6.0",
+        "tensorflow~=2.8.0",
+        "tensorflow-probability~=0.15.0",
+        "keras~=2.8.0",
         "sympy~=1.9",
         "tqdm",
     ],  # Optional
