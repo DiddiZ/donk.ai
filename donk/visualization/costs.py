@@ -48,3 +48,4 @@ def visualize_costs(
         plt.savefig(output_file)
     else:
         plt.show()
+    plt.close()
