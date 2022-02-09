@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
+from matplotlib.ticker import MaxNLocator
 
 
 def visualize_iLQR(
@@ -84,6 +85,7 @@ def visualize_step_adjust(
     plt.yscale("log")
     plt.xlabel("iteration")
     plt.ylabel("KL divergence")
+    plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
     plt.legend()
 
     plt.subplot(2, 1, 2, sharex=ax1)
