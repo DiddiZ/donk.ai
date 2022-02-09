@@ -5,7 +5,7 @@ from donk.visualization.linear import (
 )
 from donk.visualization.policy import visualize_policy_actions
 from donk.visualization.states import visualize_correlation
-from donk.visualization.traj_opt import visualize_iLQR
+from donk.visualization.traj_opt import visualize_iLQR, visualize_step_adjust
 from donk.visualization.trajectories import visualize_trajectories
 
 __all__ = [
@@ -23,4 +23,5 @@ __all__ = [
     "visualize_linear_policy",
     "visualize_policy_actions",
     "visualize_costs",
+    "visualize_step_adjust",
 ]

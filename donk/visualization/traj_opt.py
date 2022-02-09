@@ -2,10 +2,19 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
+import numpy as np
 import pandas as pd
 
 
-def visualize_iLQR(output_file: Path, results, kl_step: float, opt_result=None, cost_color="C0", constraint_color="C1"):
+def visualize_iLQR(
+    output_file: Path,
+    results,
+    kl_step: float,
+    opt_result=None,
+    cost_color="C0",
+    constraint_color="C1",
+    export_data: bool = True,
+):
 
     results = pd.DataFrame(results).sort_values("eta")
 
@@ -44,9 +53,46 @@ def visualize_iLQR(output_file: Path, results, kl_step: float, opt_result=None, 
     plt.savefig(output_file)
     plt.close()
 
-    # Write data to csv
-    results.to_csv(
-        output_file.parent / (output_file.stem + ".csv"),
-        columns=["eta", "kl_div", "expected_costs"],
-        index=False,
-    )
+    if export_data:  # Write data to csv
+        results.to_csv(
+            output_file.parent / (output_file.stem + ".csv"),
+            columns=["eta", "kl_div", "expected_costs"],
+            index=False,
+        )
+
+
+def visualize_step_adjust(
+    output_file: Path,
+    kl_step: np.ndarray,
+    predicted_new_costs: np.ndarray,
+    actual_new_costs: np.ndarray,
+):
+    """Visualize expected vs. actual costs in step adjust and resulting KL-step.
+
+    Args:
+        output_file: File to write the plot to.
+        kl_step: (iterations, )
+        predicted_new_costs:  (iterations-1, )
+        actual_new_costs:  (iterations-1, )
+    """
+    iterations = kl_step.shape[0]
+    base_kl_step = kl_step[0]
+
+    ax1 = plt.subplot(2, 1, 1)
+    plt.plot(kl_step, label="KL-step")
+    plt.axhline(base_kl_step, linewidth=1, color="black", linestyle="dashed", label="Base KL-step")
+    plt.yscale("log")
+    plt.xlabel("iteration")
+    plt.ylabel("KL divergence")
+    plt.legend()
+
+    plt.subplot(2, 1, 2, sharex=ax1)
+    plt.plot(np.arange(1, iterations), predicted_new_costs, label="predicted_new_costs")
+    plt.plot(np.arange(1, iterations), actual_new_costs, label="actual_new_costs")
+    plt.xlabel("iteration")
+    plt.ylabel("costs")
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig(output_file)
+    plt.close()
