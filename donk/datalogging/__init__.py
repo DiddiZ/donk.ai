@@ -1,4 +1,4 @@
-from donk.datalogging.datalogging import Context, DataLogger, log
+from donk.datalogging.datalogging import Context, DataLogger, concat_iterations, log
 from donk.datalogging.shelve import ShelveDataLogger
 
 __all__ = [
@@ -6,4 +6,5 @@ __all__ = [
     "log",
     "Context",
     "ShelveDataLogger",
+    "concat_iterations",
 ]

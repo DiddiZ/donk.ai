@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from typing import List
+
+import numpy as np
 
 
 class DataLogger(ABC):
@@ -91,3 +94,14 @@ def log(**kwargs):
     """
     for key, data in kwargs.items():
         _data_logger.log(_data_logger_context + [key], data)
+
+
+def concat_iterations(data: dict, key_pattern: str, iterations: Iterable[int]):
+    """Contang log entries along an iteration axis.
+
+    Args:
+        data: Open shelve
+        key_pattern: Format string for entries to concat
+        iterations: Iterations to concat
+    """
+    return np.array([data[key_pattern.format(itr=itr)] for itr in iterations])
