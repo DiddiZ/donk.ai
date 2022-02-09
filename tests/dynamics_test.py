@@ -136,7 +136,7 @@ class Test_LinearDynamics(unittest.TestCase):
         # Check shapes
         assert_array_equal(log_prob.shape, (3, T))
 
-        assert_allclose(np.mean(log_prob, axis=-1), [-109.7484287601, -98.2677612391, -6554.897500492])
+        assert_allclose(np.mean(log_prob, axis=-1), [-2084.969249, -1796.478453, -723320.786212])
 
     def test_str(self):
         """Test LinearDynamics.__str__."""

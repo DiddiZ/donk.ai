@@ -132,14 +132,17 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
         return statistics
 
 
-def fit_lr(X: np.ndarray, U: np.ndarray, prior: DynamicsPrior = None, regularization=1e-6) -> LinearDynamics:
+def fit_lr(
+    X: np.ndarray, U: np.ndarray, prior: DynamicsPrior = None, regularization: float = 1e-6, prior_weight: float = 1
+) -> LinearDynamics:
     """Fit dynamics with least squares linear regression.
 
     Args:
         X: (N, T+1, dX), States
         U: (N, T, dU), Actions
         prior: DynamicsPrior to be used. May be `None` to fit without prior.
-        regularization: Eigenvalues of the joint distribution variance are lifted to this value. Ensures matrix is not singular.
+        regularization: Eigenvalues of the joint distribution covariance are lifted to this value. Ensures matrix is not singular.
+        prior_weight: Weighting factor to scale the influce of the prior.
     """
     N, _, dX = X.shape
     _, T, dU = U.shape
@@ -163,12 +166,7 @@ def fit_lr(X: np.ndarray, U: np.ndarray, prior: DynamicsPrior = None, regulariza
             sigma = empsig
         else:
             prior_dist = prior.eval(xux)
-            posterior_dist = prior_dist.posterior(empmu, empsig, N)
-
-            # Override the size of the prior
-            # TODO More elegant solution
-            posterior_dist.N_mean = 1
-            posterior_dist.N_covar = -(dX + dU + dX)
+            posterior_dist = prior_dist.posterior(empmu, empsig, N / prior_weight)
 
             mu = empmu  # Instead of using the estimation, suggested by Finn et al. in https://github.com/cbfinn/gps
             sigma = posterior_dist.map_covar()
