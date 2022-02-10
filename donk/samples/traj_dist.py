@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 
 
@@ -45,3 +47,24 @@ class TrajectoryDistribution:
     def U_covar(self):
         """Get action component of trajectory covariances."""
         return self.covar[..., :-1, self.dX:, self.dX:]
+
+    def sample(self, size: Tuple[int], rng: np.random.Generator) -> Tuple[np.ndarray, np.ndarray]:
+        """Draw samples from this trajectory distribution.
+        
+        Args:
+            size: Shape of desired amount of samples
+        """
+        T = self.mean.shape[-2] - 1
+        N = np.prod(size)
+
+        X = np.empty((N, T + 1, self.dX))
+        U = np.empty((N, T, self.dU))
+
+        for t in range(T):
+            xu = rng.multivariate_normal(self.mean[t], self.covar[t], size=N)
+            X[:, t] = xu[:, :self.dX]
+            U[:, t] = xu[:, self.dX:]
+        # Final state
+        X[:, T] = rng.multivariate_normal(self.X_mean[T], self.X_covar[T], size=N)
+
+        return X.reshape(size + (T + 1, self.dX)), U.reshape(size + (T, self.dU))  # Reshape to desired shape
