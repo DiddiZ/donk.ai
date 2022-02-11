@@ -49,6 +49,7 @@ class Neural_Network_Policy(Policy):
         prc_train: np.ndarray,
         epochs: int,
         batch_size: int,
+        patience: int = None,
         X_val: np.ndarray = None,
         U_val: np.ndarray = None,
         prc_val: np.ndarray = None,
@@ -64,12 +65,17 @@ class Neural_Network_Policy(Policy):
             prc_train: (N_train, dU, dU) Training action precisions
             epochs: Number of epochs
             batch_size: Batch size for training
+            patience: Early topping after that many epochs without improvement
             X_val: (N_val, dX) Validation states (optional)
             U_val: (N_val, dU) Validation target actions (optional)
             prc_val: (N_val, dU, dU) Validation action precisions (optional)
             silent: Whether to disable progress bar
         """
         N_train, _ = X_train.shape
+        if epochs is None and patience is None:
+            raise ValueError("Must specifx at least one of `epochs` or `patience`")
+        if patience is None:
+            patience = epochs
 
         # Normalize states
         if self.state_normalization is not None:
@@ -134,8 +140,17 @@ class Neural_Network_Policy(Policy):
         # Reset optimizer
         opt = tf.keras.optimizers.Adam()
 
-        with tqdm(range(epochs), disable=silent) as pbar:
-            for epoch in pbar:
+        # EarlyStopping callback
+        callback = tf.keras.callbacks.EarlyStopping(
+            monitor="val/loss" if X_val is not None else "train/loss", mode="min", patience=patience, restore_best_weights=True
+        )
+        callback.set_model(self.model)
+        self.model.stop_training = False
+
+        callback.on_train_begin()
+        with tqdm(total=epochs, disable=silent) as pbar:
+            epoch = 0
+            while not self.model.stop_training and (epochs is None or epoch < epochs):
                 self.model.reset_metrics()
 
                 # Train batches
@@ -156,6 +171,12 @@ class Neural_Network_Policy(Policy):
                     f"Train loss: {self.model.metric_loss.result():.6f}" +
                     (f" Val loss: {self.model.metric_loss_val.result():.6f}" if X_val is not None else "")
                 )
+
+                callback.on_epoch_end(epoch, logs={metric.name: metric.result() for metric in self.model.metrics})
+
+                pbar.update()
+                epoch += 1
+        callback.on_train_end()
 
     def act(self, x: np.ndarray, t: int = None, noise: np.ndarray = None) -> np.ndarray:
         """Decide an action for the given state(s).
