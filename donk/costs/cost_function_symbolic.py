@@ -38,7 +38,7 @@ class SymbolicCostFunction(CostFunction):
         costs = cost_fun(X_sym, U_sym)
 
         # Store base cost function as vectorized to allow broadcasting
-        self.cost_fun = _vectorize_cost_function(lambdify([X_sym, U_sym], costs))
+        self.cost_fun = _vectorize_cost_function(lambdify([X_sym, U_sym], list(costs)))
 
         self.C = []
         self.c = []
@@ -122,7 +122,7 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
         U_sym = np.array(symbols(f"u:{T*dU}")).reshape(T, dU)
 
         # Lambdify and vectorize cost functions
-        self.cost_funs = [_vectorize_cost_function(lambdify([X_sym, U_sym], cf(X_sym, U_sym))) for cf in cost_funs]
+        self.cost_funs = [_vectorize_cost_function(lambdify([X_sym, U_sym], list(cf(X_sym, U_sym)))) for cf in cost_funs]
 
         self.cost_function_names = cost_function_names
 
