@@ -7,7 +7,6 @@ from tests.utils import random_spd
 
 
 class Test_TransitionPool(unittest.TestCase):
-
     def test_add(self):
         """Test TransitionPool.add()."""
         from donk.samples import TransitionPool
@@ -30,7 +29,6 @@ class Test_TransitionPool(unittest.TestCase):
 
 
 class Test_TrajectoryDistribution(unittest.TestCase):
-
     def test_init(self):
         """Test TrajectoryDistribution.sample()."""
         from donk.samples import TrajectoryDistribution

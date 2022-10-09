@@ -77,6 +77,15 @@ class TrajOptAlgorithm:
         if prev_dyn is not None:
             with datalogging.Context("step_adjust"):
                 self.kl_step_mult = lqg.step_adjust(
-                    self.kl_step_mult, self.dyn, self.pol, self.x0, self.costs, prev_dyn, prev_pol, prev_x0, prev_costs, self.max_step_mult,
-                    self.min_step_mult
+                    self.kl_step_mult,
+                    self.dyn,
+                    self.pol,
+                    self.x0,
+                    self.costs,
+                    prev_dyn,
+                    prev_pol,
+                    prev_x0,
+                    prev_costs,
+                    self.max_step_mult,
+                    self.min_step_mult,
                 )

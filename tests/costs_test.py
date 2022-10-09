@@ -9,8 +9,8 @@ from tests.utils import random_spd
 def _create_symbols(D):
     from sympy import symbols
 
-    d_sym = symbols(f'd0:{D}')
-    wp_sym = symbols(f'w0:{D}')
+    d_sym = symbols(f"d0:{D}")
+    wp_sym = symbols(f"w0:{D}")
 
     return d_sym, wp_sym
 
@@ -24,7 +24,7 @@ def _evaluate_loss(d, wp, d_sym, wp_sym, loss):
     d1 = Matrix([diff(loss, s) for s in d_sym])
     d2 = Matrix([[diff(d, s) for s in d_sym] for d in d1])
 
-    l = np.empty((T, ))
+    l = np.empty((T,))
     lx = np.empty((T, D))
     lxx = np.empty((T, D, D))
     for t in range(T):  # Evaluate by substituting actual values
@@ -43,7 +43,7 @@ def loss_l2_ref(x, t, w):
     d_sym, wp_sym = _create_symbols(dX)
 
     # Loss function
-    loss = 0.5 * sum(d_sym[i]**2 * wp_sym[i] for i in range(dX))
+    loss = 0.5 * sum(d_sym[i] ** 2 * wp_sym[i] for i in range(dX))
 
     return _evaluate_loss(x - t, w, d_sym, wp_sym, loss)
 
@@ -56,7 +56,7 @@ def loss_l1_ref(x, t, w, alpha):
     d_sym, wp_sym = _create_symbols(dX)
 
     # Loss function
-    loss = sum(sqrt(d_sym[i]**2 + alpha) * wp_sym[i] for i in range(dX))
+    loss = sum(sqrt(d_sym[i] ** 2 + alpha) * wp_sym[i] for i in range(dX))
 
     return _evaluate_loss(x - t, w, d_sym, wp_sym, loss)
 
@@ -64,6 +64,7 @@ def loss_l1_ref(x, t, w, alpha):
 def loss_log_cosh_ref(x, t, w):
     """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
     from sympy import cosh, log
+
     _, dX = x.shape
     d_sym, wp_sym = _create_symbols(dX)
 
@@ -74,7 +75,6 @@ def loss_log_cosh_ref(x, t, w):
 
 
 class Test_Losses(unittest.TestCase):
-
     def test_loss_l2(self):
         """Test loss_l2 implementation agains reference implementation using random values."""
         from donk.costs import loss_l2
@@ -140,16 +140,13 @@ class Test_Losses(unittest.TestCase):
         lxx_ref = lxx_l2_ref + lxx_log_cosh_ref
 
         # Impl
-        l, lx, lxx = loss_combined(x, [
-            (loss_l2, {
-                't': t,
-                'w': w,
-            }),
-            (loss_log_cosh, {
-                't': t,
-                'w': w,
-            }),
-        ])
+        l, lx, lxx = loss_combined(
+            x,
+            losses=[
+                (loss_l2, {"t": t, "w": w}),
+                (loss_log_cosh, {"t": t, "w": w}),
+            ],
+        )
 
         assert_allclose(l_ref, l)
         assert_allclose(lx_ref, lx)
@@ -168,12 +165,12 @@ class Test_Losses(unittest.TestCase):
         l_ref, lx_ref, lxx_ref = loss_l2_ref(x, t, w)
 
         # Impl
-        l, lx, lxx = loss_combined(x, [
-            (loss_l2, {
-                't': t,
-                'w': w,
-            }),
-        ])
+        l, lx, lxx = loss_combined(
+            x,
+            losses=[
+                (loss_l2, {"t": t, "w": w}),
+            ],
+        )
 
         assert_allclose(l_ref, l)
         assert_allclose(lx_ref, lx)
@@ -192,13 +189,10 @@ class Test_Losses(unittest.TestCase):
 
         # Missing 'loss'
         with self.assertRaises(IndexError):
-            loss_combined(x, [
-                (),
-            ])
+            loss_combined(x, [()])
 
 
 class Test_QuadraticCosts(unittest.TestCase):
-
     def test_quadratic_cost_approximation_l2(self):
         """Test quadratic_cost_approximation_l2 on single timesteps."""
         from donk.costs import QuadraticCosts
@@ -217,28 +211,18 @@ class Test_QuadraticCosts(unittest.TestCase):
         from donk.costs import QuadraticCosts
 
         cost_function = QuadraticCosts.quadratic_cost_approximation_l2(
-            t=np.array([
-                [-2, 2, 0],
-                [-1, 1, 0],
-                [0, 0, 0],
-            ]),
-            w=np.array([
-                [1, 1, 2],
-                [1, 1, 2],
-                [10, 10, 0],
-            ]),
+            t=np.array([[-2, 2, 0], [-1, 1, 0], [0, 0, 0]]),
+            w=np.array([[1, 1, 2], [1, 1, 2], [10, 10, 0]]),
         )
 
-        assert_allclose(cost_function.C, [
-            np.diag([1, 1, 2]),
-            np.diag([1, 1, 2]),
-            np.diag([10, 10, 0]),
-        ])
-        assert_allclose(cost_function.c, [
-            [2, -2, 0],
-            [1, -1, 0],
-            [0, 0, 0],
-        ])
+        assert_allclose(
+            cost_function.C,
+            [np.diag([1, 1, 2]), np.diag([1, 1, 2]), np.diag([10, 10, 0])],
+        )
+        assert_allclose(
+            cost_function.c,
+            [[2, -2, 0], [1, -1, 0], [0, 0, 0]],
+        )
         assert_allclose(cost_function.cc, [4, 1, 0])
 
     def test_quadratic_cost_approximation_l1(self):
@@ -252,35 +236,23 @@ class Test_QuadraticCosts(unittest.TestCase):
             alpha=1e-2,
         )
 
-        assert_allclose(cost_function.C, np.diag([0.01 / 1.01**1.5, 20]))
-        assert_allclose(cost_function.c, [1 / 1.01**0.5 - 0.03 / 1.01**1.5, -40])
-        assert_allclose(cost_function.cc, 1.01**0.5 - 3 / 1.01**0.5 + 0.045 / 1.01**1.5 + 0.2 + 40)
+        assert_allclose(cost_function.C, np.diag([0.01 / 1.01 ** 1.5, 20]))
+        assert_allclose(cost_function.c, [1 / 1.01 ** 0.5 - 0.03 / 1.01 ** 1.5, -40])
+        assert_allclose(cost_function.cc, 1.01 ** 0.5 - 3 / 1.01 ** 0.5 + 0.045 / 1.01 ** 1.5 + 0.2 + 40)
 
     def test_quadratic_cost_approximation_l1_batched(self):
         """Test quadratic_cost_approximation_l1 on a trajectory."""
         from donk.costs import QuadraticCosts
 
         cost_function = QuadraticCosts.quadratic_cost_approximation_l1(
-            xu=np.array([
-                [-2, 0],
-                [0, 0],
-            ]),
-            t=np.array([
-                [1, 2],
-                [10, 0],
-            ]),
-            w=np.array([
-                [1, 2],
-                [10, 0],
-            ]),
+            xu=np.array([[-2, 0], [0, 0]]),
+            t=np.array([[1, 2], [10, 0]]),
+            w=np.array([[1, 2], [10, 0]]),
             alpha=1e-6,
         )
 
         assert_allclose(cost_function.C, np.zeros((2, 2, 2)), atol=1e-6)
-        assert_allclose(cost_function.c, [
-            [-1, -2],
-            [-10, 0],
-        ], atol=1e-6)
+        assert_allclose(cost_function.c, [[-1, -2], [-10, 0]], atol=1e-6)
         assert_allclose(cost_function.cc, [3 * 1 - 2 + 2 * 2, 10 * 10], atol=1e-6)
 
     def test_compute_costs(self):
@@ -303,7 +275,7 @@ class Test_QuadraticCosts(unittest.TestCase):
         XU[-1, dX:] = 0  # No action at final state
         assert_allclose(
             cost_function.compute_costs(XU[:, :dX], XU[:-1, dX:]),
-            np.sum(weights * (target - XU)**2, axis=-1) / 2,
+            np.sum(weights * (target - XU) ** 2, axis=-1) / 2,
         )
 
     def test_expected_costs(self):
@@ -326,7 +298,7 @@ class Test_QuadraticCosts(unittest.TestCase):
 
         mean_costs = np.mean(cost_function.compute_costs(XU[:, :, :dX], XU[:, :-1, dX:]), axis=0)
 
-        assert_allclose(cost_function.expected_costs(traj)[:-1], mean_costs[:-1], rtol=.25)
+        assert_allclose(cost_function.expected_costs(traj)[:-1], mean_costs[:-1], rtol=0.25)
 
     def test_add(self):
         """Test QuadraticCosts.expected_costs."""
@@ -396,15 +368,14 @@ class Test_QuadraticCosts(unittest.TestCase):
 
 
 class Test_CostFunction(unittest.TestCase):
-
     def test_symbolic_cost_function(self):
         from donk.costs import SymbolicCostFunction
 
         T, dX, dU = 2, 1, 1
 
         def cost_fun(X, U):
-            c = np.sum(X**2, axis=-1) / 2
-            c[:-1] += np.sum(U**2, axis=-1) / 2
+            c = np.sum(X ** 2, axis=-1) / 2
+            c[:-1] += np.sum(U ** 2, axis=-1) / 2
             return c
 
         cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
@@ -425,9 +396,9 @@ class Test_CostFunction(unittest.TestCase):
 
         def cost_fun(X, U):
             return [
-                (np.sum((X[0] - 1)**2) + 0.5 * np.sum((U[0] - 2)**2)) / 2,
-                (np.sum(2 * (X[1] + 1)**2) - np.sum((U[1] + 1)**2)) / 2,
-                (np.sum(X[2]**2)) / 2,
+                (np.sum((X[0] - 1) ** 2) + 0.5 * np.sum((U[0] - 2) ** 2)) / 2,
+                (np.sum(2 * (X[1] + 1) ** 2) - np.sum((U[1] + 1) ** 2)) / 2,
+                (np.sum(X[2] ** 2)) / 2,
             ]
 
         cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
@@ -453,9 +424,9 @@ class Test_CostFunction(unittest.TestCase):
         def cost_fun(X, U):
             return np.array(
                 [
-                    (np.sum((X[0] - 1)**2) + 0.5 * np.sum((U[0] - 2)**2)) / 2,
-                    (np.sum(2 * (X[1] + 1)**2) - np.sum((U[1] + 1)**2)) / 2,
-                    (np.sum(X[2]**2)) / 2,
+                    (np.sum((X[0] - 1) ** 2) + 0.5 * np.sum((U[0] - 2) ** 2)) / 2,
+                    (np.sum(2 * (X[1] + 1) ** 2) - np.sum((U[1] + 1) ** 2)) / 2,
+                    (np.sum(X[2] ** 2)) / 2,
                 ]
             )
 
@@ -465,10 +436,10 @@ class Test_CostFunction(unittest.TestCase):
         U = np.array([[1], [-1]])  # (T, dU)
 
         # Flat input
-        assert_allclose(cost_function.compute_costs(X, U), [.75, 4, 2])
+        assert_allclose(cost_function.compute_costs(X, U), [0.75, 4, 2])
 
         # Nested input
-        assert_allclose(cost_function.compute_costs([X, X], [U, U]), [[.75, 4, 2], [.75, 4, 2]])
+        assert_allclose(cost_function.compute_costs([X, X], [U, U]), [[0.75, 4, 2], [0.75, 4, 2]])
 
     def test_compute_costs_is_numeric(self):
         from donk.costs import SymbolicCostFunction
@@ -478,11 +449,13 @@ class Test_CostFunction(unittest.TestCase):
         def cost_fun(X, U):
             import sympy
 
-            return np.array([
-                sympy.sin(X[0, 0]) + sympy.sqrt(U[0, 0]),
-                sympy.log(X[1, 0]),
-                X[2, 0]**2 / 2,
-            ])
+            return np.array(
+                [
+                    sympy.sin(X[0, 0]) + sympy.sqrt(U[0, 0]),
+                    sympy.log(X[1, 0]),
+                    X[2, 0] ** 2 / 2,
+                ]
+            )
 
         cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)
 
@@ -500,10 +473,10 @@ class Test_CostFunction(unittest.TestCase):
         T, dX, dU = 2, 1, 1
 
         def state_costs(X, U):
-            return np.array([np.sum((X[0] - 1)**2) / 2, np.sum(2 * (X[1] + 1)**2) / 2, np.sum(X[2]**2) / 2])
+            return np.array([np.sum((X[0] - 1) ** 2) / 2, np.sum(2 * (X[1] + 1) ** 2) / 2, np.sum(X[2] ** 2) / 2])
 
         def action_costs(X, U):
-            return np.array([0.5 * np.sum((U[0] - 2)**2) / 2, -np.sum((U[1] + 1)**2) / 2, 0])
+            return np.array([0.5 * np.sum((U[0] - 2) ** 2) / 2, -np.sum((U[1] + 1) ** 2) / 2, 0])
 
         cost_function = MultipartSymbolicCostFunction([state_costs, action_costs], ["state", "action"], T, dX, dU)
 
@@ -511,14 +484,14 @@ class Test_CostFunction(unittest.TestCase):
         U = np.array([[1], [-1]])  # (T, dU)
 
         # Flat input
-        assert_allclose(cost_function.compute_costs(X, U), [.75, 4, 2])
+        assert_allclose(cost_function.compute_costs(X, U), [0.75, 4, 2])
 
         # Nested input
-        assert_allclose(cost_function.compute_costs([X, X], [U, U]), [[.75, 4, 2], [.75, 4, 2]])
+        assert_allclose(cost_function.compute_costs([X, X], [U, U]), [[0.75, 4, 2], [0.75, 4, 2]])
 
         # Individual costs
         part_costs = cost_function.compute_costs_individual(X, U)
 
-        assert_allclose(part_costs["state"], [.5, 4, 2])
+        assert_allclose(part_costs["state"], [0.5, 4, 2])
 
-        assert_allclose(part_costs["action"], [.25, 0, 0])
+        assert_allclose(part_costs["action"], [0.25, 0, 0])

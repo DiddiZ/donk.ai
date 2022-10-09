@@ -9,7 +9,6 @@ import donk.policy
 
 
 class Sampler(ABC):
-
     @abstractmethod
     def take_sample(self, pol: donk.policy.Policy, T: int, condition, rng: np.random.Generator = None) -> tuple[np.ndarray, np.ndarray]:
         """Take one policy sample.
@@ -25,13 +24,15 @@ class Sampler(ABC):
             U: (T, dU) states
         """
 
-    def take_samples(self,
-                     N: int,
-                     pol: donk.policy.Policy,
-                     T: int,
-                     condition,
-                     rng: np.random.Generator = None,
-                     silent: bool = True) -> tuple[np.ndarray, np.ndarray]:
+    def take_samples(
+        self,
+        N: int,
+        pol: donk.policy.Policy,
+        T: int,
+        condition,
+        rng: np.random.Generator = None,
+        silent: bool = True,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Takes multiple policy sample.
 
         Args:

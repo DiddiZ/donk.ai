@@ -7,7 +7,6 @@ from tests.utils import random_spd
 
 
 class Test_LinearDynamics(unittest.TestCase):
-
     def test_predict(self):
         from donk.dynamics import LinearDynamics
 
@@ -23,8 +22,8 @@ class Test_LinearDynamics(unittest.TestCase):
         from donk.dynamics.linear_dynamics import fit_lr
 
         with np.load("tests/data/traj_00.npz") as data:
-            X = data['X']
-            U = data['U'][:, :-1]
+            X = data["X"]
+            U = data["U"][:, :-1]
         _, _, dX = X.shape
         _, T, dU = U.shape
 
@@ -38,18 +37,48 @@ class Test_LinearDynamics(unittest.TestCase):
 
         # Check some values
         assert_allclose(
-            F[0, -1], [
-                0.00000000e+00, -9.98390720e+00, -1.29479403e+01, -1.32099334e+00, -1.61173430e+00, -6.70051884e+01, 2.30815914e+01,
-                2.17293139e-01, 0.00000000e+00, 2.69500687e-23, -2.69500687e-23, 0.00000000e+00, -5.39001375e-23, 3.36875859e-24,
-                -1.34750344e-23, 4.56497288e-01, -2.70607228e-01
-            ]
+            F[0, -1],
+            [
+                0.00000000e00,
+                -9.98390720e00,
+                -1.29479403e01,
+                -1.32099334e00,
+                -1.61173430e00,
+                -6.70051884e01,
+                2.30815914e01,
+                2.17293139e-01,
+                0.00000000e00,
+                2.69500687e-23,
+                -2.69500687e-23,
+                0.00000000e00,
+                -5.39001375e-23,
+                3.36875859e-24,
+                -1.34750344e-23,
+                4.56497288e-01,
+                -2.70607228e-01,
+            ],
         )
         assert_allclose(
-            F[-1, 0], [
-                4.14986607e-02, -4.61995618e-01, -1.18756810e+00, 3.43210881e-01, 5.92291666e-01, -3.09607786e-01, -4.69028078e-02,
-                -2.30810980e-01, 3.50226060e-03, -1.19272129e-01, 9.78285647e-02, 6.28585341e-01, 4.32602881e-01, -8.24673225e-13,
-                7.16121964e-03, 9.89241563e-03, 6.08668508e-01
-            ]
+            F[-1, 0],
+            [
+                4.14986607e-02,
+                -4.61995618e-01,
+                -1.18756810e00,
+                3.43210881e-01,
+                5.92291666e-01,
+                -3.09607786e-01,
+                -4.69028078e-02,
+                -2.30810980e-01,
+                3.50226060e-03,
+                -1.19272129e-01,
+                9.78285647e-02,
+                6.28585341e-01,
+                4.32602881e-01,
+                -8.24673225e-13,
+                7.16121964e-03,
+                9.89241563e-03,
+                6.08668508e-01,
+            ],
         )
         # Check s.p.d.
         assert_array_equal(dyn_covar, np.swapaxes(dyn_covar, 1, 2), "dyn_covar not symmetric")
@@ -73,8 +102,8 @@ class Test_LinearDynamics(unittest.TestCase):
         from donk.dynamics.prior import GMMPrior
 
         with np.load("tests/data/traj_00.npz") as data:
-            X = data['X']
-            U = data['U'][:, :-1]
+            X = data["X"]
+            U = data["U"][:, :-1]
         _, _, dX = X.shape
         _, T, dU = U.shape
 
@@ -91,20 +120,50 @@ class Test_LinearDynamics(unittest.TestCase):
 
         # Check some values
         assert_allclose(
-            F[0, -1], [
-                6.4670984068e-12, -9.4600223921e+00, -1.2259576378e+01, -1.2686138915e+00, -1.7659779482e+00, -3.6820406902e+01,
-                2.8851768774e+01, 2.2697946776e-01, -3.2335492034e-12, -6.4670984068e-12, 3.2335492034e-12, -6.4670984068e-12,
-                0.0000000000e+00, 0.0000000000e+00, -1.6167746017e-12, 4.9092612094e-01, -2.3294766657e-01
+            F[0, -1],
+            [
+                6.4670984068e-12,
+                -9.4600223921e00,
+                -1.2259576378e01,
+                -1.2686138915e00,
+                -1.7659779482e00,
+                -3.6820406902e01,
+                2.8851768774e01,
+                2.2697946776e-01,
+                -3.2335492034e-12,
+                -6.4670984068e-12,
+                3.2335492034e-12,
+                -6.4670984068e-12,
+                0.0000000000e00,
+                0.0000000000e00,
+                -1.6167746017e-12,
+                4.9092612094e-01,
+                -2.3294766657e-01,
             ],
-            atol=1e-8
+            atol=1e-8,
         )
         assert_allclose(
-            F[-1, 0], [
-                5.2810630480e-02, 1.1964354976e-02, -1.4035005294e-01, -1.0247787101e-02, -6.3580697713e-02, 1.1825430983e-02,
-                7.3951825793e-03, 3.5634195593e-03, 8.7252680504e-03, 2.0284214112e-02, -3.2658321456e-02, -1.9436559723e-02,
-                1.8730195626e-01, 2.6472698883e-02, 5.9203433330e-03, -2.0699574315e-04, 5.4962668583e-01
+            F[-1, 0],
+            [
+                5.2810630480e-02,
+                1.1964354976e-02,
+                -1.4035005294e-01,
+                -1.0247787101e-02,
+                -6.3580697713e-02,
+                1.1825430983e-02,
+                7.3951825793e-03,
+                3.5634195593e-03,
+                8.7252680504e-03,
+                2.0284214112e-02,
+                -3.2658321456e-02,
+                -1.9436559723e-02,
+                1.8730195626e-01,
+                2.6472698883e-02,
+                5.9203433330e-03,
+                -2.0699574315e-04,
+                5.4962668583e-01,
             ],
-            atol=1e-8
+            atol=1e-8,
         )
         # Check s.p.d.
         assert_array_equal(dyn_covar, np.swapaxes(dyn_covar, 1, 2), "dyn_covar not symmetric")
@@ -118,8 +177,8 @@ class Test_LinearDynamics(unittest.TestCase):
         from donk.dynamics.prior import GMMPrior
 
         with np.load("tests/data/traj_00.npz") as data:
-            X = data['X']
-            U = data['U'][:, :-1]
+            X = data["X"]
+            U = data["U"][:, :-1]
         N, _, dX = X.shape
         _, T, dU = U.shape
 
@@ -154,7 +213,6 @@ class Test_LinearDynamics(unittest.TestCase):
 
 
 class Test_NormalInverseWishart(unittest.TestCase):
-
     def test_prior_map(self):
         from donk.dynamics.prior import NormalInverseWishart
 

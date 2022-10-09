@@ -28,7 +28,7 @@ class QuadraticCosts(CostFunction):
         # Check shapes
         assert C.shape == (*T, dXU, dXU), f"{C.shape} != {(*T, dXU, dXU)}"
         assert c.shape == (*T, dXU), f"{c.shape} != {(*T, dXU)}"
-        assert cc.shape == (*T, ), f"{cc.shape} != {(*T, )}"
+        assert cc.shape == (*T,), f"{cc.shape} != {(*T, )}"
 
         self.C = C
         self.c = c
@@ -62,24 +62,30 @@ class QuadraticCosts(CostFunction):
         """
         dU = U.shape[-1]
         # Add a dummy zero action to create a rectangular array
-        traj = np.concatenate([
-            X,
-            np.concatenate([
-                U,
-                np.zeros(U.shape[:-2] + (1, dU)),
-            ], axis=-2),
-        ], axis=-1)
+        traj = np.concatenate(
+            [
+                X,
+                np.concatenate(
+                    [
+                        U,
+                        np.zeros(U.shape[:-2] + (1, dU)),
+                    ],
+                    axis=-2,
+                ),
+            ],
+            axis=-1,
+        )
 
         costs = (
             # Quadratic costs
             # 1/2 * mu^t C mu
-            np.einsum("...i,...ij,...j->...", traj, self.C, traj) / 2 +
+            np.einsum("...i,...ij,...j->...", traj, self.C, traj) / 2
             # Linear costs
             # mu^T c
-            np.sum(traj * self.c, axis=-1) +
+            + np.sum(traj * self.c, axis=-1)
             # Constant costs
             # cc
-            self.cc
+            + self.cc
         )
         return costs
 
@@ -146,13 +152,13 @@ class QuadraticCosts(CostFunction):
         """
         dXU = xu.shape[-1]
 
-        abs_squared = (t - xu)**2 + alpha
+        abs_squared = (t - xu) ** 2 + alpha
         abs_d = np.sqrt(abs_squared)
         abs_d_cubed = abs_squared * abs_d
 
         # C = diag(alpha * w / )
         C = np.einsum("...i,ij->...ij", alpha * w / abs_d_cubed, np.eye(dXU))
         c = w * ((xu - t) / abs_d - alpha * xu / abs_d_cubed)
-        cc = np.sum(w * (abs_d + xu * (t - xu) / abs_d + alpha * xu**2 / abs_d_cubed / 2), axis=-1)
+        cc = np.sum(w * (abs_d + xu * (t - xu) / abs_d + alpha * xu ** 2 / abs_d_cubed / 2), axis=-1)
 
         return QuadraticCosts(C, c, cc)

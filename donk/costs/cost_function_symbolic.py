@@ -71,7 +71,7 @@ class SymbolicCostFunction(CostFunction):
         # Allocate space
         C = np.empty((T + 1, dX + dU, dX + dU))
         c = np.empty((T + 1, dX + dU))
-        cc = np.empty((T + 1, ))
+        cc = np.empty((T + 1,))
 
         # Numerical evaluations for each timestep
         for t in range(T):

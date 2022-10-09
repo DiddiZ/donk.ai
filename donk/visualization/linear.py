@@ -137,7 +137,7 @@ def visualize_linear_dynamics_model(output_file: Path, dyn: LinearDynamics, X: n
         intercept_label=r"$\mathbf{f}_t$",
         cov_label=r"$\mathbf{\Sigma}_t^{dyn}$",
         y_label=r"$\mathbf{x}_{t+1}$",
-        **kwargs
+        **kwargs,
     )
 
 
@@ -160,7 +160,7 @@ def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.
         intercept_label=r"$\mathbf{k}_t$",
         cov_label=r"$\mathbf{\Sigma}_t^{pol}$",
         y_label=r"$\mathbf{u}_t$",
-        **kwargs
+        **kwargs,
     )
 
 
@@ -236,7 +236,7 @@ def visualize_prediction(output_file_pattern, prediction, truth):
                 prediction[:, :, y].max(axis=0),
                 facecolor="C0",
                 alpha=0.25,
-                interpolate=True
+                interpolate=True,
             )
             plt.plot(truth[:, :, y].mean(axis=0), c="C1", linewidth=1)
             plt.fill_between(
@@ -266,7 +266,7 @@ def visualize_prediction_error(output_file, predictions, targets):
     """
     from sklearn.metrics import explained_variance_score, r2_score
 
-    errors = (predictions - targets)**2
+    errors = (predictions - targets) ** 2
     mse = np.mean(errors)
     N, T, dX = errors.shape
     r2 = r2_score(targets.reshape(N * T, dX), predictions.reshape(N * T, dX))

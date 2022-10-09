@@ -23,7 +23,7 @@ def load_state_controller_dataset(dataset, itr):
         raise ValueError(f"There is no dataset 'state_controller_{dataset:02d}.npz'")
 
     with np.load(file) as data:
-        if itr not in range(len(data['X'])):
+        if itr not in range(len(data["X"])):
             raise ValueError(f"Invalid iteration {itr}")
 
         X = data["X"][itr]

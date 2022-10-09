@@ -5,7 +5,6 @@ from numpy.testing import assert_allclose, assert_array_equal
 
 
 class Test_LQG(unittest.TestCase):
-
     def test_forward(self):
         from donk.samples import StateDistribution
         from donk.traj_opt import lqg
@@ -25,17 +24,19 @@ class Test_LQG(unittest.TestCase):
 
         # Check some values
         assert_allclose(
-            traj.mean, [
+            traj.mean,
+            [
                 [0.12573022, -0.13210486, 0.64042265, -2.21332089, 1.2562705],
                 [1.17023217, 1.8200327, 0.9955234, -3.87002688, -1.53651116],
                 [2.24876315, 2.2154459, 4.87559943, -5.68264397, -4.03765651],
                 [1.20832951, 17.90919574, -7.78669286, 1.24165172, 20.36111693],
                 [-39.41244121, 21.99347233, 42.74031851, -2.26076952, -7.1186971],
                 [31.0077354, 54.39317675, -68.29849519, 0, 0],
-            ]
+            ],
         )
         assert_allclose(
-            traj.covar[3:], [
+            traj.covar[3:],
+            [
                 [
                     [54.09235666, -48.4300889, 50.45096717, 105.0393554, -113.93189734],
                     [-48.4300889, 423.56745, -273.31189737, -132.74023589, 519.01789733],
@@ -56,8 +57,8 @@ class Test_LQG(unittest.TestCase):
                     [-3612.1454295, -6587.92373881, 6928.35963809, 0, 0],
                     [0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0],
-                ]
-            ]
+                ],
+            ],
         )
         assert_array_equal(traj.covar, np.swapaxes(traj.covar, 1, 2), "traj_covar not symmetric")
 
@@ -73,19 +74,20 @@ class Test_LQG(unittest.TestCase):
         _, c, C = loss_l2(
             x=rng.normal(size=(T + 1, dX + dU)),
             t=rng.normal(size=(T + 1, dX + dU)),
-            w=np.concatenate([rng.normal(size=(T + 1, dX)) > 0, 1e-2 * np.ones((T + 1, dU))], axis=1)
+            w=np.concatenate([rng.normal(size=(T + 1, dX)) > 0, 1e-2 * np.ones((T + 1, dU))], axis=1),
         )
         pol = lqg.backward(dyn, C, c)
 
         # Check some values
         assert_allclose(
-            pol.K, [
+            pol.K,
+            [
                 [[1.30823423, 1.38208415, 4.50630981], [-0.71211717, -0.19657582, -2.59400007]],
                 [[0.84046166, 1.61337651, -1.2593433], [0.12026023, -0.50799617, 1.20987989]],
                 [[2.1477244, -1.44199314, -1.17861916], [-1.37101699, 0.98956977, 0.52860322]],
                 [[-0.04972842, -0.23628132, -1.02031922], [0.3636096, -0.50788773, 0.35318357]],
-                [[-1.11351665, -1.82347015, 4.77470105], [-0.42326492, -0.27333697, 1.6068229]]
-            ]
+                [[-1.11351665, -1.82347015, 4.77470105], [-0.42326492, -0.27333697, 1.6068229]],
+            ],
         )
 
     def test_extended_cost(self):
@@ -99,7 +101,8 @@ class Test_LQG(unittest.TestCase):
         C, c = lqg.extended_costs_kl(prev_pol)
 
         assert_allclose(
-            C[:2], [
+            C[:2],
+            [
                 [
                     [0.2748826738, -0.0711263456, -0.0503819346, -0.2174365634, 0.2413743407],
                     [-0.0711263456, 0.0515225272, 0.0478347446, -0.0023277054, -0.1243356279],
@@ -113,17 +116,18 @@ class Test_LQG(unittest.TestCase):
                     [-0.4625958804, -0.3487850167, 0.3112798376, -0.0440036518, -0.0412659902],
                     [0.2757369530, 0.4421347864, -0.0440036518, 0.3162437051, -0.0067316240],
                     [0.2544584564, 0.0169459245, -0.0412659902, -0.0067316240, 0.3295255889],
-                ]
-            ]
+                ],
+            ],
         )
         assert_allclose(
-            c, [
+            c,
+            [
                 [-0.0579161036, 0.0280105873, 0.2573494063, 0.0432608817, 0.0040057220],
                 [0.1005758960, 0.0877084519, -0.1442437337, -0.0416931800, -0.0933408681],
                 [0.4112321773, 0.0086301113, 0.2037747362, 0.0484939612, -0.2259393350],
                 [-0.0251004913, -0.0911598106, -0.4501649890, 0.5172310245, -0.4162454596],
                 [0.2262868408, -0.1254204382, -0.3704702903, -0.1660214078, 0.0328029829],
-            ]
+            ],
         ),
 
     def test_kl_divergence_action(self):
@@ -142,7 +146,6 @@ class Test_LQG(unittest.TestCase):
 
 
 class TrajectoryDistribution(unittest.TestCase):
-
     def test_trajectory_distribution(self):
         from donk.samples import TrajectoryDistribution
         from tests.utils import random_spd

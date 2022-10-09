@@ -17,7 +17,7 @@ sympy = "~=1.9"
 tqdm = "*"
 
 [dev-packages]
-yapf = "*"
+black = "*"
 flake8 = "*"
 flake8-docstrings = "*"
 isort = "*"

@@ -39,7 +39,7 @@ class TransitionPool:
             # Add to pool
             self._XUX = np.concatenate([self._XUX, to_transitions(X, U)], axis=0)
         if self.capacity is not None:
-            self._XUX = self._XUX[-self.capacity:]
+            self._XUX = self._XUX[-self.capacity :]
 
     def get_transitions(self, N: int = None):
         """Get transitions from the pool.

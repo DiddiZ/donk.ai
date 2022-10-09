@@ -27,7 +27,7 @@ class Neural_Network_Policy(Policy):
         if normalize_states:
             self.state_normalization = layers.Normalization(name="normalized_state")
 
-            state = tf.keras.Input((self.dX, ), name="state")
+            state = tf.keras.Input((self.dX,), name="state")
             normalized_state = self.state_normalization(state)
             action = model(normalized_state)
 
@@ -53,7 +53,7 @@ class Neural_Network_Policy(Policy):
         X_val: np.ndarray = None,
         U_val: np.ndarray = None,
         prc_val: np.ndarray = None,
-        silent: bool = False
+        silent: bool = False,
     ):
         """Train the model on new data.
 
@@ -88,13 +88,17 @@ class Neural_Network_Policy(Policy):
             prc_val = prc_val / prc_scale
 
         # Build dataset
-        dataset = tf.data.Dataset.from_tensor_slices(
-            (
-                X_train.astype(np.float32, copy=False),
-                U_train.astype(np.float32, copy=False),
-                prc_train.astype(np.float32, copy=False),
+        dataset = (
+            tf.data.Dataset.from_tensor_slices(
+                (
+                    X_train.astype(np.float32, copy=False),
+                    U_train.astype(np.float32, copy=False),
+                    prc_train.astype(np.float32, copy=False),
+                )
             )
-        ).shuffle(N_train).batch(batch_size)
+            .shuffle(N_train)
+            .batch(batch_size)
+        )
         if X_val is not None:
             dataset_test = tf.data.Dataset.from_tensor_slices(
                 (
@@ -168,8 +172,8 @@ class Neural_Network_Policy(Policy):
 
                 # Update progress bar
                 pbar.set_description(
-                    f"Train loss: {self.model.metric_loss.result():.6f}" +
-                    (f" Val loss: {self.model.metric_loss_val.result():.6f}" if X_val is not None else "")
+                    f"Train loss: {self.model.metric_loss.result():.6f}"
+                    + (f" Val loss: {self.model.metric_loss_val.result():.6f}" if X_val is not None else "")
                 )
 
                 callback.on_epoch_end(epoch, logs={metric.name: metric.result() for metric in self.model.metrics})
@@ -192,7 +196,7 @@ class Neural_Network_Policy(Policy):
             raise NotImplementedError(f"Noise is not supported by {type(self)}")
 
         u = self.model(x.reshape(-1, self.dX).astype(np.float32, copy=False), training=False).numpy()
-        return u.reshape(x.shape[:-1] + (self.dU, ))
+        return u.reshape(x.shape[:-1] + (self.dU,))
 
     def linearize(self, X: np.ndarray, regularization: float = 1e-6) -> LinearGaussianPolicy:
         """Compute linearization of this policy.

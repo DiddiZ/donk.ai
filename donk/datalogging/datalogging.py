@@ -57,8 +57,7 @@ class DummyDataLogger(DataLogger):
         pass  # Do nothing
 
 
-class Context():
-
+class Context:
     def __init__(self, name: str):
         self.name = name
 

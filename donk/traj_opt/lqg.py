@@ -288,13 +288,13 @@ def kl_divergence_action(X, pol: LinearGaussianPolicy, prev_pol: LinearGaussianP
         delta_u = (prev_pol.K[t] - pol.K[t]) @ X[t] + prev_pol.k[t] - pol.k[t]
         kl_div += 0.5 * (
             # tr(sigma_1^-1 * sigma_0)
-            trace_of_product(prev_pol.inv_covar[t], pol.covar[t]) +
+            trace_of_product(prev_pol.inv_covar[t], pol.covar[t])
             # (mu_1 - mu_0)^T * sigma_1^-1 * (mu_1 - mu_0)
-            delta_u.T @ prev_pol.inv_covar[t] @ delta_u +
+            + delta_u.T @ prev_pol.inv_covar[t] @ delta_u
             # -k
-            -dU +
+            - dU
             # log(det(sigma_1) / det(sigma_0))
-            2 * sum(np.log(np.diag(prev_pol.chol_covar[t])) - np.log(np.diag(pol.chol_covar[t])))
+            + 2 * sum(np.log(np.diag(prev_pol.chol_covar[t])) - np.log(np.diag(pol.chol_covar[t])))
         )
 
     return kl_div / T

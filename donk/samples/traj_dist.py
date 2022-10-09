@@ -19,7 +19,7 @@ class TrajectoryDistribution:
             dU = mean.shape[-1] - dX
 
         # Check shapes
-        assert mean.shape[-1:] == (dX + dU, ), f"{mean.shape[-1:]} != {(dX + dU,)}"
+        assert mean.shape[-1:] == (dX + dU,), f"{mean.shape[-1:]} != {(dX + dU,)}"
         assert covar.shape[-2:] == (dX + dU, dX + dU), f"{covar.shape[-2:]} != {(dX + dU, dX + dU)}"
         assert mean.shape[:-1] == covar.shape[:-2], f"{mean.shape[:-1]} != {covar.shape[:-2]}"
 
@@ -31,26 +31,26 @@ class TrajectoryDistribution:
     @property
     def X_mean(self):
         """Get state component of trajectory means."""
-        return self.mean[..., :self.dX]
+        return self.mean[..., : self.dX]
 
     @property
     def X_covar(self):
         """Get state component of trajectory covariances."""
-        return self.covar[..., :self.dX, :self.dX]
+        return self.covar[..., : self.dX, : self.dX]
 
     @property
     def U_mean(self):
         """Get action component of trajectory means."""
-        return self.mean[..., :-1, self.dX:]
+        return self.mean[..., :-1, self.dX :]
 
     @property
     def U_covar(self):
         """Get action component of trajectory covariances."""
-        return self.covar[..., :-1, self.dX:, self.dX:]
+        return self.covar[..., :-1, self.dX :, self.dX :]
 
     def sample(self, size: Tuple[int], rng: np.random.Generator) -> Tuple[np.ndarray, np.ndarray]:
         """Draw samples from this trajectory distribution.
-        
+
         Args:
             size: Shape of desired amount of samples
         """
@@ -62,8 +62,8 @@ class TrajectoryDistribution:
 
         for t in range(T):
             xu = rng.multivariate_normal(self.mean[t], self.covar[t], size=N)
-            X[:, t] = xu[:, :self.dX]
-            U[:, t] = xu[:, self.dX:]
+            X[:, t] = xu[:, : self.dX]
+            U[:, t] = xu[:, self.dX :]
         # Final state
         X[:, T] = rng.multivariate_normal(self.X_mean[T], self.X_covar[T], size=N)
 

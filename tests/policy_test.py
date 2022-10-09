@@ -7,7 +7,6 @@ from tests.utils import random_spd
 
 
 class Test_LinearGaussianPolicy(unittest.TestCase):
-
     def test_init_from_pol_covar(self):
         """Test __init__ using pol_covar."""
         from donk.policy import LinearGaussianPolicy
@@ -97,7 +96,6 @@ class Test_LinearGaussianPolicy(unittest.TestCase):
 
 
 class Test_Noise(unittest.TestCase):
-
     def test_smooth_noise(self):
         """Test smooth_noise."""
         from donk.policy import smooth_noise
@@ -118,7 +116,6 @@ class Test_Noise(unittest.TestCase):
 
 
 class Test_Initial_Policies(unittest.TestCase):
-
     def test_constant_policy(self):
         """Test constant_policy."""
         from donk.policy import initial_policies
@@ -136,7 +133,6 @@ class Test_Initial_Policies(unittest.TestCase):
 
 
 class Test_Neural_Network_Policy(unittest.TestCase):
-
     def test_tensorflow(self):
         """Make sure TF dependenciesy are loaded properly."""
         import tensorflow as tf
@@ -153,10 +149,12 @@ class Test_Neural_Network_Policy(unittest.TestCase):
         prc_train = np.tile(random_spd((T, dU, dU), rng), (N, 1, 1, 1))
 
         pol = Neural_Network_Policy(
-            model=tf.keras.Sequential([
-                layers.InputLayer(input_shape=(dX, )),
-                layers.Dense(dU, activation=None),
-            ])
+            model=tf.keras.Sequential(
+                [
+                    layers.InputLayer(input_shape=(dX,)),
+                    layers.Dense(dU, activation=None),
+                ]
+            )
         )
 
         pol.update(

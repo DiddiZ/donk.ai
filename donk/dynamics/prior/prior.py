@@ -7,6 +7,7 @@ import numpy as np
 @dataclass
 class NormalInverseWishart:
     """A normal-inverse Wishart distribution."""
+
     mu0: np.ndarray
     Phi: np.ndarray
     N_mean: float
@@ -25,8 +26,9 @@ class NormalInverseWishart:
         """
         return NormalInverseWishart(
             mu0=(self.N_mean * self.mu0 + N * emp_mean) / (self.N_mean + N),
-            Phi=self.Phi + N * emp_covar + self.N_mean * N /
-            (self.N_mean + N) * np.einsum("i,j->ij", emp_mean - self.mu0, emp_mean - self.mu0),
+            Phi=self.Phi
+            + N * emp_covar
+            + self.N_mean * N / (self.N_mean + N) * np.einsum("i,j->ij", emp_mean - self.mu0, emp_mean - self.mu0),
             N_mean=self.N_mean + N,
             N_covar=self.N_covar + N,
         )
@@ -48,7 +50,7 @@ class NormalInverseWishart:
             d: Dimension
         """
         return NormalInverseWishart(
-            mu0=np.zeros((d, )),
+            mu0=np.zeros((d,)),
             Phi=np.zeros((d, d)),
             N_mean=0,
             N_covar=-(1 + d),
