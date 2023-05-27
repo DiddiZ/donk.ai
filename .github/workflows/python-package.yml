@@ -18,17 +18,14 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Install pipenv
-        run: pip install pipenv
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pipenv"
       - name: Install dependencies
         run: |
-          pipenv install --deploy --dev --python ${{ matrix.python-version }}
-      - name: Test with pytest
+          python -m pip install .
+      - name: Test with unittest
         run: |
-          pipenv run python -m unittest discover -v -s "./tests" -p "*_test.py"
+          python -m unittest discover -v -s "./tests" -p "*_test.py"
