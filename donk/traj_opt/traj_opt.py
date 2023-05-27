@@ -15,6 +15,7 @@ class TrajOptAlgorithm:
     def __init__(
         self, kl_step: float, max_step_mult: float = 10, min_step_mult: float = 0.1, dynamics_regularization: float = 1e-6
     ) -> None:
+        """Initialize the iLQR trajectory optimization."""
         self.kl_step = kl_step
         self.kl_step_mult: float = 1
         self.max_step_mult: float = max_step_mult
@@ -34,7 +35,7 @@ class TrajOptAlgorithm:
         cost_function: CostFunction,
         prev_pol: LinearGaussianPolicy = None,
         prior: DynamicsPrior = None,
-    ):
+    ) -> None:
         """Perform one iteration of trajectory optimization.
 
         Args:

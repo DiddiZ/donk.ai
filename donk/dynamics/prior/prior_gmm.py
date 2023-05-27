@@ -8,6 +8,7 @@ class GMMPrior(DynamicsPrior):
     """A Gaussian Mixture Model (GMM) based prior."""
 
     def __init__(self, n_clusters, random_state=None) -> None:
+        """Initialize this `GMMPrior`."""
         self.gmm = GaussianMixture(n_components=n_clusters, random_state=random_state)
 
     def update(self, XUX: np.ndarray) -> None:

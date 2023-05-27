@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Dict, List
 
 import numpy as np
 
@@ -104,8 +103,9 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
     """SymbolicCostFunction composed of named partial cost functions."""
 
     def __init__(
-        self, cost_funs: List[Callable[[np.ndarray, np.ndarray], np.ndarray]], cost_function_names: List[str], T: int, dX: int, dU: int
+        self, cost_funs: list[Callable[[np.ndarray, np.ndarray], np.ndarray]], cost_function_names: list[str], T: int, dX: int, dU: int
     ) -> None:
+        """Initialize this `MultipartSymbolicCostFunction`."""
         from sympy import lambdify, symbols
 
         def cost_fun(X, U):
@@ -126,7 +126,7 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
 
         self.cost_function_names = cost_function_names
 
-    def compute_costs_individual(self, X: np.ndarray, U: np.ndarray) -> Dict[str, np.ndarray]:
+    def compute_costs_individual(self, X: np.ndarray, U: np.ndarray) -> dict[str, np.ndarray]:
         """Evaluate costs for trajectories.
 
         Args:

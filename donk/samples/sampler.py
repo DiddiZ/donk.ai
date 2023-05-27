@@ -9,6 +9,11 @@ import donk.policy
 
 
 class Sampler(ABC):
+    """Base class for samplers.
+
+    Sampler provide an interface for taking policy samples in some evironment.
+    """
+
     @abstractmethod
     def take_sample(self, pol: donk.policy.Policy, T: int, condition, rng: np.random.Generator = None) -> tuple[np.ndarray, np.ndarray]:
         """Take one policy sample.

@@ -5,16 +5,17 @@
 </div>
 
 # Guided Policy Search Toolbox
-This repository provides an implementation of the Guided Policy Search (GPS) algorithm for trajectroy-centric Reinforcement Learning.
-The 
 
+This repository provides an implementation of the Guided Policy Search (GPS) algorithm for trajectroy-centric Reinforcement Learning.
 
 ## Guided Policy Search
+
 TODO
 
 ## Features
 
 ### LQR
+
 The linear–quadratic regulator (LQR) computes cost optimal linerar controllers.
 
 ```python
@@ -33,11 +34,12 @@ costs = cost_function.quadratic_approximation(np.mean(X, axis=0), np.mean(U, axi
 x0 = StateDistribution.fit(X[:, 0])
 
 # Perform LQR trajectory optimization
-ilqr = ILQR(dyn, prev_pol, costs, x0)  
+ilqr = ILQR(dyn, prev_pol, costs, x0)
 pol = ilqr.optimize(kl_step=1).policy # Use a KL constraint of 1
 ```
 
 ### Quadratic Cost Approximation
+
 LQR trajectory optimization requires a quadratic cost function. Donk.ai can automatically compute quadratic approximations using symbolic differentiation via sympy.
 
 ```python
@@ -65,13 +67,14 @@ cost_function = SymbolicCostFunction(cost_function_, T, dX, dU)
 cost_approx = cost_function.quadratic_approximation(X, U)
 ```
 
-As `cost_function_` is called with sympy symbols, 
-
+As `cost_function_` is called with sympy symbols,
 
 ### TVLG Dynamics
+
 A time-varying linear Gaussian (TVGL) dynamics model `dyn: LinearDynamics`
 consists of a linear term `dyn.K`, a constant term `dyn.k` and a covariance `dyn.covar`.
 The transitions are modelled as a series of Gaussian distributions
+
 <div align="center">
 <img src="https://render.githubusercontent.com/render/math?math=p(\mathbf{x}_{t%2b1}|\mathbf{x}_t,\mathbf{u}_t)\sim\mathcal{N}(\mathbf{F}_t\mathbf{x}_t%2b\mathbf{f}_t,%20\mathbf{\Sigma}^{dyn}_t)\text{,}">
 </div>
@@ -118,6 +121,7 @@ dyn = linear_dynamics.fit_lr(X, U, prior=prior)
 Sufficient size of the prior assumed, regularization of the dynamics is not required.
 
 ### Datalogging
+
 Inside into internals and interim results of sub-algorithms is often crucial for understanding and debugging.
 Therfore, donk.ai provides a context-based datalogging functionality, using Python shelves.
 
@@ -131,7 +135,7 @@ def inner_fun(a, b):
     "Inner function with datalogging"
     c = a + b
     datalogging.log(c=c) # Log interim result
-    return c**2  
+    return c**2
 
 with datalogging.ShelveDataLogger("logfile"):
     a = 1
@@ -151,6 +155,7 @@ with datalogging.ShelveDataLogger("logfile"):
 #### Read shelves
 
 The resulting shelve contains the data and can be opened via the shelve library.
+
 ```python
 import shelve
 
@@ -158,7 +163,9 @@ with shelve.open('logfile') as data:
     for key, value in data.items():
         print(f"{key}: {value}")
 ```
+
 results in:
+
 ```text
 a: 1
 b: 2
@@ -168,4 +175,5 @@ c: 3
 ```
 
 ## See also
-* [Original GPS implmenetion at Berkeley](https://github.com/cbfinn/gps)
+
+- [Original GPS implmenetion at Berkeley](https://github.com/cbfinn/gps)

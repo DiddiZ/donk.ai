@@ -1,4 +1,4 @@
-from typing import Tuple
+from __future__ import annotations
 
 import numpy as np
 
@@ -48,11 +48,12 @@ class TrajectoryDistribution:
         """Get action component of trajectory covariances."""
         return self.covar[..., :-1, self.dX :, self.dX :]
 
-    def sample(self, size: Tuple[int], rng: np.random.Generator) -> Tuple[np.ndarray, np.ndarray]:
+    def sample(self, size: tuple[int], rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
         """Draw samples from this trajectory distribution.
 
         Args:
             size: Shape of desired amount of samples
+            rng: Random number generator
         """
         T = self.mean.shape[-2] - 1
         N = np.prod(size)

@@ -236,9 +236,9 @@ class Test_QuadraticCosts(unittest.TestCase):
             alpha=1e-2,
         )
 
-        assert_allclose(cost_function.C, np.diag([0.01 / 1.01 ** 1.5, 20]))
-        assert_allclose(cost_function.c, [1 / 1.01 ** 0.5 - 0.03 / 1.01 ** 1.5, -40])
-        assert_allclose(cost_function.cc, 1.01 ** 0.5 - 3 / 1.01 ** 0.5 + 0.045 / 1.01 ** 1.5 + 0.2 + 40)
+        assert_allclose(cost_function.C, np.diag([0.01 / 1.01**1.5, 20]))
+        assert_allclose(cost_function.c, [1 / 1.01**0.5 - 0.03 / 1.01**1.5, -40])
+        assert_allclose(cost_function.cc, 1.01**0.5 - 3 / 1.01**0.5 + 0.045 / 1.01**1.5 + 0.2 + 40)
 
     def test_quadratic_cost_approximation_l1_batched(self):
         """Test quadratic_cost_approximation_l1 on a trajectory."""
@@ -374,8 +374,8 @@ class Test_CostFunction(unittest.TestCase):
         T, dX, dU = 2, 1, 1
 
         def cost_fun(X, U):
-            c = np.sum(X ** 2, axis=-1) / 2
-            c[:-1] += np.sum(U ** 2, axis=-1) / 2
+            c = np.sum(X**2, axis=-1) / 2
+            c[:-1] += np.sum(U**2, axis=-1) / 2
             return c
 
         cost_function = SymbolicCostFunction(cost_fun, T, dX, dU)

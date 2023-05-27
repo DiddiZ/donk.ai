@@ -19,7 +19,7 @@ class Test_ShelveDataLogger(unittest.TestCase):
 
                 datalogging.log(c=c)
 
-                return c ** 2
+                return c**2
 
             temp_file = str(Path(tmpdirname) / "data")
             with datalogging.ShelveDataLogger(temp_file):
@@ -46,7 +46,7 @@ class Test_ShelveDataLogger(unittest.TestCase):
             with datalogging.ShelveDataLogger(temp_file):
                 for itr in range(10):
                     with datalogging.Context(f"itr_{itr:02d}"):
-                        datalogging.log(a=itr ** 2)
+                        datalogging.log(a=itr**2)
 
             with shelve.open(temp_file) as data:
                 assert_allclose(datalogging.concat_iterations(data, "itr_{itr:02d}/a", range(10)), np.arange(10) ** 2)

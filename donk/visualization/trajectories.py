@@ -1,9 +1,12 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator
 
 
-def plot_line_set(x, ys, color=None, individual_lines="auto", label=None):
+def plot_line_set(x: np.ndarray, ys: np.ndarray, color=None, individual_lines: str | bool = "auto", label: str | None = None):
+    """Plot a set of lines with a mean and confidence interval."""
     N, _ = ys.shape
 
     # Only show individual lines if there are only a few in auto mode
@@ -32,7 +35,14 @@ def plot_line_set(x, ys, color=None, individual_lines="auto", label=None):
     )
 
 
-def visualize_trajectories(file, X, U):
+def visualize_trajectories(file: Path | str, X: np.ndarray, U: np.ndarray):
+    """Visualize trajectories with states and action in seperate plots.
+
+    Args:
+        file: File to save figure to.
+        X: (T+1, dX), states
+        U: (T, dU), actions
+    """
     plt.figure(figsize=(16, 9))
 
     ax1 = plt.subplot(2, 1, 1)

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List
 
 import numpy as np
 
@@ -11,7 +10,7 @@ class DataLogger(ABC):
     """Base class for data loggers."""
 
     @abstractmethod
-    def log(self, key: List[str], data) -> None:
+    def log(self, key: list[str], data) -> None:
         """Log one data.
 
         Args:
@@ -37,7 +36,7 @@ class DataLogger(ABC):
 
         return self.as_default()
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.flush()
 
         # Restore stored logger
@@ -58,10 +57,13 @@ class DummyDataLogger(DataLogger):
 
 
 class Context:
-    def __init__(self, name: str):
+    """Context manager for hierarchical data logging."""
+
+    def __init__(self, name: str) -> None:
+        """Initialize this `Context`."""
         self.name = name
 
-    def __enter__(self):
+    def __enter__(self) -> Context:
         global _data_logger_context
 
         # Store previous context
@@ -72,7 +74,7 @@ class Context:
 
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         global _data_logger_context
 
         # Restore context

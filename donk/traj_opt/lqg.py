@@ -15,6 +15,8 @@ from donk.utils import regularize, symmetrize, trace_of_product
 
 @dataclass
 class ILQRStepResult:
+    """Result of one iLQR step."""
+
     eta: float
     policy: LinearGaussianPolicy
     kl_div: float

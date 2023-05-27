@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,8 +8,8 @@ import numpy as np
 
 def visualize_costs(
     output_file: Path,
-    costs: List[np.ndarray],
-    cost_labels: List[str],
+    costs: list[np.ndarray],
+    cost_labels: list[str],
     include_total: bool = True,
 ):
     """Plots mutiple cost curves.

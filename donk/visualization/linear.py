@@ -13,18 +13,18 @@ from donk.policy import LinearGaussianPolicy
 
 def visualize_linear_model(
     output_file: Path,
-    coeff,
-    intercept,
-    cov,
-    x,
-    y=None,
-    N=100,
-    coeff_label="coefficients",
-    intercept_label="intercept",
-    cov_label="covariance",
-    y_label="prediction",
-    time_label="$t$",
-    export_data=True,
+    coeff: np.ndarray,
+    intercept: np.ndarray,
+    cov: np.ndarray,
+    x: np.ndarray,
+    y: np.ndarray | None = None,
+    N: int = 100,
+    coeff_label: str = "coefficients",
+    intercept_label: str = "intercept",
+    cov_label: str = "covariance",
+    y_label: str = "prediction",
+    time_label: str = "$t$",
+    export_data: bool = True,
 ):
     """Creates a figure visualizing a timeseries of linear Gausian models.
 
@@ -35,7 +35,13 @@ def visualize_linear_model(
         cov: Covariances. Shape: (T, dY, dY)
         x: Shape (T, dX)
         y: Optional. Shape (T, dY)
-        N: Number of random samples drawn to visualize variance.
+        N: Number of random samples drawn to visualize variance
+        coeff_label: y-axis label for coefficients
+        intercept_label: y-axis label for intercept
+        cov_label: y-axis label for covariance
+        y_label: y-axis label for prediction
+        time_label: x-axis label for time
+        export_data: If True, export the data to a .npz file
     """
     fig = plt.figure(figsize=(16, 12))
 
@@ -146,7 +152,7 @@ def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.
 
     Args:
         output_file: File to write the plot to.
-        dyn: Linear dynamics model
+        pol: Linear Gaussian policy
         X: (N, T+1, dX) States
         kwargs: Passed to `visualize_linear_model`
     """
@@ -164,14 +170,13 @@ def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.
     )
 
 
-def visualize_coefficients(output_file_pattern, coeff):
+def visualize_coefficients(output_file_pattern: str | None, coeff: np.ndarray):
     """Visualize coefficietns of a linear model.
 
     Args:
         output_file_pattern: Pattern for files to write the plots to.
         coeff: shape (T, dY, dX), linear coefficients
     """
-
     T, dY, dX = coeff.shape
 
     for y in range(dY):
@@ -261,8 +266,8 @@ def visualize_prediction_error(output_file, predictions, targets):
 
     Args:
         output_file: File to write the plot to.
-        prediction: shape (N, T, dX), model predictions
-        target: shape (N, T, dX), targets
+        predictions: shape (N, T, dX), model predictions
+        targets: shape (N, T, dX), targets
     """
     from sklearn.metrics import explained_variance_score, r2_score
 
@@ -326,13 +331,17 @@ def visualize_prediction_error(output_file, predictions, targets):
     plt.close()
 
 
-def visualize_predictor_target_correlation(output_file, X, Y, xlabel="$x$", ylabel="$y$"):
+def visualize_predictor_target_correlation(
+    output_file: Path | str | None, X: np.ndarray, Y: np.ndarra, xlabel: str = "$x$", ylabel: str = "$y$"
+):
     """Visualize the correlation between predictors and targets.
 
     Args:
         output_file: File to write the plot to.
         X: shape (N, dX), predictors
         Y: shape (N, dY), targets
+        xlabel: Label for the x-axis
+        ylabel: Label for the y-axis
     """
     dX, dY = X.shape[-1], Y.shape[-1]
     corr = np.empty((dY, dX))
@@ -352,13 +361,14 @@ def visualize_predictor_target_correlation(output_file, X, Y, xlabel="$x$", ylab
     plt.close()
 
 
-def visualize_predictor_target_scatter(output_file, X, Y, cmap=plt.cm.plasma):
+def visualize_predictor_target_scatter(output_file, X: np.ndarray, Y: np.ndarray, cmap=plt.cm.plasma):
     """Visualize the correlation between predictors and targets.
 
     Args:
         output_file: File to write the plot to.
         X: shape (N, T, dX), predictors
         Y: shape (N, T, dY), targets
+        cmap: Colormap to use for coloring the scatters
     """
     N, T, dX = X.shape
     dY = Y.shape[-1]

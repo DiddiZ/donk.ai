@@ -159,6 +159,6 @@ class QuadraticCosts(CostFunction):
         # C = diag(alpha * w / )
         C = np.einsum("...i,ij->...ij", alpha * w / abs_d_cubed, np.eye(dXU))
         c = w * ((xu - t) / abs_d - alpha * xu / abs_d_cubed)
-        cc = np.sum(w * (abs_d + xu * (t - xu) / abs_d + alpha * xu ** 2 / abs_d_cubed / 2), axis=-1)
+        cc = np.sum(w * (abs_d + xu * (t - xu) / abs_d + alpha * xu**2 / abs_d_cubed / 2), axis=-1)
 
         return QuadraticCosts(C, c, cc)

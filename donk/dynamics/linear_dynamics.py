@@ -20,9 +20,9 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
         """Initialize this LinearDynamics object.
 
         Args:
-            Fm: (T, dX, dX + dU), Linear term
-            fv: (T, dX), Constant term
-            dyn_covar: (T, dX, dX), Covariances
+            F: (T, dX, dX + dU), Linear term
+            f: (T, dX), Constant term
+            covar: (T, dX, dX), Covariances
 
         """
         TimeVaryingLinearGaussian.__init__(self, F, f, covar)

@@ -1,15 +1,10 @@
 {
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true,
-    "editor.formatOnSave": true,
-    "python.formatting.provider": "black",
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./tests",
-        "-p",
-        "*_test.py"
-    ],
-    "python.testing.unittestEnabled": true
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.enabled": true,
+  "editor.formatOnSave": true,
+  "python.formatting.provider": "none",
+  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "*_test.py"],
+  "python.testing.unittestEnabled": true,
+  "git.rebaseWhenSync": true
 }

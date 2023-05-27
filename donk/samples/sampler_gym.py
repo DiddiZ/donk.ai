@@ -9,7 +9,15 @@ from donk.samples.sampler import Sampler
 
 
 class GymSampler(Sampler):
+    """Sampler for Gym environments."""
+
     def __init__(self, env, smooth_kernel: float = 0.0) -> None:
+        """Initialize Gym sampler.
+
+        Args:
+            env: Gym environment
+            smooth_kernel: Standard deviation of Gaussian kernel for smoothing actions. `0.0` indicates no smoothing.
+        """
         super().__init__()
 
         self.env = env
@@ -58,7 +66,7 @@ class GymSampler(Sampler):
         # Perform policy rollout
         for t in range(T):
             U[t] = pol.act(X[t], t, noise[t] if rng is not None else None)
-            obs, _, done, _ = self.env.step(self.convert_action((U[t])))
+            obs, _, done, _ = self.env.step(self.convert_action(U[t]))
             if done and t < T - 1:
                 raise Exception(f"Iteration ended prematurely {t+1}/{T}")
             X[t + 1] = self.convert_observation(obs)

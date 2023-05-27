@@ -16,7 +16,7 @@ def visualize_iLQR(
     constraint_color="C1",
     export_data: bool = True,
 ):
-
+    """Visualize the results of an iLQR optimization."""
     results = pd.DataFrame(results).sort_values("eta")
 
     fig, ax1 = plt.subplots()

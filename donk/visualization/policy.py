@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,17 +9,18 @@ from donk.policy import Policy
 
 
 def visualize_policy_actions(
-    output_file: Path,
+    output_file: Path | str | None,
     X: np.ndarray,
-    policies: List[Policy],
-    policy_labels: List[str],
-    actions: List[int],
-    action_labels: List[str],
+    policies: list[Policy],
+    policy_labels: list[str],
+    actions: list[int],
+    action_labels: list[str],
     action_scaler=None,
-):
+) -> None:
     """Compares the actions of different policies of the same sates.
 
     Args:
+        output_file: Path to save the figure to. `None` indicates showing the figure.
         X: (N, T+1, dX) States
         policies: List of policies
         policy_labels: Names for the policies

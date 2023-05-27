@@ -5,31 +5,30 @@ name: Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Install pipenv
-      run: pip install pipenv
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pipenv'
-    - name: Install dependencies
-      run: |
-        pipenv install --deploy --dev --python ${{ matrix.python-version }}
-    - name: Test with pytest
-      run: |
-        pipenv run python -m unittest discover -v -s "./tests" -p "*_test.py"
+      - uses: actions/checkout@v2
+      - name: Install pipenv
+        run: pip install pipenv
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pipenv"
+      - name: Install dependencies
+        run: |
+          pipenv install --deploy --dev --python ${{ matrix.python-version }}
+      - name: Test with pytest
+        run: |
+          pipenv run python -m unittest discover -v -s "./tests" -p "*_test.py"

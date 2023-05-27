@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dbm.dumb
 import pickle
-from typing import List
 
 from donk.datalogging.datalogging import DataLogger
 
@@ -11,11 +10,12 @@ class ShelveDataLogger(DataLogger):
     """Log data as single shelve file."""
 
     def __init__(self, file) -> None:
+        """Initialize this `ShelveDataLogger`."""
         super().__init__()
 
         self.file = file
 
-    def log(self, key: List[str], data) -> None:
+    def log(self, key: list[str], data) -> None:
         """Log one data.
 
         Args:
@@ -35,8 +35,8 @@ class ShelveDataLogger(DataLogger):
 
         return super().__enter__()
 
-    def __exit__(self, type, value, traceback):
-        super().__exit__(type, value, traceback)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        super().__exit__(exc_type, exc_val, exc_tb)
 
         # Close shelve
         self.__data.close()

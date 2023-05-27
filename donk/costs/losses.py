@@ -47,7 +47,7 @@ def loss_l2(x, t, w):
 
     # Total cost
     # l = sum(0.5 * (x - t)^2 * w)
-    l = 0.5 * np.sum(d ** 2 * w, axis=1)
+    l = 0.5 * np.sum(d**2 * w, axis=1)
 
     # First order derivative
     # lx = (x - t) * w
@@ -80,7 +80,7 @@ def loss_l1(x, t, w, alpha):
     _, dX = x.shape
 
     d = x - t  # Error
-    abs_d = np.sqrt(alpha + d ** 2)
+    abs_d = np.sqrt(alpha + d**2)
 
     # Total cost
     # l = sum(w * sqrt((x - t)^2 + alpha))
@@ -92,7 +92,7 @@ def loss_l1(x, t, w, alpha):
 
     # Second order derivative
     # lxx = w * alpha / (((x-t)^2 + alpha)^(3/2))
-    lxx = np.einsum("ij,jk->ijk", w * alpha / abs_d ** 3, np.eye(dX))
+    lxx = np.einsum("ij,jk->ijk", w * alpha / abs_d**3, np.eye(dX))
 
     return l, lx, lxx
 
