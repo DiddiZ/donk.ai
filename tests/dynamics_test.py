@@ -84,7 +84,10 @@ class Test_LinearDynamics(unittest.TestCase):
         assert_array_equal(dyn_covar, np.swapaxes(dyn_covar, 1, 2), "dyn_covar not symmetric")
         for t in range(T):
             with self.subTest(t=t):
-                self.assertTrue(all(np.linalg.eigvalsh(dyn_covar[t]) >= -1e-16), f"Negative eigenvalues {np.linalg.eigvalsh(dyn_covar[t])}")
+                self.assertTrue(
+                    all(np.linalg.eigvalsh(dyn_covar[t]) >= -1e-16),
+                    f"Negative eigenvalues {np.linalg.eigvalsh(dyn_covar[t])}",
+                )
 
     def test_fit_lr_error(self):
         from donk.dynamics.linear_dynamics import fit_lr
@@ -169,7 +172,10 @@ class Test_LinearDynamics(unittest.TestCase):
         assert_array_equal(dyn_covar, np.swapaxes(dyn_covar, 1, 2), "dyn_covar not symmetric")
         for t in range(T):
             with self.subTest(t=t):
-                self.assertTrue(all(np.linalg.eigvalsh(dyn_covar[t]) >= 0), f"Negative eigenvalues {np.linalg.eigvalsh(dyn_covar[t])}")
+                self.assertTrue(
+                    all(np.linalg.eigvalsh(dyn_covar[t]) >= 0),
+                    f"Negative eigenvalues {np.linalg.eigvalsh(dyn_covar[t])}",
+                )
 
     def test_log_prob(self):
         from donk.dynamics import to_transitions

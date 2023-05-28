@@ -146,7 +146,10 @@ class Neural_Network_Policy(Policy):
 
         # EarlyStopping callback
         callback = tf.keras.callbacks.EarlyStopping(
-            monitor="val/loss" if X_val is not None else "train/loss", mode="min", patience=patience, restore_best_weights=True
+            monitor="val/loss" if X_val is not None else "train/loss",
+            mode="min",
+            patience=patience,
+            restore_best_weights=True,
         )
         callback.set_model(self.model)
         self.model.stop_training = False
@@ -215,7 +218,9 @@ class Neural_Network_Policy(Policy):
             tape.watch(x)
             U = tf.reshape(self.model(x, training=False), (N, T, dU))
             U_mean = tf.reduce_mean(U, axis=0)
-            U_sum = tf.reduce_sum(U_mean, axis=0)  # Sum over timesteps as they are independend, to reduce dimension of du_dx
+            U_sum = tf.reduce_sum(
+                U_mean, axis=0
+            )  # Sum over timesteps as they are independend, to reduce dimension of du_dx
 
         # Compute and reshape jacobian
         du_dx = tape.jacobian(U_sum, x)

@@ -92,8 +92,8 @@ class ILQR:
             kl_step: KL divergence threshold to previous policy
             min_eta: Minimal value of the Lagrangian multiplier
             max_eta: Maximal value of the Lagrangian multiplier
-            rtol: Tolerance of found solution to kl_step. Levine et al. propose a value of 0.1 in "Learning Neural Network Policies with
-                  Guided Policy Search under Unknown Dynamics", chapter 3.1
+            rtol: Tolerance of found solution to kl_step. Levine et al. propose a value of 0.1 in "Learning Neural
+                    Network Policies with Guided Policy Search under Unknown Dynamics", chapter 3.1
             full_history: Whether to return ahistory of all optimization steps, for debug purposes
 
         Returns:

@@ -31,7 +31,9 @@ class GymSampler(Sampler):
         """Convert one action from a flat numpy array to one action for the from the Gym environment."""
         return u
 
-    def take_sample(self, pol: Policy, T: int, condition: int, rng: np.random.Generator = None) -> tuple[np.ndarray, np.ndarray]:
+    def take_sample(
+        self, pol: Policy, T: int, condition: int, rng: np.random.Generator = None
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Take one policy sample.
 
         Args:

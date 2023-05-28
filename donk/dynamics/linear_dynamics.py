@@ -63,7 +63,9 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
         means = self.predict(X[..., :-1, :], U, t=None)
         return multivariate_normal_logpdf(X[..., 1:, :], means, self.covar)
 
-    def evaluate(self, output_dir: str | Path, X_train: np.ndarray, U_train: np.ndarray, X_test: np.ndarray, U_test: np.ndarray):
+    def evaluate(
+        self, output_dir: str | Path, X_train: np.ndarray, U_train: np.ndarray, X_test: np.ndarray, U_test: np.ndarray
+    ):
         """Create diagnostics and evaluation plots for this dynamics model.
 
         Args:
@@ -141,7 +143,8 @@ def fit_lr(
         X: (N, T+1, dX), States
         U: (N, T, dU), Actions
         prior: DynamicsPrior to be used. May be `None` to fit without prior.
-        regularization: Eigenvalues of the joint distribution covariance are lifted to this value. Ensures matrix is not singular.
+        regularization: Eigenvalues of the joint distribution covariance are lifted to this value. Ensures matrix is
+                not singular.
         prior_weight: Weighting factor to scale the influce of the prior.
     """
     N, _, dX = X.shape

@@ -5,7 +5,9 @@ import numpy as np
 from matplotlib.ticker import MaxNLocator
 
 
-def plot_line_set(x: np.ndarray, ys: np.ndarray, color=None, individual_lines: str | bool = "auto", label: str | None = None):
+def plot_line_set(
+    x: np.ndarray, ys: np.ndarray, color=None, individual_lines: str | bool = "auto", label: str | None = None
+):
     """Plot a set of lines with a mean and confidence interval."""
     N, _ = ys.shape
 

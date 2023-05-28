@@ -15,7 +15,9 @@ class Sampler(ABC):
     """
 
     @abstractmethod
-    def take_sample(self, pol: donk.policy.Policy, T: int, condition, rng: np.random.Generator = None) -> tuple[np.ndarray, np.ndarray]:
+    def take_sample(
+        self, pol: donk.policy.Policy, T: int, condition, rng: np.random.Generator = None
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Take one policy sample.
 
         Args:

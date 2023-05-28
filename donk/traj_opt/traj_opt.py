@@ -13,7 +13,11 @@ class TrajOptAlgorithm:
     """Algorithm for iterative LQR trajectory optimization."""
 
     def __init__(
-        self, kl_step: float, max_step_mult: float = 10, min_step_mult: float = 0.1, dynamics_regularization: float = 1e-6
+        self,
+        kl_step: float,
+        max_step_mult: float = 10,
+        min_step_mult: float = 0.1,
+        dynamics_regularization: float = 1e-6,
     ) -> None:
         """Initialize the iLQR trajectory optimization."""
         self.kl_step = kl_step

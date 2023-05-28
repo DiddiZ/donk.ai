@@ -9,7 +9,9 @@ class TimeVaryingLinearGaussian:
     `p(y|t,x) ~ N(coeffcients_t * x + intercept_t, covar_t)`
     """
 
-    def __init__(self, coefficients: np.ndarray, intercept: np.ndarray, covar: np.ndarray = None, inv_covar: np.ndarray = None) -> None:
+    def __init__(
+        self, coefficients: np.ndarray, intercept: np.ndarray, covar: np.ndarray = None, inv_covar: np.ndarray = None
+    ) -> None:
         """Initialize this TimeVaryingLinearGaussian object.
 
         Must provide either covariance or precision, or both.

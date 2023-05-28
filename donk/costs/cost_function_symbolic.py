@@ -19,8 +19,8 @@ class SymbolicCostFunction(CostFunction):
         """Initialize this SymbolicCostFunction.
 
         Args:
-            cost_fun: The primitive cost function. A callable which evaluates the costs for a trajectory at each timestep.
-                      Returns an ndarray with shape (T, )
+            cost_fun: The primitive cost function. A callable which evaluates the costs for a trajectory at each
+                    timestep. Returns an ndarray with shape (T, )
             T: Time horizon
             dX: Dimension of state space
             dU: Dimension of action space
@@ -103,7 +103,12 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
     """SymbolicCostFunction composed of named partial cost functions."""
 
     def __init__(
-        self, cost_funs: list[Callable[[np.ndarray, np.ndarray], np.ndarray]], cost_function_names: list[str], T: int, dX: int, dU: int
+        self,
+        cost_funs: list[Callable[[np.ndarray, np.ndarray], np.ndarray]],
+        cost_function_names: list[str],
+        T: int,
+        dX: int,
+        dU: int,
     ) -> None:
         """Initialize this `MultipartSymbolicCostFunction`."""
         from sympy import lambdify, symbols
@@ -122,7 +127,9 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
         U_sym = np.array(symbols(f"u:{T*dU}")).reshape(T, dU)
 
         # Lambdify and vectorize cost functions
-        self.cost_funs = [_vectorize_cost_function(lambdify([X_sym, U_sym], list(cf(X_sym, U_sym)))) for cf in cost_funs]
+        self.cost_funs = [
+            _vectorize_cost_function(lambdify([X_sym, U_sym], list(cf(X_sym, U_sym)))) for cf in cost_funs
+        ]
 
         self.cost_function_names = cost_function_names
 
