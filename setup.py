@@ -21,7 +21,6 @@ setup(
         "pandas~=1.5",
         "tensorflow~=2.12",
         "tensorflow-probability~=0.20",
-        "keras~=2.12",
         "sympy~=1.12",
         "tqdm",
     ],
