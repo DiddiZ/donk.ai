@@ -35,7 +35,7 @@ class ShelveDataLogger(DataLogger):
 
         return super().__enter__()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         super().__exit__(exc_type, exc_val, exc_tb)
 
         # Close shelve

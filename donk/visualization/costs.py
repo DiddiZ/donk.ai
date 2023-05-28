@@ -11,7 +11,7 @@ def visualize_costs(
     costs: list[np.ndarray],
     cost_labels: list[str],
     include_total: bool = True,
-):
+) -> None:
     """Plots mutiple cost curves.
 
     Args:

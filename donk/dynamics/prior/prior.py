@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -43,7 +45,7 @@ class NormalInverseWishart:
         return self.Phi / (self.N_covar + d + 1)
 
     @staticmethod
-    def non_informative_prior(d):
+    def non_informative_prior(d: int) -> NormalInverseWishart:
         """Create a non-onformative prior distribution.
 
         Args:

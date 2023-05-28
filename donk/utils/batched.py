@@ -59,7 +59,7 @@ def symmetrize(A: np.ndarray) -> np.ndarray:
     return A
 
 
-def regularize(A: np.ndarray, regularization) -> np.ndarray:
+def regularize(A: np.ndarray, regularization: float) -> np.ndarray:
     """Regularizes a matrix or a batch of matrices by adding a constant to the diagonal.
 
     Modifies the given matrix in-place.
@@ -84,7 +84,7 @@ def trace_of_product(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     return np.einsum("...ij,...ji->...", A, B)
 
 
-def batched_multivariate_normal(mean: np.ndarray, covar: np.ndarray, N: int, rng) -> np.ndarray:
+def batched_multivariate_normal(mean: np.ndarray, covar: np.ndarray, N: int, rng: np.random.Generator) -> np.ndarray:
     """Draw `N` samples from `T` multivariate normal distributions each.
 
     Args:

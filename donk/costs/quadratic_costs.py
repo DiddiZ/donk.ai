@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from donk.costs.cost_function import CostFunction
@@ -13,7 +15,7 @@ class QuadraticCosts(CostFunction):
     cost(x, u) = 1/2 [x u]^T*C*[x u] + [x u]^T*c + cc
     """
 
-    def __init__(self, C: np.ndarray, c: np.ndarray, cc: np.ndarray):
+    def __init__(self, C: np.ndarray, c: np.ndarray, cc: np.ndarray) -> None:
         """Initialize this LinearDynamics object.
 
         Args:
@@ -34,20 +36,20 @@ class QuadraticCosts(CostFunction):
         self.c = c
         self.cc = cc
 
-    def __add__(self, other) -> QuadraticCosts:
+    def __add__(self, other: Any) -> QuadraticCosts:
         """Sum two cost functions."""
         if isinstance(other, QuadraticCosts):
             return QuadraticCosts(self.C + other.C, self.c + other.c, self.cc + other.cc)
         return NotImplemented
 
-    def __mul__(self, other) -> QuadraticCosts:
-        """Scale cost function with  vonstant scalar."""
+    def __mul__(self, other: Any) -> QuadraticCosts:
+        """Scale cost function with constant scalar."""
         if np.isscalar(other):
             return QuadraticCosts(self.C * other, self.c * other, self.cc * other)
         return NotImplemented
 
-    def __rmul__(self, other) -> QuadraticCosts:
-        """Scale cost function with  vonstant scalar."""
+    def __rmul__(self, other: Any) -> QuadraticCosts:
+        """Scale cost function with constant scalar."""
         return self.__mul__(other)
 
     def compute_costs(self, X: np.ndarray, U: np.ndarray) -> np.ndarray:

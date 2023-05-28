@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -72,7 +74,7 @@ class ILQR:
 
         return ILQRStepResult(eta, pol, kl_div, expected_costs, traj)
 
-    def sample_surface(self, min_eta: float = 1e-6, max_eta: float = 1e16, N: int = 100):
+    def sample_surface(self, min_eta: float = 1e-6, max_eta: float = 1e16, N: int = 100) -> list[ILQRStepResult]:
         """Sample the Lagrangian at different values for eta.
 
         For visualization/debugging purposes.
@@ -85,7 +87,9 @@ class ILQR:
         results = [self.step(eta) for eta in np.logspace(np.log10(min_eta), np.log10(max_eta), num=N)]
         return results
 
-    def optimize(self, kl_step: float, min_eta: float = 1e-6, max_eta: float = 1e16, rtol: float = 1e-2):
+    def optimize(
+        self, kl_step: float, min_eta: float = 1e-6, max_eta: float = 1e16, rtol: float = 1e-2
+    ) -> ILQRStepResult:
         """Perform iLQG trajectory optimization.
 
         Args:
@@ -109,7 +113,7 @@ class ILQR:
             raise ValueError(f"max_eta eta to low ({max_eta})")
 
         # Find the point where kl divergence equals the kl_step
-        def constraint_violation(log_eta):
+        def constraint_violation(log_eta: float) -> float:
             return self.step(np.exp(log_eta)).kl_div - kl_step
 
         # Search root of the constraint violation
@@ -119,7 +123,7 @@ class ILQR:
         return self.step(np.exp(log_eta))
 
 
-def backward(dynamics: LinearDynamics, C, c, gamma=1) -> LinearGaussianPolicy:
+def backward(dynamics: LinearDynamics, C: np.ndarray, c: np.ndarray, gamma: float = 1) -> LinearGaussianPolicy:
     """Perform LQR backward pass.
 
     `C` is required to be symmetric.
@@ -182,7 +186,7 @@ def forward(
     dynamics: LinearDynamics,
     policy: LinearGaussianPolicy,
     initial_state: StateDistribution,
-    regularization=1e-6,
+    regularization: float = 1e-6,
 ) -> TrajectoryDistribution:
     """Perform LQR forward pass.
 
@@ -240,7 +244,7 @@ def forward(
     return TrajectoryDistribution(traj_mean, traj_covar, dX, dU)
 
 
-def extended_costs_kl(prev_pol: LinearGaussianPolicy):
+def extended_costs_kl(prev_pol: LinearGaussianPolicy) -> tuple[np.ndarray, np.ndarray]:
     """Compute expansion of extended cost used in the iLQR backward pass.
 
     The extended cost function is -log p(u_t | x_t) with p being the previous trajectory distribution.
@@ -269,7 +273,7 @@ def extended_costs_kl(prev_pol: LinearGaussianPolicy):
     return C, c
 
 
-def kl_divergence_action(X, pol: LinearGaussianPolicy, prev_pol: LinearGaussianPolicy):
+def kl_divergence_action(X: np.ndarray, pol: LinearGaussianPolicy, prev_pol: LinearGaussianPolicy) -> float:
     """Compute KL divergence between new and previous trajectory distributions.
 
     Args:
@@ -314,7 +318,7 @@ def step_adjust(
     costs_prev: QuadraticCosts,
     max_step_mult: float = 10,
     min_step_mult: float = 0.1,
-):
+) -> float:
     """Compute new multiplier for KL divergence constraint based on expected vs. actual improvement.
 
     See:

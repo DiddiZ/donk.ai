@@ -1,10 +1,12 @@
 """Visualization tool for state spaces."""
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
 
-def visualize_correlation(output_file, X):
+def visualize_correlation(output_file: Path | str | None, X: np.ndarray) -> None:
     """Visualize the correlation between states.
 
     Args:

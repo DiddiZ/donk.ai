@@ -7,7 +7,7 @@ from donk.dynamics.prior import DynamicsPrior, NormalInverseWishart
 class GMMPrior(DynamicsPrior):
     """A Gaussian Mixture Model (GMM) based prior."""
 
-    def __init__(self, n_clusters, random_state=None) -> None:
+    def __init__(self, n_clusters: int, random_state=None) -> None:
         """Initialize this `GMMPrior`."""
         self.gmm = GaussianMixture(n_components=n_clusters, random_state=random_state)
 

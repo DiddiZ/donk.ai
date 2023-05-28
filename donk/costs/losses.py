@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import numpy as np
 
 
-def loss_combined(x, losses):
+def loss_combined(x: np.ndarray, losses) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Evaluates and sums up multiple loss functions.
 
     Args:
@@ -9,7 +11,6 @@ def loss_combined(x, losses):
         losses: List of tuples (`loss`, `kwargs`)
             `loss`: loss function to evaluate.
             `kwargs`: Addional arguments passed to the loss function (optional).
-
     """
     if len(losses) < 1:
         raise ValueError("loss_combined requred at least one loss function to sum up.")
@@ -24,7 +25,7 @@ def loss_combined(x, losses):
     return l, lx, lxx
 
 
-def loss_l2(x, t, w):
+def loss_l2(x: np.ndarray, t: np.ndarray, w: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Evaluate and compute derivatives for l2 norm penalty.
 
     loss = sum(0.5 * (x - t)^2 * w)
@@ -38,7 +39,6 @@ def loss_l2(x, t, w):
         l: (T,) cost at each timestep.
         lx: (T, D) first order derivative.
         lxx: (T, D, D) second order derivative.
-
     """
     # Get trajectory length.
     _, dX = x.shape
@@ -60,7 +60,7 @@ def loss_l2(x, t, w):
     return l, lx, lxx
 
 
-def loss_l1(x, t, w, alpha):
+def loss_l1(x: np.ndarray, t: np.ndarray, w: np.ndarray, alpha: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Evaluate and compute derivatives for l2 norm penalty.
 
     loss = sum(sqrt((x - t)^2 + alpha) * w)
@@ -74,7 +74,6 @@ def loss_l1(x, t, w, alpha):
         l: (T,) cost at each timestep.
         lx: (T, D) first order derivative.
         lxx: (T, D, D) second order derivative.
-
     """
     # Get trajectory length.
     _, dX = x.shape
@@ -97,7 +96,7 @@ def loss_l1(x, t, w, alpha):
     return l, lx, lxx
 
 
-def loss_log_cosh(x, t, w):
+def loss_log_cosh(x: np.ndarray, t: np.ndarray, w: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Evaluate and compute derivatives for log-cosh loss.
 
     loss = sum(log(cosh(x - t)) * w)

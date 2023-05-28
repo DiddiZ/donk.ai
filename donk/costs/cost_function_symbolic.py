@@ -8,7 +8,7 @@ from donk.costs.cost_function import CostFunction
 from donk.costs.quadratic_costs import QuadraticCosts
 
 
-def _vectorize_cost_function(fun):
+def _vectorize_cost_function(fun) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
     return np.vectorize(lambda X, U: np.array(fun(X, U)), signature="(v,x),(t,u)->(v)")
 
 
@@ -113,7 +113,7 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
         """Initialize this `MultipartSymbolicCostFunction`."""
         from sympy import lambdify, symbols
 
-        def cost_fun(X, U):
+        def cost_fun(X: np.ndarray, U: np.ndarray) -> np.ndarray:
             """Sum up individual parts."""
             cost = cost_funs[0](X, U)
             for fn in cost_funs[1:]:
