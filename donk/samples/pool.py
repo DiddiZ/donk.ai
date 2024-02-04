@@ -24,7 +24,7 @@ class TransitionPool:
         """
         # Check shapes
         assert X.shape[0] == U.shape[0], f"{X.shape[0]} != {U.shape[0]}"
-        assert X.shape[1] == U.shape[1] + 1, f"{X.shape[1]} != {U.shape[1]+1}"
+        assert X.shape[1] == U.shape[1] + 1, f"{X.shape[1]} != {U.shape[1] + 1}"
         if self._XUX is None:
             # Pool was empty, assume dimensions
             self.dX, self.dU = X.shape[-1], U.shape[-1]

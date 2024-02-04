@@ -17,7 +17,7 @@ class StateDistribution:
         dX = mean.shape[-1]
 
         # Check shapes
-        assert covar.shape[-2:] == (dX, dX), f"{covar.shape[-2:]} != {(dX, dX )}"
+        assert covar.shape[-2:] == (dX, dX), f"{covar.shape[-2:]} != {(dX, dX)}"
         assert mean.shape[:-1] == covar.shape[:-2], f"{mean.shape[:-1]} != {covar.shape[:-2]}"
 
         self.mean = mean

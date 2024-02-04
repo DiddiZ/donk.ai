@@ -28,12 +28,12 @@ class TimeVaryingLinearGaussian:
         self.T, dY, dX = coefficients.shape
 
         # Check shapes
-        assert coefficients.shape == (self.T, dY, dX), f"{coefficients.shape} != {(self.T, dY, dX )}"
+        assert coefficients.shape == (self.T, dY, dX), f"{coefficients.shape} != {(self.T, dY, dX)}"
         assert intercept.shape == (self.T, dY), f"{intercept.shape} != {(self.T, dY)}"
         if covar is not None:
             assert covar.shape == (self.T, dY, dY), f"{covar.shape} != {(self.T, dY, dY)}"
         if inv_covar is not None:
-            assert inv_covar.shape == (self.T, dY, dY), f"{inv_covar.shape} != {(self.T,dY, dY)}"
+            assert inv_covar.shape == (self.T, dY, dY), f"{inv_covar.shape} != {(self.T, dY, dY)}"
 
         self._coefficients = coefficients
         self._intercept = intercept

@@ -70,7 +70,7 @@ class GymSampler(Sampler):
             U[t] = pol.act(X[t], t, noise[t] if rng is not None else None)
             obs, _, done, _ = self.env.step(self.convert_action(U[t]))
             if done and t < T - 1:
-                raise Exception(f"Iteration ended prematurely {t+1}/{T}")
+                raise Exception(f"Iteration ended prematurely {t + 1}/{T}")
             X[t + 1] = self.convert_observation(obs)
 
         return X, U

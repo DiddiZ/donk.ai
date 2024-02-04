@@ -30,8 +30,8 @@ class SymbolicCostFunction(CostFunction):
         self.T, self.dX, self.dU = T, dX, dU
 
         # Create symbols
-        X_sym = np.array(symbols(f"x:{(T+1)*dX}")).reshape(T + 1, dX)
-        U_sym = np.array(symbols(f"u:{T*dU}")).reshape(T, dU)
+        X_sym = np.array(symbols(f"x:{(T + 1) * dX}")).reshape(T + 1, dX)
+        U_sym = np.array(symbols(f"u:{T * dU}")).reshape(T, dU)
 
         # Eval costs
         costs = cost_fun(X_sym, U_sym)
@@ -123,8 +123,8 @@ class MultipartSymbolicCostFunction(SymbolicCostFunction):
         super().__init__(cost_fun, T, dX, dU)
 
         # Create symbols
-        X_sym = np.array(symbols(f"x:{(T+1)*dX}")).reshape(T + 1, dX)
-        U_sym = np.array(symbols(f"u:{T*dU}")).reshape(T, dU)
+        X_sym = np.array(symbols(f"x:{(T + 1) * dX}")).reshape(T + 1, dX)
+        U_sym = np.array(symbols(f"u:{T * dU}")).reshape(T, dU)
 
         # Lambdify and vectorize cost functions
         self.cost_funs = [
