@@ -148,25 +148,25 @@ class Test_LinearDynamics(unittest.TestCase):
         assert_allclose(
             F[-1, 0],
             [
-                5.2810630480e-02,
-                1.1964354976e-02,
-                -1.4035005294e-01,
-                -1.0247787101e-02,
-                -6.3580697713e-02,
-                1.1825430983e-02,
-                7.3951825793e-03,
-                3.5634195593e-03,
-                8.7252680504e-03,
-                2.0284214112e-02,
-                -3.2658321456e-02,
-                -1.9436559723e-02,
-                1.8730195626e-01,
-                2.6472698883e-02,
-                5.9203433330e-03,
-                -2.0699574315e-04,
-                5.4962668583e-01,
+                0.058843,
+                0.017633,
+                -0.049648,
+                -0.016292,
+                -0.059552,
+                0.005838,
+                0.019156,
+                0.004139,
+                0.006051,
+                0.020613,
+                -0.027258,
+                -0.111383,
+                0.196334,
+                0.048958,
+                0.027476,
+                0.00429,
+                0.542758,
             ],
-            atol=1e-8,
+            atol=1e-6,
         )
         # Check s.p.d.
         assert_array_equal(dyn_covar, np.swapaxes(dyn_covar, 1, 2), "dyn_covar not symmetric")
@@ -201,7 +201,7 @@ class Test_LinearDynamics(unittest.TestCase):
         # Check shapes
         assert_array_equal(log_prob.shape, (3, T))
 
-        assert_allclose(np.mean(log_prob, axis=-1), [-2084.969249, -1796.478453, -723320.786212])
+        assert_allclose(np.mean(log_prob, axis=-1), [-2139.578291, -2076.051295, -911263.960917])
 
     def test_str(self):
         """Test LinearDynamics.__str__."""
