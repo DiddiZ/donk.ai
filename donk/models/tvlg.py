@@ -98,7 +98,7 @@ class TimeVaryingLinearGaussian:
             self._inv_covar = batched_inv_spd(self.chol_covar)
         return self._inv_covar
 
-    def predict(self, X: np.ndarray, t: int = None, noise: np.ndarray = None) -> np.ndarray:
+    def predict(self, X: np.ndarray, t: int | None = None, noise: np.ndarray | None = None) -> np.ndarray:
         """Sample preditions from this model.
 
         Samples the Gaussian distributing given by `p(y|t,x) ~ N(coeffcients_t * x + intercept_t, covar_t)`.

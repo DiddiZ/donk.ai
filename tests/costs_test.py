@@ -15,7 +15,7 @@ def _create_symbols(D):
     return d_sym, wp_sym
 
 
-def _evaluate_loss(d, wp, d_sym, wp_sym, loss):
+def _evaluate_loss(d, wp, d_sym, wp_sym, loss) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     from sympy import Matrix, diff
 
     T, D = d.shape
@@ -37,7 +37,7 @@ def _evaluate_loss(d, wp, d_sym, wp_sym, loss):
     return l, lx, lxx
 
 
-def loss_l2_ref(x, t, w):
+def loss_l2_ref(x, t, w) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
     _, dX = x.shape
     d_sym, wp_sym = _create_symbols(dX)
@@ -48,7 +48,7 @@ def loss_l2_ref(x, t, w):
     return _evaluate_loss(x - t, w, d_sym, wp_sym, loss)
 
 
-def loss_l1_ref(x, t, w, alpha):
+def loss_l1_ref(x, t, w, alpha) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Reference implmentation for loss_l1 using sympy for symbolic differentation."""
     from sympy import sqrt
 
@@ -61,7 +61,7 @@ def loss_l1_ref(x, t, w, alpha):
     return _evaluate_loss(x - t, w, d_sym, wp_sym, loss)
 
 
-def loss_log_cosh_ref(x, t, w):
+def loss_log_cosh_ref(x, t, w) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Reference implmentation for loss_l2 using sympy for symbolic differentation."""
     from sympy import cosh, log
 
@@ -373,7 +373,7 @@ class Test_CostFunction(unittest.TestCase):
 
         T, dX, dU = 2, 1, 1
 
-        def cost_fun(X, U):
+        def cost_fun(X: np.ndarray, U: np.ndarray) -> np.ndarray:
             c = np.sum(X**2, axis=-1) / 2
             c[:-1] += np.sum(U**2, axis=-1) / 2
             return c
@@ -394,7 +394,7 @@ class Test_CostFunction(unittest.TestCase):
 
         T, dX, dU = 2, 1, 1
 
-        def cost_fun(X, U):
+        def cost_fun(X: np.ndarray, U: np.ndarray) -> np.ndarray:
             return [
                 (np.sum((X[0] - 1) ** 2) + 0.5 * np.sum((U[0] - 2) ** 2)) / 2,
                 (np.sum(2 * (X[1] + 1) ** 2) - np.sum((U[1] + 1) ** 2)) / 2,
@@ -421,7 +421,7 @@ class Test_CostFunction(unittest.TestCase):
 
         T, dX, dU = 2, 1, 1
 
-        def cost_fun(X, U):
+        def cost_fun(X: np.ndarray, U: np.ndarray) -> np.ndarray:
             return np.array(
                 [
                     (np.sum((X[0] - 1) ** 2) + 0.5 * np.sum((U[0] - 2) ** 2)) / 2,
@@ -446,7 +446,7 @@ class Test_CostFunction(unittest.TestCase):
 
         T, dX, dU = 2, 1, 1
 
-        def cost_fun(X, U):
+        def cost_fun(X: np.ndarray, U: np.ndarray) -> np.ndarray:
             import sympy
 
             return np.array(
@@ -472,10 +472,10 @@ class Test_CostFunction(unittest.TestCase):
 
         T, dX, dU = 2, 1, 1
 
-        def state_costs(X, U):
+        def state_costs(X: np.ndarray, U: np.ndarray) -> np.ndarray:
             return np.array([np.sum((X[0] - 1) ** 2) / 2, np.sum(2 * (X[1] + 1) ** 2) / 2, np.sum(X[2] ** 2) / 2])
 
-        def action_costs(X, U):
+        def action_costs(X: np.ndarray, U: np.ndarray) -> np.ndarray:
             return np.array([0.5 * np.sum((U[0] - 2) ** 2) / 2, -np.sum((U[1] + 1) ** 2) / 2, 0])
 
         cost_function = MultipartSymbolicCostFunction([state_costs, action_costs], ["state", "action"], T, dX, dU)

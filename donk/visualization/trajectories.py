@@ -7,7 +7,7 @@ from matplotlib.ticker import MaxNLocator
 
 def plot_line_set(
     x: np.ndarray, ys: np.ndarray, color=None, individual_lines: str | bool = "auto", label: str | None = None
-):
+) -> None:
     """Plot a set of lines with a mean and confidence interval."""
     N, _ = ys.shape
 
@@ -37,7 +37,7 @@ def plot_line_set(
     )
 
 
-def visualize_trajectories(file: Path | str, X: np.ndarray, U: np.ndarray):
+def visualize_trajectories(file: Path | str, X: np.ndarray, U: np.ndarray) -> None:
     """Visualize trajectories with states and action in seperate plots.
 
     Args:

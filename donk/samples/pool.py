@@ -41,7 +41,7 @@ class TransitionPool:
         if self.capacity is not None:
             self._XUX = self._XUX[-self.capacity :]
 
-    def get_transitions(self, N: int = None):
+    def get_transitions(self, N: int = None) -> np.ndarray:
         """Get transitions from the pool.
 
         Args:

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from scipy.stats import multivariate_normal
 
 from donk.dynamics import DynamicsModel
@@ -16,7 +17,7 @@ multivariate_normal_logpdf = np.vectorize(multivariate_normal.logpdf, signature=
 class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
     """Stochastic linear dynamics model."""
 
-    def __init__(self, F: np.ndarray, f: np.ndarray, covar: np.ndarray):
+    def __init__(self, F: np.ndarray, f: np.ndarray, covar: np.ndarray) -> None:
         """Initialize this LinearDynamics object.
 
         Args:
@@ -32,7 +33,9 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
     F = TimeVaryingLinearGaussian.coefficients
     f = TimeVaryingLinearGaussian.intercept
 
-    def predict(self, x: np.ndarray, u: np.ndarray, t: int = None, noise: np.ndarray = None):
+    def predict(
+        self, x: np.ndarray, u: np.ndarray, t: int | None = None, noise: np.ndarray | None = None
+    ) -> np.ndarray:
         """Predict the next state.
 
         Samples next state from the Gaussian distributing given by x' ~ N(Fm_t * [x; u] + fv_t, dyn_covar_t).
@@ -65,7 +68,7 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
 
     def evaluate(
         self, output_dir: str | Path, X_train: np.ndarray, U_train: np.ndarray, X_test: np.ndarray, U_test: np.ndarray
-    ):
+    ) -> pd.DataFrame:
         """Create diagnostics and evaluation plots for this dynamics model.
 
         Args:

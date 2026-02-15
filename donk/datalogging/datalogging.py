@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
+from types import TracebackType
 
 import numpy as np
 
@@ -36,7 +37,9 @@ class DataLogger(ABC):
 
         return self.as_default()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
+    ) -> None:
         self.flush()
 
         # Restore stored logger
@@ -46,7 +49,7 @@ class DataLogger(ABC):
 class DummyDataLogger(DataLogger):
     """Logs directly to the void."""
 
-    def log(self, key: list[str], data):
+    def log(self, key: list[str], data) -> None:
         """Ignore one data.
 
         Args:
@@ -74,7 +77,9 @@ class Context:
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
+    ) -> None:
         global _data_logger_context
 
         # Restore context
@@ -86,7 +91,7 @@ _data_logger: DataLogger = DummyDataLogger()
 _data_logger_context = []
 
 
-def log(**kwargs):
+def log(**kwargs) -> None:
     """Logs one or multiple pieces of data.
 
     Args:
@@ -97,8 +102,8 @@ def log(**kwargs):
         _data_logger.log(_data_logger_context + [key], data)
 
 
-def concat_iterations(data: dict, key_pattern: str, iterations: Iterable[int]):
-    """Contang log entries along an iteration axis.
+def concat_iterations(data: dict, key_pattern: str, iterations: Iterable[int]) -> np.ndarray:
+    """Concatenate log entries along an iteration axis.
 
     Args:
         data: Open shelve

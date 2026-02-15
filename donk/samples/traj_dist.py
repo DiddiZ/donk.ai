@@ -29,22 +29,22 @@ class TrajectoryDistribution:
         self.dU = dU
 
     @property
-    def X_mean(self):
+    def X_mean(self) -> np.ndarray:
         """Get state component of trajectory means."""
         return self.mean[..., : self.dX]
 
     @property
-    def X_covar(self):
+    def X_covar(self) -> np.ndarray:
         """Get state component of trajectory covariances."""
         return self.covar[..., : self.dX, : self.dX]
 
     @property
-    def U_mean(self):
+    def U_mean(self) -> np.ndarray:
         """Get action component of trajectory means."""
         return self.mean[..., :-1, self.dX :]
 
     @property
-    def U_covar(self):
+    def U_covar(self) -> np.ndarray:
         """Get action component of trajectory covariances."""
         return self.covar[..., :-1, self.dX :, self.dX :]
 

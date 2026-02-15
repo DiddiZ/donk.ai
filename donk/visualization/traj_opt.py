@@ -15,7 +15,7 @@ def visualize_iLQR(
     cost_color="C0",
     constraint_color="C1",
     export_data: bool = True,
-):
+) -> None:
     """Visualize the results of an iLQR optimization."""
     results = pd.DataFrame(results).sort_values("eta")
 
@@ -67,7 +67,7 @@ def visualize_step_adjust(
     kl_step: np.ndarray,
     predicted_new_costs: np.ndarray,
     actual_new_costs: np.ndarray,
-):
+) -> None:
     """Visualize expected vs. actual costs in step adjust and resulting KL-step.
 
     Args:

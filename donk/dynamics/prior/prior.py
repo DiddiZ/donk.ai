@@ -15,7 +15,7 @@ class NormalInverseWishart:
     N_mean: float
     N_covar: float
 
-    def posterior(self, emp_mean: np.ndarray, emp_covar: np.ndarray, N: float):
+    def posterior(self, emp_mean: np.ndarray, emp_covar: np.ndarray, N: float) -> NormalInverseWishart:
         """Compute prior distibution after observing samples with the given sample distribution.
 
         Args:

@@ -10,7 +10,7 @@ class LinearGaussianPolicy(Policy, TimeVaryingLinearGaussian):
     `p(u|t,x) ~ N(K_t * x + k_t, covar_t)`
     """
 
-    def __init__(self, K: np.ndarray, k: np.ndarray, covar: np.ndarray = None, inv_covar: np.ndarray = None):
+    def __init__(self, K: np.ndarray, k: np.ndarray, covar: np.ndarray = None, inv_covar: np.ndarray = None) -> None:
         """Initialize this LinearGaussianPolicy object.
 
         Must provide either covariance or precision, or both.

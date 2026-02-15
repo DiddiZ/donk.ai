@@ -11,7 +11,7 @@ from donk.policy.policy import Policy
 class Neural_Network_Policy(Policy):
     """Neural network state-action mapping policy."""
 
-    def __init__(self, model, normalize_states: bool = True):
+    def __init__(self, model, normalize_states: bool = True) -> None:
         """Initialize this policy.
 
         Args:
@@ -54,7 +54,7 @@ class Neural_Network_Policy(Policy):
         U_val: np.ndarray = None,
         prc_val: np.ndarray = None,
         silent: bool = False,
-    ):
+    ) -> None:
         """Train the model on new data.
 
         May supply validation data.
@@ -109,7 +109,7 @@ class Neural_Network_Policy(Policy):
             ).batch(256)
 
         @tf.function
-        def train_step(model, opt, state, action, precision):
+        def train_step(model, opt, state, action, precision) -> None:
             """Perform one train step."""
             with tf.GradientTape() as tape:
                 action_pred = model(state, training=True)
@@ -133,7 +133,7 @@ class Neural_Network_Policy(Policy):
             self.model.metric_loss(loss)
 
         @tf.function
-        def validation_step(model, state, action, precision):
+        def validation_step(model, state, action, precision) -> None:
             """Perform one validation step."""
             action_pred = model(state, training=False)
 
@@ -236,7 +236,7 @@ class Neural_Network_Policy(Policy):
 
         return LinearGaussianPolicy(K, k, pol_covar)
 
-    def load_weights(self, data_file):
+    def load_weights(self, data_file) -> None:
         """Load the network weighs from a file.
 
         Args:
@@ -244,7 +244,7 @@ class Neural_Network_Policy(Policy):
         """
         self.model.load_weights(data_file)
 
-    def save_weights(self, data_file):
+    def save_weights(self, data_file) -> None:
         """Save the network weighs in a file.
 
         Args:

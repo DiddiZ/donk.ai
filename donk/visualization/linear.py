@@ -1,4 +1,5 @@
 """Visualization tool for linear models."""
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -25,7 +26,7 @@ def visualize_linear_model(
     y_label: str = "prediction",
     time_label: str = "$t$",
     export_data: bool = True,
-):
+) -> None:
     """Creates a figure visualizing a timeseries of linear Gausian models.
 
     Args:
@@ -122,7 +123,9 @@ def visualize_linear_model(
     plt.close(fig)
 
 
-def visualize_linear_dynamics_model(output_file: Path, dyn: LinearDynamics, X: np.ndarray, U: np.ndarray, **kwargs):
+def visualize_linear_dynamics_model(
+    output_file: Path, dyn: LinearDynamics, X: np.ndarray, U: np.ndarray, **kwargs
+) -> None:
     """Creates a figure visualizing a TVLG dynamics model.
 
     Args:
@@ -147,7 +150,7 @@ def visualize_linear_dynamics_model(output_file: Path, dyn: LinearDynamics, X: n
     )
 
 
-def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.ndarray, **kwargs):
+def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.ndarray, **kwargs) -> None:
     """Creates a figure visualizing a TVLG policy.
 
     Args:
@@ -170,7 +173,7 @@ def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.
     )
 
 
-def visualize_coefficients(output_file_pattern: str | None, coeff: np.ndarray):
+def visualize_coefficients(output_file_pattern: str | None, coeff: np.ndarray) -> None:
     """Visualize coefficietns of a linear model.
 
     Args:
@@ -196,7 +199,7 @@ def visualize_coefficients(output_file_pattern: str | None, coeff: np.ndarray):
         plt.close()
 
 
-def visualize_covariance(output_file, covar):
+def visualize_covariance(output_file, covar) -> None:
     """Visualize the covariance matrix of a linear model.
 
     Args:
@@ -216,7 +219,7 @@ def visualize_covariance(output_file, covar):
     plt.close()
 
 
-def visualize_prediction(output_file_pattern, prediction, truth):
+def visualize_prediction(output_file_pattern: str, prediction: np.ndarray, truth: np.ndarray) -> None:
     """Visualize the prediction errors of a linear model.
 
     Args:
@@ -261,7 +264,7 @@ def visualize_prediction(output_file_pattern, prediction, truth):
         plt.close()
 
 
-def visualize_prediction_error(output_file, predictions, targets):
+def visualize_prediction_error(output_file, predictions, targets) -> None:
     """Visualize the prediction errors of a linear model.
 
     Args:
@@ -333,7 +336,7 @@ def visualize_prediction_error(output_file, predictions, targets):
 
 def visualize_predictor_target_correlation(
     output_file: Path | str | None, X: np.ndarray, Y: np.ndarra, xlabel: str = "$x$", ylabel: str = "$y$"
-):
+) -> None:
     """Visualize the correlation between predictors and targets.
 
     Args:
@@ -361,7 +364,7 @@ def visualize_predictor_target_correlation(
     plt.close()
 
 
-def visualize_predictor_target_scatter(output_file, X: np.ndarray, Y: np.ndarray, cmap=plt.cm.plasma):
+def visualize_predictor_target_scatter(output_file, X: np.ndarray, Y: np.ndarray, cmap=plt.cm.plasma) -> None:
     """Visualize the correlation between predictors and targets.
 
     Args:

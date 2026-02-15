@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import dbm.dumb
 import pickle
+from pathlib import Path
+from types import TracebackType
 
 from donk.datalogging.datalogging import DataLogger
 
@@ -9,7 +11,7 @@ from donk.datalogging.datalogging import DataLogger
 class ShelveDataLogger(DataLogger):
     """Log data as single shelve file."""
 
-    def __init__(self, file) -> None:
+    def __init__(self, file: str | Path) -> None:
         """Initialize this `ShelveDataLogger`."""
         super().__init__()
 
@@ -35,7 +37,9 @@ class ShelveDataLogger(DataLogger):
 
         return super().__enter__()
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
+    ) -> None:
         super().__exit__(exc_type, exc_val, exc_tb)
 
         # Close shelve
