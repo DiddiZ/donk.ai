@@ -1,10 +1,22 @@
 {
-  "python.linting.pylintEnabled": false,
-  "python.linting.flake8Enabled": true,
-  "python.linting.enabled": true,
   "editor.formatOnSave": true,
-  "python.formatting.provider": "none",
-  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "*_test.py"],
-  "python.testing.unittestEnabled": true,
-  "git.rebaseWhenSync": true
+  "python.testing.pytestArgs": ["tests"],
+  "python.testing.pytestEnabled": true,
+  "git.rebaseWhenSync": true,
+  "notebook.formatOnSave.enabled": true,
+  "notebook.codeActionsOnSave": {
+    "notebook.source.organizeImports.ruff": "explicit"
+  },
+  "files.eol": "\n",
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  "window.title": "${dirty}${rootName}${separator}${activeEditorShort}",
+  "evenBetterToml.formatter.arrayAutoCollapse": false
 }

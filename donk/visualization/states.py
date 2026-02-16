@@ -1,4 +1,5 @@
 """Visualization tool for state spaces."""
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt

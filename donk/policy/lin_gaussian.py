@@ -1,3 +1,5 @@
+from typing import override
+
 import numpy as np
 
 from donk.models import TimeVaryingLinearGaussian
@@ -10,7 +12,9 @@ class LinearGaussianPolicy(Policy, TimeVaryingLinearGaussian):
     `p(u|t,x) ~ N(K_t * x + k_t, covar_t)`
     """
 
-    def __init__(self, K: np.ndarray, k: np.ndarray, covar: np.ndarray = None, inv_covar: np.ndarray = None) -> None:
+    def __init__(
+        self, K: np.ndarray, k: np.ndarray, covar: np.ndarray | None = None, inv_covar: np.ndarray | None = None
+    ) -> None:
         """Initialize this LinearGaussianPolicy object.
 
         Must provide either covariance or precision, or both.
@@ -27,7 +31,8 @@ class LinearGaussianPolicy(Policy, TimeVaryingLinearGaussian):
     K = TimeVaryingLinearGaussian.coefficients
     k = TimeVaryingLinearGaussian.intercept
 
-    def act(self, x: np.ndarray, t: int, noise: np.ndarray = None) -> np.ndarray:
+    @override
+    def act(self, x: np.ndarray, t: int | None = None, noise: np.ndarray | None = None) -> np.ndarray:
         """Decide an action for the given state at the current timestep.
 
         Uses the TVLG model to predict the next action.
@@ -40,6 +45,8 @@ class LinearGaussianPolicy(Policy, TimeVaryingLinearGaussian):
         Returns:
             u: (dU,) Selected action
         """
+        if t is None:
+            raise ValueError("Time-varying policy requires timestep `t`.")
         return self.predict(x, t, noise)
 
     def __str__(self) -> str:

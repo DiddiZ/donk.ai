@@ -1,10 +1,11 @@
 """Batched versions of commin math operations."""
+
 import numpy as np
 from scipy.linalg import solve_triangular
 
 
 def batched_inv_spd(a_chol: np.ndarray) -> np.ndarray:
-    """Computes inverse of a batch of s.p.d. matrices from their cholesky decomposition.
+    """Compute inverse of a batch of s.p.d. matrices from their cholesky decomposition.
 
     Exploits s.p.d.-ness for faster inverse.
 
@@ -32,7 +33,7 @@ def batched_inv_spd(a_chol: np.ndarray) -> np.ndarray:
 
 
 def batched_cholesky(a: np.ndarray) -> np.ndarray:
-    """Computes cholesky decomposition of a batch of s.p.d. matrices.
+    """Compute cholesky decomposition of a batch of s.p.d. matrices.
 
     Args:
         a: (T, dX, dX), batch of s.p.d. matrices

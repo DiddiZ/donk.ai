@@ -4,6 +4,7 @@ import dbm.dumb
 import pickle
 from pathlib import Path
 from types import TracebackType
+from typing import Self, override
 
 from donk.datalogging.datalogging import DataLogger
 
@@ -17,7 +18,8 @@ class ShelveDataLogger(DataLogger):
 
         self.file = file
 
-    def log(self, key: list[str], data) -> None:
+    @override
+    def log(self, key: list[str], data: object) -> None:
         """Log one data.
 
         Args:
@@ -27,16 +29,19 @@ class ShelveDataLogger(DataLogger):
         # Store data
         self.__data["/".join(key)] = pickle.dumps(data)
 
+    @override
     def flush(self) -> None:
         """Write data to the file."""
         self.__data.sync()
 
-    def __enter__(self) -> ShelveDataLogger:
+    @override
+    def __enter__(self) -> Self:
         # Open database
         self.__data = dbm.dumb.open(self.file, "c")
 
         return super().__enter__()
 
+    @override
     def __exit__(
         self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
     ) -> None:

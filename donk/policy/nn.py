@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import override
+
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.layers as layers
@@ -8,10 +11,10 @@ from donk.policy.lin_gaussian import LinearGaussianPolicy
 from donk.policy.policy import Policy
 
 
-class Neural_Network_Policy(Policy):
+class NeuralNetworkPolicy(Policy):
     """Neural network state-action mapping policy."""
 
-    def __init__(self, model, normalize_states: bool = True) -> None:
+    def __init__(self, model: tf.keras.Model, normalize_states: bool = True) -> None:
         """Initialize this policy.
 
         Args:
@@ -20,8 +23,8 @@ class Neural_Network_Policy(Policy):
 
         """
         # Extract dimensions
-        self.dX = model.input.shape[-1]
-        self.dU = model.output.shape[-1]
+        self.dX = model.layers[0].input.shape[-1]
+        self.dU = model.layers[-1].output.shape[-1]
 
         # Add state normalization to model
         if normalize_states:
@@ -49,10 +52,10 @@ class Neural_Network_Policy(Policy):
         prc_train: np.ndarray,
         epochs: int,
         batch_size: int,
-        patience: int = None,
-        X_val: np.ndarray = None,
-        U_val: np.ndarray = None,
-        prc_val: np.ndarray = None,
+        patience: int | None = None,
+        X_val: np.ndarray | None = None,
+        U_val: np.ndarray | None = None,
+        prc_val: np.ndarray | None = None,
         silent: bool = False,
     ) -> None:
         """Train the model on new data.
@@ -89,27 +92,30 @@ class Neural_Network_Policy(Policy):
 
         # Build dataset
         dataset = (
-            tf.data.Dataset.from_tensor_slices(
-                (
-                    X_train.astype(np.float32, copy=False),
-                    U_train.astype(np.float32, copy=False),
-                    prc_train.astype(np.float32, copy=False),
-                )
-            )
+            tf.data.Dataset
+            .from_tensor_slices((
+                X_train.astype(np.float32, copy=False),
+                U_train.astype(np.float32, copy=False),
+                prc_train.astype(np.float32, copy=False),
+            ))
             .shuffle(N_train)
             .batch(batch_size)
         )
         if X_val is not None:
-            dataset_test = tf.data.Dataset.from_tensor_slices(
-                (
-                    X_val.astype(np.float32, copy=False),
-                    U_val.astype(np.float32, copy=False),
-                    prc_val.astype(np.float32, copy=False),
-                )
-            ).batch(256)
+            dataset_test = tf.data.Dataset.from_tensor_slices((
+                X_val.astype(np.float32, copy=False),
+                U_val.astype(np.float32, copy=False),
+                prc_val.astype(np.float32, copy=False),
+            )).batch(256)
 
         @tf.function
-        def train_step(model, opt, state, action, precision) -> None:
+        def train_step(
+            model: tf.keras.Model,
+            opt: tf.keras.optimizers.Optimizer,
+            state: tf.Tensor,
+            action: tf.Tensor,
+            precision: tf.Tensor,
+        ) -> None:
             """Perform one train step."""
             with tf.GradientTape() as tape:
                 action_pred = model(state, training=True)
@@ -133,7 +139,7 @@ class Neural_Network_Policy(Policy):
             self.model.metric_loss(loss)
 
         @tf.function
-        def validation_step(model, state, action, precision) -> None:
+        def validation_step(model: tf.keras.Model, state: tf.Tensor, action: tf.Tensor, precision: tf.Tensor) -> None:
             """Perform one validation step."""
             action_pred = model(state, training=False)
 
@@ -185,12 +191,14 @@ class Neural_Network_Policy(Policy):
                 epoch += 1
         callback.on_train_end()
 
-    def act(self, x: np.ndarray, t: int = None, noise: np.ndarray = None) -> np.ndarray:
+    @override
+    def act(self, x: np.ndarray, t: int | None = None, noise: np.ndarray | None = None) -> np.ndarray:
         """Decide an action for the given state(s).
 
         Args:
             x: (..., dX) State(s)
             t: Timestep, ignored
+            noise: Not supported
 
         Returns:
             u: (..., dU) Selected action(s)
@@ -199,13 +207,14 @@ class Neural_Network_Policy(Policy):
             raise NotImplementedError(f"Noise is not supported by {type(self)}")
 
         u = self.model(x.reshape(-1, self.dX).astype(np.float32, copy=False), training=False).numpy()
-        return u.reshape(x.shape[:-1] + (self.dU,))
+        return u.reshape([*x.shape[:-1], self.dU])
 
     def linearize(self, X: np.ndarray, regularization: float = 1e-6) -> LinearGaussianPolicy:
         """Compute linearization of this policy.
 
         Args:
             X: (N, T, dX) States
+            regularization: Regularization constant to ensure positive definite covariance.
 
         Returns:
             pol_lin: LinearGaussianPolicy
@@ -229,14 +238,14 @@ class Neural_Network_Policy(Policy):
         du_dx = tf.transpose(du_dx, (1, 0, 2))
         # du_dx.shape = (T, dU, dX)
 
-        # Consutruct policy object
+        # Construct policy object
         K = du_dx.numpy()
         k = U_mean.numpy() - np.einsum("tux,tx->tu", K, np.mean(X, axis=0))
         pol_covar = tfp.stats.covariance(U).numpy() + np.eye(self.dU) * regularization  # Use sample covariance
 
         return LinearGaussianPolicy(K, k, pol_covar)
 
-    def load_weights(self, data_file) -> None:
+    def load_weights(self, data_file: str | Path) -> None:
         """Load the network weighs from a file.
 
         Args:
@@ -244,7 +253,7 @@ class Neural_Network_Policy(Policy):
         """
         self.model.load_weights(data_file)
 
-    def save_weights(self, data_file) -> None:
+    def save_weights(self, data_file: str | Path) -> None:
         """Save the network weighs in a file.
 
         Args:

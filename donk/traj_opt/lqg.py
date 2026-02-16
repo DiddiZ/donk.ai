@@ -84,8 +84,7 @@ class ILQR:
             max_eta: Maximal value of the Lagrangian multiplier
             N: Number of samples. Samples are equally distanced in log space to base 10.
         """
-        results = [self.step(eta) for eta in np.logspace(np.log10(min_eta), np.log10(max_eta), num=N)]
-        return results
+        return [self.step(eta) for eta in np.logspace(np.log10(min_eta), np.log10(max_eta), num=N)]
 
     def optimize(
         self, kl_step: float, min_eta: float = 1e-6, max_eta: float = 1e16, rtol: float = 1e-2
@@ -195,10 +194,11 @@ def forward(
     Distribution of last time step only contains the state distribution, as there is no corresponding action.
 
     Args:
-        dynamics: A LinearGaussianPolicy.
-        policy: A LinearDynamics.
-        X_0_mean: (dX, ) Mean of initial state distribution.
-        X_0_covar: (dX, dX) Covariance of initial state distribution.
+        dynamics: linear dynamics model.
+        policy: linear Gaussian policy.
+        initial_state: initial state distribution.
+        regularization: Regularization to ensure numerical stability of covariance matrices.
+
 
     Returns:
         traj_mean: (T+1, dX+dU) mean state-action vectors.
@@ -225,14 +225,14 @@ def forward(
     for t in range(T):
         # u_t = K_t*x_t + k_t
         traj_mean[t, dX:] = K[t] @ traj_mean[t, :dX] + k[t]
-        # TODO Formulas
+        # TODO: Formulas
         traj_covar[t, dX:, :dX] = K[t] @ traj_covar[t, :dX, :dX]
         traj_covar[t, :dX, dX:] = traj_covar[t, dX:, :dX].T
         traj_covar[t, dX:, dX:] = traj_covar[t, dX:, :dX] @ K[t].T + pol_covar[t]
 
         # x_t+1 = Fm_t*[x_t;u_t] + fv_t
         traj_mean[t + 1, :dX] = F[t] @ traj_mean[t] + f[t]
-        # TODO Formula
+        # TODO: Formula
         traj_covar[t + 1, :dX, :dX] = F[t] @ traj_covar[t] @ F[t].T + dyn_covar[t]
 
         symmetrize(traj_covar[t])

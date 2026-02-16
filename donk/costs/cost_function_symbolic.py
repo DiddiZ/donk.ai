@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import override
 
 import numpy as np
 
@@ -8,7 +9,9 @@ from donk.costs.cost_function import CostFunction
 from donk.costs.quadratic_costs import QuadraticCosts
 
 
-def _vectorize_cost_function(fun) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
+def _vectorize_cost_function(
+    fun: Callable[[np.ndarray, np.ndarray], np.ndarray],
+) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
     return np.vectorize(lambda X, U: np.array(fun(X, U)), signature="(v,x),(t,u)->(v)")
 
 
@@ -54,6 +57,7 @@ class SymbolicCostFunction(CostFunction):
             self.c.append(lambdify([X_sym, U_sym], Matrix(loss_d - XU @ loss_dd)))
             self.cc.append(lambdify([X_sym, U_sym], loss - XU @ loss_d + XU.T @ loss_dd @ XU / 2))
 
+    @override
     def quadratic_approximation(self, X: np.ndarray, U: np.ndarray) -> QuadraticCosts:
         """Compute a quadratic approximation (2nd order Taylor) at the given trajectory.
 
@@ -65,7 +69,7 @@ class SymbolicCostFunction(CostFunction):
 
         # Check shapes
         assert X.shape == (T + 1, dX), f"{X.shape} != {(T + 1, dX)}"
-        assert U.shape == (T, dU), f"{U.shape} != {(T , dU)}"
+        assert U.shape == (T, dU), f"{U.shape} != {(T, dU)}"
 
         # Allocate space
         C = np.empty((T + 1, dX + dU, dX + dU))

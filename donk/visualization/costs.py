@@ -12,7 +12,7 @@ def visualize_costs(
     cost_labels: list[str],
     include_total: bool = True,
 ) -> None:
-    """Plots mutiple cost curves.
+    """Plot mutiple cost curves.
 
     Args:
         output_file: File to write plot to. Use `None` to show plot.

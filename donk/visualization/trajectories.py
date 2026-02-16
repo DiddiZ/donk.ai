@@ -3,10 +3,15 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator
+from matplotlib.typing import ColorType
 
 
 def plot_line_set(
-    x: np.ndarray, ys: np.ndarray, color=None, individual_lines: str | bool = "auto", label: str | None = None
+    x: np.ndarray,
+    ys: np.ndarray,
+    color: ColorType | None = None,
+    individual_lines: str | bool = "auto",
+    label: str | None = None,
 ) -> None:
     """Plot a set of lines with a mean and confidence interval."""
     N, _ = ys.shape
@@ -15,13 +20,13 @@ def plot_line_set(
     if individual_lines == "auto":
         individual_lines = N <= 5
 
-    # Plot indiviadual data lines
+    # Plot individual data lines
     if individual_lines:
         for n in range(N):
             l = plt.plot(x, ys[n], c=color, linewidth=0.5)[0]
             color = l.get_color()  # Remember color
 
-    # Plot distriution
+    # Plot distribution
     mean = np.mean(ys, axis=0)
     std = np.std(ys, axis=0)
     conf = 1.96 * std / np.sqrt(N)
@@ -38,7 +43,7 @@ def plot_line_set(
 
 
 def visualize_trajectories(file: Path | str, X: np.ndarray, U: np.ndarray) -> None:
-    """Visualize trajectories with states and action in seperate plots.
+    """Visualize trajectories with states and action in separate plots.
 
     Args:
         file: File to save figure to.

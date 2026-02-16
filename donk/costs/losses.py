@@ -1,23 +1,25 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import numpy as np
 
 
-def loss_combined(x: np.ndarray, losses) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Evaluates and sums up multiple loss functions.
+def loss_combined(x: np.ndarray, losses: list[tuple[Callable, dict]]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Evaluate and sum up multiple loss functions.
 
     Args:
         x: (T, dX) states, actual values.
         losses: List of tuples (`loss`, `kwargs`)
             `loss`: loss function to evaluate.
-            `kwargs`: Addional arguments passed to the loss function (optional).
+            `kwargs`: Additional arguments passed to the loss function (optional).
     """
     if len(losses) < 1:
-        raise ValueError("loss_combined requred at least one loss function to sum up.")
+        raise ValueError("loss_combined requires at least one loss function to sum up")
 
     l, lx, lxx = losses[0][0](x, **losses[0][1])
-    for loss in losses[1:]:
-        l_, lx_, lxx_ = loss[0](x, **loss[1])
+    for loss_fn, loss_kargs in losses[1:]:
+        l_, lx_, lxx_ = loss_fn(x, **loss_kargs)
         l += l_
         lx += lx_
         lxx += lxx_
@@ -69,6 +71,7 @@ def loss_l1(x: np.ndarray, t: np.ndarray, w: np.ndarray, alpha: float) -> tuple[
         x: (T, dX) states, actual values.
         t: (T, dX) targets, expected values.
         w: (T, dX) weights, scale error of each feature at each timestep.
+        alpha: Smoothing parameter to avoid singularities.
 
     Returns:
         l: (T,) cost at each timestep.

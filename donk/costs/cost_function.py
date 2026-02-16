@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-import donk
+if TYPE_CHECKING:
+    from donk.costs.quadratic_costs import QuadraticCosts
 
 
 class CostFunction(ABC):
@@ -12,7 +16,7 @@ class CostFunction(ABC):
     """
 
     @abstractmethod
-    def quadratic_approximation(self, X: np.ndarray, U: np.ndarray) -> "donk.costs.quadratic_costs.QuadraticCosts":
+    def quadratic_approximation(self, X: np.ndarray, U: np.ndarray) -> QuadraticCosts:
         """Compute a quadratic approximation (2nd order Taylor) at the given trajectory.
 
         Args:

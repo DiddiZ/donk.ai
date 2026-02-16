@@ -10,7 +10,11 @@ class TimeVaryingLinearGaussian:
     """
 
     def __init__(
-        self, coefficients: np.ndarray, intercept: np.ndarray, covar: np.ndarray = None, inv_covar: np.ndarray = None
+        self,
+        coefficients: np.ndarray,
+        intercept: np.ndarray,
+        covar: np.ndarray | None = None,
+        inv_covar: np.ndarray | None = None,
     ) -> None:
         """Initialize this TimeVaryingLinearGaussian object.
 

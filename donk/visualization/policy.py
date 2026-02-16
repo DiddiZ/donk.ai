@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Protocol
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from donk.policy import Policy
+
+
+class Scaler(Protocol):
+    """Protocol for various sklearn scalers."""
+
+    def inverse_transform(self, X: np.ndarray) -> np.ndarray:
+        """Inverse transform the data."""
 
 
 def visualize_policy_actions(
@@ -15,9 +23,9 @@ def visualize_policy_actions(
     policy_labels: list[str],
     actions: list[int],
     action_labels: list[str],
-    action_scaler=None,
+    action_scaler: Scaler | None = None,
 ) -> None:
-    """Compares the actions of different policies of the same sates.
+    """Compare the actions of different policies of the same states.
 
     Args:
         output_file: Path to save the figure to. `None` indicates showing the figure.
@@ -26,7 +34,7 @@ def visualize_policy_actions(
         policy_labels: Names for the policies
         actions: Indices of actions to plot
         action_labels: Names for the actions
-        action_scaler: sklearn Scaler
+        action_scaler: Scaler for actions
     """
     N, _, _ = X.shape
     T = X.shape[1] - 1
@@ -47,7 +55,7 @@ def visualize_policy_actions(
                 plt.plot(u[n][:, action], color=f"C{i}", label=policy_labels[i] if n == 0 else None)
 
         plt.xlabel("$t$")
-        plt.ylabel(r"$\mathbf{u}_t$")
+        plt.ylabel(r"$\mathbf{u}_t$")  # noqa: RUF027
         if j == len(actions) - 1:
             plt.legend()
 

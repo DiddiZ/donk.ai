@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import override
 
 import numpy as np
 
@@ -30,28 +30,29 @@ class QuadraticCosts(CostFunction):
         # Check shapes
         assert C.shape == (*T, dXU, dXU), f"{C.shape} != {(*T, dXU, dXU)}"
         assert c.shape == (*T, dXU), f"{c.shape} != {(*T, dXU)}"
-        assert cc.shape == (*T,), f"{cc.shape} != {(*T, )}"
+        assert cc.shape == (*T,), f"{cc.shape} != {(*T,)}"
 
         self.C = C
         self.c = c
         self.cc = cc
 
-    def __add__(self, other: Any) -> QuadraticCosts:
+    def __add__(self, other: object) -> QuadraticCosts:
         """Sum two cost functions."""
         if isinstance(other, QuadraticCosts):
             return QuadraticCosts(self.C + other.C, self.c + other.c, self.cc + other.cc)
         return NotImplemented
 
-    def __mul__(self, other: Any) -> QuadraticCosts:
+    def __mul__(self, other: object) -> QuadraticCosts:
         """Scale cost function with constant scalar."""
         if np.isscalar(other):
             return QuadraticCosts(self.C * other, self.c * other, self.cc * other)
         return NotImplemented
 
-    def __rmul__(self, other: Any) -> QuadraticCosts:
+    def __rmul__(self, other: object) -> QuadraticCosts:
         """Scale cost function with constant scalar."""
         return self.__mul__(other)
 
+    @override
     def compute_costs(self, X: np.ndarray, U: np.ndarray) -> np.ndarray:
         """Evaluate costs for trajectories.
 
@@ -70,7 +71,7 @@ class QuadraticCosts(CostFunction):
                 np.concatenate(
                     [
                         U,
-                        np.zeros(U.shape[:-2] + (1, dU)),
+                        np.zeros((*U.shape[:-2], 1, dU)),
                     ],
                     axis=-2,
                 ),
@@ -78,7 +79,7 @@ class QuadraticCosts(CostFunction):
             axis=-1,
         )
 
-        costs = (
+        return (
             # Quadratic costs
             # 1/2 * mu^t C mu
             np.einsum("...i,...ij,...j->...", traj, self.C, traj) / 2
@@ -89,8 +90,8 @@ class QuadraticCosts(CostFunction):
             # cc
             + self.cc
         )
-        return costs
 
+    @override
     def quadratic_approximation(self, X: np.ndarray, U: np.ndarray) -> QuadraticCosts:
         """Compute a quadratic approximation (2nd order Taylor) at the given trajectory.
 
@@ -108,19 +109,14 @@ class QuadraticCosts(CostFunction):
 
         1/2 * (Tr(C Sigma) + mu^t C mu) + mu^T c + cc
 
-        Args:
-            traj_mean: (..., dXU), Mean of trajectory distribution
-            traj_covar: (..., dXU), Covariances of trajectory distribution
-
         Returns:
             expectation: (..., ) Expected costs at each time step
         """
-        expectation = self.compute_costs(traj.X_mean, traj.U_mean) + trace_of_product(self.C, traj.covar) / 2
-        return expectation
+        return self.compute_costs(traj.X_mean, traj.U_mean) + trace_of_product(self.C, traj.covar) / 2
 
     @staticmethod
     def quadratic_cost_approximation_l2(t: np.ndarray, w: np.ndarray) -> QuadraticCosts:
-        """Constructs a quadratic cost function for a non-equilibrium L2 loss.
+        """Construct a quadratic cost function for a non-equilibrium L2 loss.
 
         L(xu) = 0.5*sum_i w_i*(t_i-xu_i)**2
 
@@ -140,7 +136,7 @@ class QuadraticCosts(CostFunction):
 
     @staticmethod
     def quadratic_cost_approximation_l1(xu: np.ndarray, t: np.ndarray, w: np.ndarray, alpha: float) -> QuadraticCosts:
-        """Constructs a quadratic cost function approximation for a non-equilibrium L1 loss.
+        """Construct a quadratic cost function approximation for a non-equilibrium L1 loss.
 
         L(xu) = sum_i w_i*sqrt((t_i-xu_i)**2 + alpha)
 

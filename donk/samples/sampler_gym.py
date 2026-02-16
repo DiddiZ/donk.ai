@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import TYPE_CHECKING, override
 
 import numpy as np
 
 from donk.policy import Policy, smooth_noise
 from donk.samples.sampler import Sampler
 
+if TYPE_CHECKING:
+    from gym import Env
+
 
 class GymSampler(Sampler):
     """Sampler for Gym environments."""
 
-    def __init__(self, env, smooth_kernel: float = 0.0) -> None:
+    def __init__(self, env: Env, smooth_kernel: float = 0.0) -> None:
         """Initialize Gym sampler.
 
         Args:
@@ -24,15 +28,16 @@ class GymSampler(Sampler):
         self.smooth_kernel = smooth_kernel
 
     @abstractmethod
-    def convert_observation(self, obs) -> np.ndarray:
+    def convert_observation(self, obs: object) -> np.ndarray:
         """Convert one observation from the Gym environment to a flat numpy array."""
 
     def convert_action(self, u: np.ndarray) -> np.ndarray:
         """Convert one action from a flat numpy array to one action for the from the Gym environment."""
         return u
 
+    @override
     def take_sample(
-        self, pol: Policy, T: int, condition: int, rng: np.random.Generator = None
+        self, pol: Policy, T: int, condition: int, rng: np.random.Generator | None = None
     ) -> tuple[np.ndarray, np.ndarray]:
         """Take one policy sample.
 
@@ -70,7 +75,7 @@ class GymSampler(Sampler):
             U[t] = pol.act(X[t], t, noise[t] if rng is not None else None)
             obs, _, done, _ = self.env.step(self.convert_action(U[t]))
             if done and t < T - 1:
-                raise Exception(f"Iteration ended prematurely {t + 1}/{T}")
+                raise RuntimeError(f"Iteration ended prematurely {t + 1}/{T}")
             X[t + 1] = self.convert_observation(obs)
 
         return X, U

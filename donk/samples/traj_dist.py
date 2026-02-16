@@ -6,7 +6,7 @@ import numpy as np
 class TrajectoryDistribution:
     """A normally distributed trajectory."""
 
-    def __init__(self, mean: np.ndarray, covar: np.ndarray, dX: int, dU: int = None) -> None:
+    def __init__(self, mean: np.ndarray, covar: np.ndarray, dX: int, dU: int | None = None) -> None:
         """Initialize this `TrajectoryDistribution`.
 
         Args:
@@ -48,7 +48,7 @@ class TrajectoryDistribution:
         """Get action component of trajectory covariances."""
         return self.covar[..., :-1, self.dX :, self.dX :]
 
-    def sample(self, size: tuple[int], rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
+    def sample(self, size: tuple[int, ...], rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
         """Draw samples from this trajectory distribution.
 
         Args:
@@ -68,4 +68,4 @@ class TrajectoryDistribution:
         # Final state
         X[:, T] = rng.multivariate_normal(self.X_mean[T], self.X_covar[T], size=N)
 
-        return X.reshape(size + (T + 1, self.dX)), U.reshape(size + (T, self.dU))  # Reshape to desired shape
+        return X.reshape((*size, T + 1, self.dX)), U.reshape((*size, T, self.dU))  # Reshape to desired shape

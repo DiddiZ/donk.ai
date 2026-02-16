@@ -46,7 +46,7 @@ class NormalInverseWishart:
 
     @staticmethod
     def non_informative_prior(d: int) -> NormalInverseWishart:
-        """Create a non-onformative prior distribution.
+        """Create a non-informative prior distribution.
 
         Args:
             d: Dimension

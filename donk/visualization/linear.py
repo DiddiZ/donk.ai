@@ -1,11 +1,13 @@
 """Visualization tool for linear models."""
 
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib.colors import Colormap
 from matplotlib.ticker import MaxNLocator
 
 from donk.dynamics import LinearDynamics
@@ -27,7 +29,7 @@ def visualize_linear_model(
     time_label: str = "$t$",
     export_data: bool = True,
 ) -> None:
-    """Creates a figure visualizing a timeseries of linear Gausian models.
+    """Create a figure visualizing a timeseries of linear Gaussian models.
 
     Args:
         output_file: File to write the plot to.
@@ -86,9 +88,10 @@ def visualize_linear_model(
 
     # Prediction
     y_ = np.empty((N, T, dY))  # Approx y using the model
+    rng = np.random.default_rng()
     for t in range(T):
         mu = coeff[t] @ x[t] + intercept[t]
-        y_[:, t] = np.random.multivariate_normal(mean=mu, cov=cov[t], size=N)
+        y_[:, t] = rng.multivariate_normal(mean=mu, cov=cov[t], size=N)
     y_mean = np.mean(y_, axis=0)
     y_std = np.std(y_, axis=0)
 
@@ -124,9 +127,9 @@ def visualize_linear_model(
 
 
 def visualize_linear_dynamics_model(
-    output_file: Path, dyn: LinearDynamics, X: np.ndarray, U: np.ndarray, **kwargs
+    output_file: Path, dyn: LinearDynamics, X: np.ndarray, U: np.ndarray, **kwargs: Any
 ) -> None:
-    """Creates a figure visualizing a TVLG dynamics model.
+    """Create a figure visualizing a TVLG dynamics model.
 
     Args:
         output_file: File to write the plot to.
@@ -150,8 +153,8 @@ def visualize_linear_dynamics_model(
     )
 
 
-def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.ndarray, **kwargs) -> None:
-    """Creates a figure visualizing a TVLG policy.
+def visualize_linear_policy(output_file: Path, pol: LinearGaussianPolicy, X: np.ndarray, **kwargs: Any) -> None:
+    """Create a figure visualizing a TVLG policy.
 
     Args:
         output_file: File to write the plot to.
@@ -199,7 +202,7 @@ def visualize_coefficients(output_file_pattern: str | None, coeff: np.ndarray) -
         plt.close()
 
 
-def visualize_covariance(output_file, covar) -> None:
+def visualize_covariance(output_file: str | Path, covar: np.ndarray) -> None:
     """Visualize the covariance matrix of a linear model.
 
     Args:
@@ -264,7 +267,7 @@ def visualize_prediction(output_file_pattern: str, prediction: np.ndarray, truth
         plt.close()
 
 
-def visualize_prediction_error(output_file, predictions, targets) -> None:
+def visualize_prediction_error(output_file: str | Path, predictions: np.ndarray, targets: np.ndarray) -> None:
     """Visualize the prediction errors of a linear model.
 
     Args:
@@ -335,7 +338,7 @@ def visualize_prediction_error(output_file, predictions, targets) -> None:
 
 
 def visualize_predictor_target_correlation(
-    output_file: Path | str | None, X: np.ndarray, Y: np.ndarra, xlabel: str = "$x$", ylabel: str = "$y$"
+    output_file: Path | str | None, X: np.ndarray, Y: np.ndarray, xlabel: str = "$x$", ylabel: str = "$y$"
 ) -> None:
     """Visualize the correlation between predictors and targets.
 
@@ -350,7 +353,7 @@ def visualize_predictor_target_correlation(
     corr = np.empty((dY, dX))
     for i in range(dX):
         for j in range(dY):
-            corr[j, i] = np.corrcoef(X[:, i], Y[:, j])[0, 1]  # TODO can be calculated more efficiently
+            corr[j, i] = np.corrcoef(X[:, i], Y[:, j])[0, 1]  # TODO: can be calculated more efficiently
     sns.heatmap(corr, cmap="bwr", vmin=-1, vmax=1)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -364,7 +367,9 @@ def visualize_predictor_target_correlation(
     plt.close()
 
 
-def visualize_predictor_target_scatter(output_file, X: np.ndarray, Y: np.ndarray, cmap=plt.cm.plasma) -> None:
+def visualize_predictor_target_scatter(
+    output_file: str | Path, X: np.ndarray, Y: np.ndarray, cmap: Colormap = plt.cm.plasma
+) -> None:
     """Visualize the correlation between predictors and targets.
 
     Args:

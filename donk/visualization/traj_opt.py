@@ -5,15 +5,18 @@ import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
 from matplotlib.ticker import MaxNLocator
+from matplotlib.typing import ColorType
+
+from donk.traj_opt.lqg import ILQRStepResult
 
 
 def visualize_iLQR(
     output_file: Path,
-    results,
+    results: list[dict],
     kl_step: float,
-    opt_result=None,
-    cost_color="C0",
-    constraint_color="C1",
+    opt_result: ILQRStepResult | None = None,
+    cost_color: ColorType = "C0",
+    constraint_color: ColorType = "C1",
     export_data: bool = True,
 ) -> None:
     """Visualize the results of an iLQR optimization."""

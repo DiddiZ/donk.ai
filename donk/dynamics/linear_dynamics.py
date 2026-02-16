@@ -54,7 +54,7 @@ class LinearDynamics(DynamicsModel, TimeVaryingLinearGaussian):
     def __str__(self) -> str:
         return f"LinearDynamics[T={self.T}, dX={self.dX}, dU={self.dU}]"
 
-    def log_prob(self, X: np.ndarray, U: np.ndarray) -> float:
+    def log_prob(self, X: np.ndarray, U: np.ndarray) -> np.ndarray:
         """Compute log probabilities for transitions to occur under this dynamics.
 
         Args:

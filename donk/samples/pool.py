@@ -6,7 +6,7 @@ from donk.dynamics import to_transitions
 class TransitionPool:
     """Stores transition tuples."""
 
-    def __init__(self, capacity: int = None) -> None:
+    def __init__(self, capacity: int | None = None) -> None:
         """Init this TransitionPool.
 
         Args:
@@ -41,7 +41,7 @@ class TransitionPool:
         if self.capacity is not None:
             self._XUX = self._XUX[-self.capacity :]
 
-    def get_transitions(self, N: int = None) -> np.ndarray:
+    def get_transitions(self, N: int | None = None) -> np.ndarray:
         """Get transitions from the pool.
 
         Args:

@@ -5,9 +5,9 @@ from donk.samples.state_dist import StateDistribution
 from donk.samples.traj_dist import TrajectoryDistribution
 
 __all__ = [
-    "TransitionPool",
+    "GymSampler",
+    "Sampler",
     "StateDistribution",
     "TrajectoryDistribution",
-    "Sampler",
-    "GymSampler",
+    "TransitionPool",
 ]
